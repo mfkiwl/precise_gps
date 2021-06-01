@@ -1,0 +1,7 @@
+name : precise_gps
+dependencies :
+  - pip
+  - pip :
+    - numpy
+    - matplotlib
+    - gpflow
