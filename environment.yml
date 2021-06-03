@@ -4,4 +4,5 @@ dependencies :
   - pip :
     - numpy
     - matplotlib
+    - tensorflow
     - gpflow
