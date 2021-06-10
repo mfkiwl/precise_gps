@@ -126,7 +126,7 @@ class ARD(gpflow.kernels.Kernel):
         if X2 is None:
             X2 = X1
             
-        P = tf.linalg.diag(self.ell**2)    
+        P = tf.linalg.diag(self.ell**(-2))    
         # batched products (N_,1,D) (D,D) (N_,D,1)
         X11 = tf.squeeze(tf.expand_dims(X1,axis = 1) @ P @ tf.expand_dims(X1,axis = -1),-1)  # (N1,1)
         X22 = tf.transpose(tf.squeeze(tf.expand_dims(X2,axis = 1) @ P @ tf.expand_dims(X2,axis = -1),-1))  # (1,N2)
