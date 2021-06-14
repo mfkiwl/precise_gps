@@ -31,6 +31,7 @@ def train(model, kernel, data, lassos, n_splits, max_iter, show = False):
             train_Xnp, train_ynp = tf.gather(X,train_idx), tf.gather(y,train_idx)
             test_Xnp, test_ynp = tf.gather(X,test_idx), tf.gather(y,test_idx)
             if model == "FULL":
+                kernel = FullGaussianKernelCholesky(10,1,1,True)
                 gpr_model = GPRLassoFullCholesky((X,y),kernel, l)
             else:
                 gpr_model = GPRLassoARD((X,y),kernel, l)
