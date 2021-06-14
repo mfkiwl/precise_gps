@@ -33,7 +33,7 @@ class GPRLassoFullCholesky(gpflow.models.GPR):
         self.lasso = lasso
     
     def lml_lasso(self):
-        if len(self.lasso) == 2:
+        if self.lasso == -10:
             return self.log_marginal_likelihood() - self.lasso[0]*tf.math.reduce_sum(tf.abs(self.kernel.off_diagonal)) - self.lasso[1]*tf.math.reduce_sum(tf.abs(self.kernel.diagonal))
         else:
             paddings = tf.constant([[1, 0,], [0, 1]])
