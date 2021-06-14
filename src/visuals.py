@@ -46,3 +46,33 @@ def show_kernel(kernel, title, cols, save, aspect = "minmax", show_nums = -1, sa
     if save_fig:
         plt.savefig("{}.pdf".format(save), bbox_inches='tight')
     plt.show()
+
+def show_kernels(kernels, title, cols, save, aspect = "minmax", show_nums = -1, save_fig = False):
+    fig, axs = plt.subplots(5,3,figsize = (25,18))
+
+    for i in range(15):
+        kernel = kernels[i]
+        maximum = max(abs(np.min(kernel)), np.max(kernel))
+        axs[i] = plt.gca()
+        divider = make_axes_locatable(axs[i])
+        cax = divider.append_axes("right", size="5%", pad=0.15)
+        if aspect != "minmax":
+            im = axs[i].imshow(kernel, cmap = 'bwr', norm = MidpointNormalize(midpoint = 0, vmin = -maximum, vmax = maximum))
+        else:
+            im = axs[i].imshow(kernel, cmap = 'bwr', norm = MidpointNormalize(midpoint = 0, vmin = np.min(kernel), vmax = np.max(kernel)))
+        
+        axs[i].set_yticks(np.arange(len(cols)))
+        axs[i].set_yticklabels(cols);
+        axs[i].set_title(title)
+        num_rows = kernel.shape[0]
+        # Loop over data dimensions and create text annotations.
+        if show_nums > -1:
+            for i in range(num_rows):
+                for j in range(num_rows):
+                    text = axs[i].text(j, i, np.around(kernel[i, j],show_nums),
+                                ha="center", va="center", color="black")
+
+        plt.colorbar(im, cax=cax)
+    if save_fig:
+        plt.savefig("{}.pdf".format(save), bbox_inches='tight')
+    plt.show()
