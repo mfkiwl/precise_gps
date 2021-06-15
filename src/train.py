@@ -34,8 +34,8 @@ def train(model, kernel, data, lassos, n_splits, max_iter, show = False):
                 kernel = FullGaussianKernelCholesky(10,1,1,True)
                 gpr_model = GPRLassoFullCholesky((X,y),kernel, l)
             else:
-                kernel = ARD(10,1,1,True)
-                gpr_model = GPRLassoARD((X,y),kernel, l)
+                kernel2 = ARD(10,1,1,True)
+                gpr_model = GPRLassoARD((X,y),kernel2, l)
             
             optimizer = gpflow.optimizers.Scipy()
             if model == "FULL":
