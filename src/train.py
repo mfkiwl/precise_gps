@@ -51,7 +51,7 @@ def train(model, kernel, data, lassos, n_splits, max_iter, show = False):
                         print(f"Step {step}, MLL: {value.numpy()}")
             else:
                 def step_callback(step, variables, values):
-                    P = tf.linalg.diag(kernel.lengthscales)
+                    P = tf.linalg.diag(gpr_model.kernel.lengthscales)
                     params[l][counter].append(list(P))
                     value = gpr_model.lml_lasso()
                     mlls[l][counter].append(value)
@@ -77,7 +77,7 @@ def train(model, kernel, data, lassos, n_splits, max_iter, show = False):
                 L = tf.linalg.set_diag(L_as_matrix, gpr_model.kernel.diagonal)
                 show_kernel(L @ tf.transpose(L), "Optimized precision matrix LL^T", cols, "", "center")
             else:
-                P = tf.linalg.diag(kernel.lengthscales)
+                P = tf.linalg.diag(gpr_model.kernel.lengthscales)
                 show_kernel(P, "Optimized precision matrix LL^T", cols, "", "center")
 
         counter += 1
