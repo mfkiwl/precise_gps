@@ -61,14 +61,14 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized = False, s
                 if not randomized:
                     lengthscales = np.ones(dim)
                 else:
-                    lengthscales = np.random.uniform(-1,1,dim)
+                    lengthscales = np.random.uniform(0,1,dim)
                 kernel = ARD(variance=1, lengthscales=lengthscales)
                 gpr_model = GPRLassoARD((train_Xnp,train_ynp),kernel,l)
             else:
                 if not randomized:
                     lengthscales = np.ones(dim)
                 else:
-                    lengthscales = np.random.uniform(-1,1,dim)
+                    lengthscales = np.random.uniform(0,1,dim)
                 kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=lengthscales)
                 gpr_model = GPRLassoARD((train_Xnp,train_ynp),kernel,l)
             
