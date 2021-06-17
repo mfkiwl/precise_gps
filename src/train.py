@@ -54,7 +54,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized = False, s
                 if not randomized:
                     L = np.ones((dim*(dim+1))//2)
                 else:
-                    L = np.random.uniform(0.5,3,(dim*(dim+1))//2)
+                    L = np.random.uniform(-1,1,(dim*(dim+1))//2)
                 kernel = FullGaussianKernel(variance=1, L=L)
                 gpr_model = GPRLassoFull((train_Xnp,train_ynp),kernel,l)
             elif model == "own_ard":
