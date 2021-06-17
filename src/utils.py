@@ -1,4 +1,5 @@
 import numpy as np 
+import pickle 
 
 def parse_trace(d, lassos, max_iter = 1500):
     traces = {}
@@ -31,3 +32,9 @@ def parse_traceL(d, lassos, max_iter = 1500):
                 concatted = current
             traces[i][j] = concatted
     return traces
+
+def parse_pickle(path):
+    f = open(path, "rb")
+    data = pickle.load(f)
+    f.close()
+    return data 

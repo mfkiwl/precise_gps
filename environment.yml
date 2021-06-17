@@ -6,3 +6,6 @@ dependencies :
     - matplotlib
     - tensorflow
     - gpflow
+    - tensorflow_probability
+    - pandas
+    - scikit-learn

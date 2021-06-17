@@ -10,7 +10,10 @@ import tensorflow as tf
 import tensorflow_probability as tfp 
 
 
-def train(model, kernel, data, lassos, max_iter, num_runs, randomized = False, show = False):
+def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
+    """
+    Training models with different 
+    """
 
     possible_models = ["full", "own_ard", "gpflow_ard"]
     if model not in possible_models:
