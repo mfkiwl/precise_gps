@@ -51,7 +51,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, show = False):
             likelihood_variances[l][counter] = []
             variances[l][counter] = []
             if model == "full":
-                kernel = FullGaussianKernel(variance=1, L=np.ones(dim))
+                kernel = FullGaussianKernel(variance=1, L=np.ones(dim*(dim+1)//2))
                 gpr_model = GPRLassoFull((train_Xnp,train_ynp),kernel,l)
             elif model == "own_ard":
                 kernel = ARD(variance=1, lengthscales=np.ones(dim))
