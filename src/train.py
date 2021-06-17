@@ -99,7 +99,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized = False, s
                         print(f"Step {step}, MLL: {value.numpy()}")
             
             optimizer.minimize(
-                gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': True}, step_callback = step_callback)
+                gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
 
             # Calculating error
             pred_mean, _ = gpr_model.predict_f(test_Xnp)
