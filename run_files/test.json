@@ -3,7 +3,7 @@
         "model" : "full",
         "kernel": "full",
         "data": "data/wine/winequality-red.csv",
-        "lassos": [100000,100000,1000000],
+        "lassos": [10,10,100],
         "max_iter": 500,
         "num_runs": 10,
         "randomized": 1,
