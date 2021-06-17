@@ -1,7 +1,18 @@
 {
-    "test" : {
+    "full1" : {
         "model" : "full",
         "kernel": "full",
+        "data": "data/wine/winequality-red.csv",
+        "lassos": [0,0.2,10],
+        "max_iter": 500,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 1
+    },
+
+    "ard1" : {
+        "model" : "gpflow_ard",
+        "kernel": "gpflow_ard",
         "data": "data/wine/winequality-red.csv",
         "lassos": [0,0.2,10],
         "max_iter": 500,
