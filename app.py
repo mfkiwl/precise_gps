@@ -7,10 +7,36 @@ from sklearn.model_selection import train_test_split
 from numpy import genfromtxt
 
 '''
-Training different models is possible with this script
-'''
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+Training different Gaussian process models is possible with this script. Running isntructions are given in
+a json file with the following syntax.
 
+{
+    "<name>": {
+        "model" : (string),
+        "kernel": (string),
+        "data": (string),
+        "lassos": (list),
+        "max_iter": (int),
+        "num_runs": (int),
+        "randomized": (bool),
+        "show": (bool)
+    }
+
+}
+    Args:
+        name (string)     : name of the instance
+        model (string)    : name of the model ("full", "own_ard", "gpflow_ard")
+        kernel (string)   : name of the kernel that is used ("full", "own_ard", "gpflow_ard")
+        data (string)     : path to the data e.g. "data/wine/winequality-red.csv"
+        lassos (list)     : [start, step, end] e.g. [0,0.1,10]
+        max_iter (int)    : maximum number of iterations for Scipy
+        num_runs (int)    : number of runs per a lasso coefficient
+        randomized (bool) : initialization is randomized if True
+        show (bool)       : show optimized precisions if True (these are saved anyway)
+
+See example json-file in "run_files/test.json". Results are automatically saved in "results/<name>.pkl".
+Usage : python app.py -f <path to json>
+'''
 ap = argparse.ArgumentParser()
 ap.add_argument("-f", "--file", required=True, help="Path to the json file that is used for running the script.")
 args = vars(ap.parse_args())
