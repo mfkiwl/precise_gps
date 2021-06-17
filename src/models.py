@@ -9,7 +9,8 @@ class GPRLassoFull(gpflow.models.GPR):
         self.lasso = lasso
     
     def lml_lasso(self):
-        return self.log_marginal_likelihood() - self.lasso*tf.math.reduce_sum(tf.abs(self.kernel.L @ tf.transpose(self.kernel.L)))
+        L = tfp.math.fill_triangular(self.kernel.L)
+        return self.log_marginal_likelihood() - self.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
 
     def maximum_log_likelihood_objective(self):
         return self.lml_lasso()
@@ -21,7 +22,7 @@ class GPRLassoARD(gpflow.models.GPR):
         self.lasso = lasso
     
     def lml_lasso(self):
-        return self.log_marginal_likelihood() - self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales)))
+        return self.log_marginal_likelihood() - self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(-2))))
     
     def maximum_log_likelihood_objective(self):
         return self.lml_lasso()
@@ -41,7 +42,7 @@ class GPRLassoFullCholesky(gpflow.models.GPR):
             L_as_matrix = tf.pad(L_as_matrix, paddings, "CONSTANT")
             L = tf.linalg.set_diag(L_as_matrix, self.kernel.diagonal)
             return self.log_marginal_likelihood() - self.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
-
-    
+            
+             
     def maximum_log_likelihood_objective(self):
         return self.lml_lasso()
