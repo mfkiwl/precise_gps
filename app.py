@@ -9,6 +9,7 @@ from numpy import genfromtxt
 '''
 Training different models is possible with this script
 '''
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-f", "--file", required=True, help="Path to the json file that is used for running the script.")
