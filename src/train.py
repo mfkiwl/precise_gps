@@ -10,7 +10,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp 
 
 
-def train(model, kernel, data, lassos, max_iter, num_runs, show = False):
+def train(model, kernel, data, lassos, max_iter, num_runs, randomized = False, show = False):
 
     possible_models = ["full", "own_ard", "gpflow_ard"]
     if model not in possible_models:
@@ -51,13 +51,25 @@ def train(model, kernel, data, lassos, max_iter, num_runs, show = False):
             likelihood_variances[l][counter] = []
             variances[l][counter] = []
             if model == "full":
-                kernel = FullGaussianKernel(variance=1, L=np.ones((dim*(dim+1))//2))
+                if not randomized:
+                    L = np.ones((dim*(dim+1))//2)
+                else:
+                    L = np.random.uniform(-1,1,(dim*(dim+1))//2)
+                kernel = FullGaussianKernel(variance=1, L=L)
                 gpr_model = GPRLassoFull((train_Xnp,train_ynp),kernel,l)
             elif model == "own_ard":
-                kernel = ARD(variance=1, lengthscales=np.ones(dim))
+                if not randomized:
+                    lengthscales = np.ones(dim)
+                else:
+                    lengthscales = np.random.uniform(-1,1,dim)
+                kernel = ARD(variance=1, lengthscales=lengthscales)
                 gpr_model = GPRLassoARD((train_Xnp,train_ynp),kernel,l)
             else:
-                kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=np.ones(dim))
+                if not randomized:
+                    lengthscales = np.ones(dim)
+                else:
+                    lengthscales = np.random.uniform(-1,1,dim)
+                kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=lengthscales)
                 gpr_model = GPRLassoARD((train_Xnp,train_ynp),kernel,l)
             
             optimizer = gpflow.optimizers.Scipy()
