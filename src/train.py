@@ -1,7 +1,7 @@
-from models import GPRLassoARD, GPRLassoFull
-from kernels import FullGaussianKernel, ARD 
-from utils import * 
-from visuals import *
+from src.models import GPRLassoARD, GPRLassoFull
+from src.kernels import FullGaussianKernel, ARD 
+from src.utils import * 
+from src.visuals import *
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 import numpy as np

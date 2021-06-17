@@ -1,4 +1,5 @@
 import numpy as np 
+import json 
 
 def parse_trace(d, lassos, max_iter = 1500):
     traces = {}
