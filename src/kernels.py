@@ -128,6 +128,6 @@ class FullGaussianKernel(gpflow.kernels.Kernel):
         X12 = A @ tf.transpose(B) # (N1,N2)
 
         # kernel  (N1,1) - (N1,N2) + (1,N2)
-        K = self.sf*tf.exp(-0.5 * (X11 - 2*X12 + X22))
+        K = self.variance*tf.exp(-0.5 * (X11 - 2*X12 + X22))
 
         return K
