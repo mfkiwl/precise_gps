@@ -3,131 +3,95 @@ import tensorflow as tf
 import gpflow
 import tensorflow_probability as tfp 
     
-class FullGaussianKernelCholesky(gpflow.kernels.Kernel):
-    """
-    This kernel calculates the 'full' Gaussian kernel defined in ...
-    It is used for learning the off-diagonal covariates of the precion matrix.
-    """
-    
-    def __init__(self, covariates, sf = 1, init_factor = 1, randomized = False):
-        
-        # init as 1D kernel 
-        super().__init__()
-        self.covariates = covariates
-        
-        # gpflow parameters
-        self.sf = gpflow.Parameter(sf, transform = tfp.bijectors.Power(2))
-        
-        # TODO : select some sparsity prior 
-        # For now, use np.eye since it seems to work
-        if not randomized:
-          self.L = gpflow.Parameter(init_factor*np.ones(self.covariates*(self.covariates +1) // 2))
-        else:
-          self.L = gpflow.Parameter(2*init_factor*np.random.random(self.covariates*(self.covariates +1) // 2)-init_factor) 
-        
-        
-    def K_diag(self, X):
-        return self.sf * tf.ones_like(X[:,0])
-    
-    def K(self, X1, X2=None):
-        if X2 is None:
-            X2 = X1
-        
-        L_as_matrix = tfp.math.fill_triangular(self.L)
-        A = X1 @ L_as_matrix
-        B = X2 @ L_as_matrix 
-
-    
-        # batched products (N_,1,D) (D,D) (N_,D,1)
-        X11 = tf.squeeze(tf.expand_dims(A, axis = 1) @ tf.expand_dims(A, axis = -1), axis = -1)
-        X22 = tf.transpose(tf.squeeze(tf.expand_dims(B, axis = 1) @ tf.expand_dims(B, axis = -1), axis = -1))  # (1,N2)
-
-        # regular product -2 (N1,D) (D,D) (D,N2)
-        X12 = A @ tf.transpose(B) # (N1,N2)
-
-        # kernel  (N1,1) - (N1,N2) + (1,N2)
-        K = self.sf * tf.exp(-0.5 * (X11 - 2*X12 + X22))
-
-        return K
 
 class ARD(gpflow.kernels.Kernel):
     """
-    ARD kernel
+    Own implementation of the squared exponential kernel with ard property. Should work
+    the same way as gpflow.kernels.SquaredExponential(ARD = True). Lengthscales and variance 
+    can be randomized. This should be handled when initializing the kernel.
+    See : https://gpflow.readthedocs.io/en/master/gpflow/kernels/index.html#gpflow-kernels-squaredexponential
+
+    Args:
+        variance (float)           : signal variance which scales the whole kernel
+        lengthscales (numpy array) : list of lengthscales (should match the dimension of the input)
     """
-    
     def __init__(self, variance, lengthscales):        
-        # init as 1D kernel 
         super().__init__()
-        #self.covariates = covariates
-        
-        # gpflow parameters
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
-        
-        # TODO : select some sparsity prior 
-        # For now, use np.eye since it seems to work
         self.lengthscales = gpflow.Parameter(lengthscales, transform = gpflow.utilities.positive())
         
-        
+    
     def K_diag(self, X):
+        """
+        Returns the diagonal vector when X1 == X2 (used in the background of gpflow)
+        """
         return self.variance * tf.ones_like(X[:,0])
     
     def K(self, X1, X2=None):
+        """
+        Returns the squared exponential ard kernel.
+
+        Args:
+            X1 (numpy array) : shaped N x D
+            X2 (numpy array) : shaped M x D (D denotes the number of dimensions of the input)
+        """
         if X2 is None:
             X2 = X1
             
+        # Precision is the inverse squared of the lengthscales
         P = tf.linalg.diag(self.lengthscales**(-2))    
-        # batched products (N_,1,D) (D,D) (N_,D,1)
-        X11 = tf.squeeze(tf.expand_dims(X1,axis = 1) @ P @ tf.expand_dims(X1,axis = -1),-1)  # (N1,1)
-        X22 = tf.transpose(tf.squeeze(tf.expand_dims(X2,axis = 1) @ P @ tf.expand_dims(X2,axis = -1),-1))  # (1,N2)
+        X11 = tf.squeeze(tf.expand_dims(X1,axis = 1) @ P @ tf.expand_dims(X1,axis = -1),-1)  # (N,1)
+        X22 = tf.transpose(tf.squeeze(tf.expand_dims(X2,axis = 1) @ P @ tf.expand_dims(X2,axis = -1),-1))  # (1,M)
+        X12 = X1 @ P @ tf.transpose(X2) # (N,M)
 
-        # regular product -2 (N1,D) (D,D) (D,N2)
-        X12 = X1 @ P @ tf.transpose(X2) # (N1,N2)
-
-        # kernel  (N1,1) - (N1,N2) + (1,N2)
+        # kernel  (N,1) - (N,M) + (1,M)
         K = self.variance * tf.exp(-0.5 * (X11 - 2*X12 + X22))
 
         return K
 
 class FullGaussianKernel(gpflow.kernels.Kernel):
     """
-    This kernel calculates the 'full' Gaussian kernel defined in ...
-    It is used for learning the off-diagonal covariates of the precion matrix.
+    Implementation of the full Gaussian kernel which introduces also the off-diagonal
+    covariates of the precision matrix. Randomizing the initialization should be handled outside
+    of this class.
+
+    Args:
+        variance (float) : signal variance which scales the whole kernel
+        L (numpy array)  : vector representation of L, where LL^T = P : precision
     """
     
     def __init__(self, variance, L):
-        
-        # init as 1D kernel 
         super().__init__()
-        
-        # gpflow parameters
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
-        
-        # TODO : select some sparsity prior 
         self.L = gpflow.Parameter(L)
 
-        
-        
     def K_diag(self, X):
+        """
+        Returns the diagonal vector when X1 == X2 (used in the background of gpflow)
+        """
         return self.variance * tf.ones_like(X[:,0])
     
     def K(self, X1, X2=None):
+        """
+        Returns the full Gaussian kernel.
+
+        Args:
+            X1 (numpy array) : shaped N x D
+            X2 (numpy array) : shaped M x D (D denotes the number of dimensions of the input)
+        """
         if X2 is None:
             X2 = X1
         
-        L = tfp.math.fill_triangular(self.L)
+        L = tfp.math.fill_triangular(self.L) # matrix representation of L
 
-        #L_as_matrix = tfp.math.fill_triangular(self.L)
         A = X1 @ L
         B = X2 @ L 
 
-        # batched products (N_,1,D) (D,D) (N_,D,1)
-        X11 = tf.squeeze(tf.expand_dims(A, axis = 1) @ tf.expand_dims(A, axis = -1), axis = -1)
-        X22 = tf.transpose(tf.squeeze(tf.expand_dims(B, axis = 1) @ tf.expand_dims(B, axis = -1), axis = -1))  # (1,N2)
+        X11 = tf.squeeze(tf.expand_dims(A, axis = 1) @ tf.expand_dims(A, axis = -1), axis = -1) # (N, 1)
+        X22 = tf.transpose(tf.squeeze(tf.expand_dims(B, axis = 1) @ tf.expand_dims(B, axis = -1), axis = -1))  # (1,M)
+        X12 = A @ tf.transpose(B) # (N,M)
 
-        # regular product -2 (N1,D) (D,D) (D,N2)
-        X12 = A @ tf.transpose(B) # (N1,N2)
-
-        # kernel  (N1,1) - (N1,N2) + (1,N2)
+        # kernel  (N,1) - (N,M) + (1,M)
         K = self.variance*tf.exp(-0.5 * (X11 - 2*X12 + X22))
 
         return K
