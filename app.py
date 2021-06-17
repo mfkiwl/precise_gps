@@ -18,7 +18,9 @@ save_path = "results"
 path = args["file"]
 
 def main():
-    commands = json.load(path)
+    file = open(path,)
+    commands = json.load(file)
+    file.close()
     for key in commands.keys():
         print(f"Started process for {key}")
         current_run = commands[key]
