@@ -1,5 +1,4 @@
 import numpy as np 
-import json 
 
 def parse_trace(d, lassos, max_iter = 1500):
     traces = {}
@@ -12,7 +11,6 @@ def parse_trace(d, lassos, max_iter = 1500):
             len_cur = len(current)
             concatted = np.concatenate((current, last_term*np.ones(max_iter-len_cur)), axis=0)
         tr.append(concatted)
-        tr = np.array(tr).mean(axis = 0)
         traces[i] = tr
     return traces
 
