@@ -83,7 +83,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
                 else:
                     lengthscales = np.random.uniform(0.5,3,dim)
                 kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=lengthscales)
-
+            print(type(kernel))
             """
             Selecting the correct model TODO: remove if-else structure
             """
@@ -98,7 +98,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             optimizer = gpflow.optimizers.Scipy()
             def step_callback(step, variables, values):
                 if step % 100 == 0:
-                    if type(gpr_model.kernel) == FullGaussianKernel:
+                    if type(kernel) == FullGaussianKernel:
                         L = gpr_model.kernel.L
                         params[l][counter].append(list(L))
                     else:
