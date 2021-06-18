@@ -6,12 +6,11 @@ from src.kernels import *
 class GPRLasso(gpflow.models.GPR):
     """
     Basic Gaussian process regression, but L1 penalty term is added to the loss. This model
-    assumes that the underlying kernel is full Gaussian kernel. See: src/kernels/.
+    assumes that the underlying kernel is either full Gaussian kernel or ARD kernel.
     """
     
     def __init__(self, data, kernel, lasso):
         super(GPRLasso, self).__init__(data, kernel)
-        assert type(kernel) == FullGaussianKernel # assumes that full Gaussian kernel is used
         self.lasso = lasso # lasso coefficient
     
     def lasso_penalty(self):
