@@ -70,27 +70,26 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
                     L = np.ones((dim*(dim+1))//2)
                 else:
                     L = init_precision(dim)
-                kernel = FullGaussianKernel(variance=1, L=L)
+                _kernel = FullGaussianKernel(variance=1, L=L)
             elif model == "own_ard":
                 if not randomized:
                     lengthscales = np.ones(dim)
                 else:
                     lengthscales = np.random.uniform(0.5,3,dim)
-                kernel = ARD(variance=1, lengthscales=lengthscales)
+                _kernel = ARD(variance=1, lengthscales=lengthscales)
             else:
                 if not randomized:
                     lengthscales = np.ones(dim)
                 else:
                     lengthscales = np.random.uniform(0.5,3,dim)
-                kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=lengthscales)
-            print(type(kernel))
+                _kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=lengthscales)
             """
             Selecting the correct model TODO: remove if-else structure
             """
             if model == "GPRLasso":
-                gpr_model = GPRLasso((train_Xnp,train_ynp),kernel,l)
+                gpr_model = GPRLasso((train_Xnp,train_ynp),_kernel,l)
             else:
-                gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), kernel)
+                gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), _kernel)
             
             """
             Optimizer
@@ -98,7 +97,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             optimizer = gpflow.optimizers.Scipy()
             def step_callback(step, variables, values):
                 if step % 100 == 0:
-                    if type(kernel) == FullGaussianKernel:
+                    if type(_kernel) == FullGaussianKernel:
                         L = gpr_model.kernel.L
                         params[l][counter].append(list(L))
                     else:
