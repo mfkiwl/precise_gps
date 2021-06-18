@@ -10,15 +10,23 @@ import tensorflow as tf
 import tensorflow_probability as tfp 
 
 
+possible_models = ["GPR", "GPRLasso"] # current possible models to train
+possible_kernels = ["full", "own_ard", "gpflow_ard"] # current possible kernels to use
+
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
     """
-    Training models with different 
+    Training models with different kernels
     """
 
-    possible_models = ["full", "own_ard", "gpflow_ard"]
     if model not in possible_models:
-        print(f"Model {model} is not part of the models. Changed to full!")
-        model = "full"
+        print(f"Model {model} is not part of the models. Changed to gpflow.models.GPR!")
+        model = "GPR"
+    if kernel not in possible_kernels:
+        print(f"Model {kernel} is not part of the kernels. Changed to gpflow.SquaredExponential!")
+        kernel = "gpflow_ard"
+    
+    if model == "GPR":
+        lassos = [0]
 
     train_Xnp = data["train_X"]
     train_ynp = data["train_y"]
@@ -53,53 +61,57 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             params[l][counter] = []
             likelihood_variances[l][counter] = []
             variances[l][counter] = []
-            if model == "full":
+
+            """
+            Selecting the correct kernel TODO: remove if-else structure
+            """
+            if kernel == "full":
                 if not randomized:
-                    L = init_precision(dim)
+                    L = np.ones((dim*(dim+1))//2)
                 else:
-                    L = np.random.uniform(-1,1,(dim*(dim+1))//2)
+                    L = init_precision(dim)
                 kernel = FullGaussianKernel(variance=1, L=L)
-                gpr_model = GPRLassoFull((train_Xnp,train_ynp),kernel,l)
             elif model == "own_ard":
                 if not randomized:
                     lengthscales = np.ones(dim)
                 else:
                     lengthscales = np.random.uniform(0.5,3,dim)
                 kernel = ARD(variance=1, lengthscales=lengthscales)
-                gpr_model = GPRLassoARD((train_Xnp,train_ynp),kernel,l)
             else:
                 if not randomized:
                     lengthscales = np.ones(dim)
                 else:
                     lengthscales = np.random.uniform(0.5,3,dim)
                 kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=lengthscales)
-                gpr_model = GPRLassoARD((train_Xnp,train_ynp),kernel,l)
-            
-            optimizer = gpflow.optimizers.Scipy()
-            if model == "full":
-                def step_callback(step, variables, values):
-                    L = gpr_model.kernel.L
-                    params[l][counter].append(list(L))
-                    value = gpr_model.lml_lasso()
-                    lik_var = gpr_model.likelihood.variance
-                    var = gpr_model.kernel.variance
-                    variances[l][counter] = var
-                    likelihood_variances[l][counter] = lik_var
-                    mlls[l][counter].append(value)
-                    if step % 100 == 0:
-                        print(f"Step {step}, MLL: {value.numpy()}")
+
+            """
+            Selecting the correct model TODO: remove if-else structure
+            """
+            if model == "GPRLasso":
+                gpr_model = GPRLassoFull((train_Xnp,train_ynp),kernel,l)
             else:
-                def step_callback(step, variables, values):
-                    P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
-                    params[l][counter].append(list(P))
-                    value = gpr_model.lml_lasso()
+                gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), kernel)
+            
+            """
+            Optimizer
+            """
+            optimizer = gpflow.optimizers.Scipy()
+            def step_callback(step, variables, values):
+                if step % 100 == 0:
+                    if type(gpr_model.kernel) == FullGaussianKernel:
+                        L = gpr_model.kernel.L
+                        params[l][counter].append(list(L))
+                    else:
+                        P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
+                        params[l][counter].append(list(P))
+
+                    value = gpr_model.maximum_log_likelihood_objective()
                     lik_var = gpr_model.likelihood.variance
                     var = gpr_model.kernel.variance
                     variances[l][counter] = var
                     likelihood_variances[l][counter] = lik_var
                     mlls[l][counter].append(value)
-                    if step % 100 == 0:
-                        print(f"Step {step}, MLL: {value.numpy()}")
+                    print(f"Step {step}, MLL: {value.numpy()}")
             
             optimizer.minimize(
                 gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
@@ -116,7 +128,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             log_likelihoods[l].append(log_lik)
 
             if show:
-                if model == "full":
+                if kernel == "full":
                     L = gpr_model.kernel.L
                     L = tfp.math.fill_triangular(L)
                     show_kernel(L @ tf.transpose(L), "Optimized precision matrix LL^T", cols, "", "center", 1)
@@ -135,7 +147,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
     df["max_iter"] = max_iter 
     df["test_errors"] = test_errors_full
     df["train_errors"] = train_errors_full
-    df["mll"] = mlls#parse_trace(mlls, lassos, max_iter = max_iter)
+    df["mll"] = mlls 
     df["params"] = parse_traceL(params, lassos, max_iter = max_iter)
     df["likelihood_variances"] = likelihood_variances
     df["variances"] = variances

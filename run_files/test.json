@@ -1,22 +1,22 @@
 {
     "full1" : {
-        "model" : "full",
+        "model" : "GPRLasso",
         "kernel": "full",
         "data": "data/wine/winequality-red.csv",
-        "lassos": [0,1,10],
+        "lassos": [0,10,1000],
         "max_iter": 500,
         "num_runs": 10,
         "randomized": 1,
-        "show": 1
+        "show": 0
     },
     "ard1" : {
-        "model" : "gpflow_ard",
+        "model" : "GPR",
         "kernel": "gpflow_ard",
         "data": "data/wine/winequality-red.csv",
-        "lassos": [0,1,2],
+        "lassos": [0],
         "max_iter": 500,
         "num_runs": 10,
         "randomized": 1,
-        "show": 1
+        "show": 0
     }
 }
