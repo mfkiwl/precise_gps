@@ -88,7 +88,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             Selecting the correct model TODO: remove if-else structure
             """
             if model == "GPRLasso":
-                gpr_model = GPRLassoFull((train_Xnp,train_ynp),kernel,l)
+                gpr_model = GPRLasso((train_Xnp,train_ynp),kernel,l)
             else:
                 gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), kernel)
             
