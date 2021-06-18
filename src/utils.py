@@ -2,6 +2,17 @@ import numpy as np
 import pickle 
 
 def parse_trace(d, lassos, max_iter = 1500):
+    """
+    Used to parse marginal-log-likelihoods. all the iterations the same length.
+
+    Args:   
+        d (dict)       : dictionary of parameters (different lassos)
+        lassos (list)  : lassos used during optimization
+        max_iter (int) : max iteration during optimization
+
+    Returns:
+        dictionary
+    """
     traces = {}
     for i in range(len(d)):
         tr = []
@@ -16,6 +27,17 @@ def parse_trace(d, lassos, max_iter = 1500):
     return traces
 
 def parse_traceL(d, lassos, max_iter = 1500):
+    """
+    Used for parcing the paramaters this allows visualizing trace plots. 
+
+    Args:   
+        d (dict)       : dictionary of parameters (different lassos)
+        lassos (list)  : lassos used during optimization
+        max_iter (int) : max iteration during optimization
+
+    Returns:
+        dictionary
+    """
     traces = {}
     for i in range(len(d)):
         traces[i] = {}
@@ -34,6 +56,15 @@ def parse_traceL(d, lassos, max_iter = 1500):
     return traces
 
 def parse_pickle(path):
+    """
+    Load a specific pickle file
+
+    Args:
+        path (string) : path to the pickle file 
+    
+    Returns:
+        dictionary
+    """
     f = open(path, "rb")
     data = pickle.load(f)
     f.close()
