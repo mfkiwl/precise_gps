@@ -1,5 +1,5 @@
-from src.models import GPRLassoARD, GPRLassoFull
-from src.kernels import FullGaussianKernel, ARD 
+from src.models import *
+from src.kernels import *
 from src.utils import * 
 from src.visuals import *
 from sklearn.model_selection import KFold
