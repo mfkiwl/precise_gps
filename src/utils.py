@@ -1,5 +1,6 @@
 import numpy as np 
 import pickle 
+import tensorflow_probability as tfp
 
 def parse_trace(d, lassos, max_iter = 1500):
     """
@@ -69,3 +70,10 @@ def parse_pickle(path):
     data = pickle.load(f)
     f.close()
     return data 
+
+def init_precision(dim):
+    full_L = np.random.uniform(-1,1,(dim,dim))
+    P = full_L@np.transpose(full_L)
+
+    lower_L = np.linalg.cholesky(P)
+    return tfp.math.fill_triangular_inverse(lower_L)

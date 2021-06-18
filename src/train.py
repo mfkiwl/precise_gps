@@ -55,7 +55,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             variances[l][counter] = []
             if model == "full":
                 if not randomized:
-                    L = np.ones((dim*(dim+1))//2)
+                    L = init_precision(dim)
                 else:
                     L = np.random.uniform(-1,1,(dim*(dim+1))//2)
                 kernel = FullGaussianKernel(variance=1, L=L)
