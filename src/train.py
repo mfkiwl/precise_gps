@@ -94,27 +94,31 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             """
             Optimizer
             """
+            def save_results():
+                if type(_kernel) == FullGaussianKernel:
+                    L = gpr_model.kernel.L
+                    params[l][counter].append(list(L))
+                else:
+                    P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
+                    params[l][counter].append(list(P))
+
+                value = gpr_model.maximum_log_likelihood_objective()
+                lik_var = gpr_model.likelihood.variance
+                var = gpr_model.kernel.variance
+                variances[l][counter] = var
+                likelihood_variances[l][counter] = lik_var
+                mlls[l][counter].append(value)
+
+
             optimizer = gpflow.optimizers.Scipy()
             def step_callback(step, variables, values):
                 if step % 100 == 0:
-                    if type(_kernel) == FullGaussianKernel:
-                        L = gpr_model.kernel.L
-                        params[l][counter].append(list(L))
-                    else:
-                        P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
-                        params[l][counter].append(list(P))
-
-                    value = gpr_model.maximum_log_likelihood_objective()
-                    lik_var = gpr_model.likelihood.variance
-                    var = gpr_model.kernel.variance
-                    variances[l][counter] = var
-                    likelihood_variances[l][counter] = lik_var
-                    mlls[l][counter].append(value)
-                    print(f"Step {step}, MLL: {value.numpy()}")
+                    save_results()
             
             optimizer.minimize(
                 gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
 
+            save_results()
             # Calculating error
             pred_mean, _ = gpr_model.predict_f(test_Xnp)
             pred_train,_ = gpr_model.predict_f(train_Xnp)
