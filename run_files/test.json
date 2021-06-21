@@ -7,7 +7,9 @@
         "max_iter": 500,
         "num_runs": 10,
         "randomized": 1,
-        "show": 0
+        "show": 0,
+        "num_Z": 0,
+        "minibatch": 100
     },
     "ard1" : {
         "model" : "GPR",
@@ -17,6 +19,8 @@
         "max_iter": 500,
         "num_runs": 10,
         "randomized": 1,
-        "show": 0
+        "show": 0,
+        "num_Z": 0,
+        "minibatch": 100
     }
 }

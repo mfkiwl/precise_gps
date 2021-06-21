@@ -13,7 +13,7 @@ import tensorflow_probability as tfp
 possible_models = ["GPR", "GPRLasso", "SVILasso"] # current possible models to train
 possible_kernels = ["full", "own_ard", "gpflow_ard"] # current possible kernels to use
 
-def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
+def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size):
     """
     
     """
@@ -89,7 +89,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             if model == "GPRLasso":
                 gpr_model = GPRLasso((train_Xnp,train_ynp),_kernel,l)
             elif model == "SVILasso":
-                gpr_model = SVILasso((train_Xnp, train_ynp), _kernel, l, 100)
+                gpr_model = SVILasso((train_Xnp, train_ynp), _kernel, l, num_Z)
             else:
                 gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), _kernel)
             
@@ -122,12 +122,11 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
                     save_results()
             if model == "SVILasso":
                 train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
-                minibatch_size = 100
-                for _ in range(100):
-                    train_iter = iter(train_dataset.batch(minibatch_size))
-                    training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
-                    optimizer.minimize(
-                        training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
+                minibatch_size = minibatch_size
+                train_iter = iter(train_dataset.batch(minibatch_size))
+                training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
+                optimizer.minimize(
+                    training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
             else:
                 optimizer.minimize(
                     gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
