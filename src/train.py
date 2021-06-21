@@ -116,9 +116,14 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             def step_callback(step, variables, values):
                 if step % 100 == 0:
                     save_results()
-            
-            optimizer.minimize(
-                gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
+            if model == "SVILasso":
+                training_loss = gpr_model.training_loss_closure((train_Xnp, train_ynp), compile=True)
+                optimizer.minimize(
+                    training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
+            else:
+                optimizer.minimize(
+                    gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
+
 
             save_results()
             # Calculating error
