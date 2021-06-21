@@ -107,7 +107,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
                 if model == "SVILasso":
                     value = gpr_model.maximum_log_likelihood_objective((train_Xnp, train_ynp))
                 else:
-                    value = gpr_model.maximum_log_likelihood_objective((train_Xnp, train_ynp))      
+                    value = gpr_model.maximum_log_likelihood_objective()
+
                 lik_var = gpr_model.likelihood.variance
                 var = gpr_model.kernel.variance
                 variances[l][counter] = var
@@ -120,10 +121,13 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
                 if step % 100 == 0:
                     save_results()
             if model == "SVILasso":
-                tensor_data = tuple(map(tf.convert_to_tensor, (train_Xnp, train_ynp)))
-                training_loss = gpr_model.training_loss_closure((train_Xnp, train_ynp), compile = True)
-                optimizer.minimize(
-                    training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
+                train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
+                minibatch_size = 100
+                for _ in range(100):
+                    train_iter = iter(train_dataset.batch(minibatch_size))
+                    training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
+                    optimizer.minimize(
+                        training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
             else:
                 optimizer.minimize(
                     gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
@@ -152,7 +156,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
 
         current_mean = np.mean(errors)
         train_mean = np.mean(train_errors)
-        print("Train error:", train_mean, "Test error", current_mean)
+        print("Lasso:", l, "Train error:", train_mean, "Test error", current_mean)
         test_errors_full.append(current_mean)
         train_errors_full.append(train_mean)
 
