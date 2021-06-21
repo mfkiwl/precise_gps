@@ -104,12 +104,12 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
                     P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
                     params[l][counter].append(list(P))
 
-                #value = gpr_model.maximum_log_likelihood_objective()
+                value = gpr_model.maximum_log_likelihood_objective()
                 lik_var = gpr_model.likelihood.variance
                 var = gpr_model.kernel.variance
                 variances[l][counter] = var
                 likelihood_variances[l][counter] = lik_var
-                #mlls[l][counter].append(value)
+                mlls[l][counter].append(value)
 
 
             optimizer = gpflow.optimizers.Scipy()
@@ -118,7 +118,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
                     save_results()
             if model == "SVILasso":
                 tensor_data = tuple(map(tf.convert_to_tensor, (train_Xnp, train_ynp)))
-                training_loss = gpr_model.training_loss_closure((train_Xnp, train_ynp))
+                training_loss = gpr_model.training_loss_closure((train_Xnp, train_ynp), compile = True)
                 optimizer.minimize(
                     training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
             else:

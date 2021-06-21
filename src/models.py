@@ -51,9 +51,9 @@ class SVILasso(gpflow.models.SVGP):
         else:
             return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(-2))))
 
-    def maximum_log_likelihood_objective(self):
-        """
-        Overwrites the gpflow.models.SVGP.maximum_likelihood_objective
-        See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
-        """
-        return self.log_marginal_likelihood() - self.lasso_penalty()
+    #def maximum_log_likelihood_objective(self):
+    #    """
+    #    Overwrites the gpflow.models.SVGP.maximum_likelihood_objective
+    #    See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
+    #    """
+    #    return self.log_marginal_likelihood() - self.lasso_penalty()
