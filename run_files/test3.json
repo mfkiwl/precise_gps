@@ -1,9 +1,9 @@
 {
     "svi_full" : {
-        "model" : "SVILasso",
+        "model" : "GPRLaso",
         "kernel": "full",
-        "data": "data/wine",
-        "lassos": [0,10,30],
+        "data": "data/naval",
+        "lassos": [0,1,5],
         "max_iter": 500,
         "num_runs": 10,
         "randomized": 1,

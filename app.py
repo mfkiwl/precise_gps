@@ -5,6 +5,7 @@ from src.train import *
 import pickle 
 from sklearn.model_selection import train_test_split
 from numpy import genfromtxt
+import pandas as pd 
 
 '''
 Training different Gaussian process models is possible with this script. Running isntructions are given in
@@ -56,7 +57,10 @@ def main():
 
         data_path = current_run["data"]
 
-        data_ = genfromtxt(data_path, delimiter=';')
+        if data_path == "data/wine":
+            data_ = genfromtxt(data_path + "/data.csv", delimiter=';')
+        else:
+            data_ = genfromtxt(data_path + "/data.txt", delimiter='  ')
         # standardize each covariate to mean 0 var 1
         Xnp = data_[1:,0:-1]
         for i in range(11):
@@ -74,7 +78,9 @@ def main():
         train_data["train_y"] = train_ynp
         train_data["test_X"] = test_Xnp
         train_data["test_y"] = test_ynp
-        train_data["cols"] = ["fixed acidity","volatile acidity","citric acid","residual sugar","chlorides","free sulfur dioxide","total sulfur dioxide","density","pH","sulphates", "alcohol"]
+
+        features = [d.strip("'") for d in list(pd.read_csv(data_path + "/features.csv", delimiter=','))]
+        train_data["cols"] = features
 
 
         l = current_run["lassos"]

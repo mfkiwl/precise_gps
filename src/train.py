@@ -123,9 +123,9 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             if model == "SVILasso":
                 train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
                 minibatch_size = minibatch_size
-                train_iter = iter(train_dataset.batch(minibatch_size))
-                training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
                 for _ in range(batch_iter):
+                    train_iter = iter(train_dataset.batch(minibatch_size))
+                    training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
                     optimizer.minimize(
                         training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
             else:

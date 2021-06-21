@@ -2,7 +2,7 @@
     "full1" : {
         "model" : "GPRLasso",
         "kernel": "full",
-        "data": "data/wine/winequality-red.csv",
+        "data": "data/wine",
         "lassos": [0,10,1000],
         "max_iter": 500,
         "num_runs": 10,
@@ -15,7 +15,7 @@
     "ard1" : {
         "model" : "GPR",
         "kernel": "gpflow_ard",
-        "data": "data/wine/winequality-red.csv",
+        "data": "data/wine",
         "lassos": [0],
         "max_iter": 500,
         "num_runs": 10,
