@@ -14,6 +14,30 @@ from gpflow.ci_utils import ci_niter
 possible_models = ["GPR", "GPRLasso", "SVILasso"] # current possible models to train
 possible_kernels = ["full", "own_ard", "gpflow_ard"] # current possible kernels to use
 
+def run_adam(model, iterations, train_dataset, minibatch_size):
+    """
+    Utility function running the Adam optimizer
+
+    :param model: GPflow model
+    :param interations: number of iterations
+    """
+    # Create an Adam Optimizer action
+    logf = []
+    train_iter = iter(train_dataset.batch(minibatch_size))
+    training_loss = model.training_loss_closure(train_iter, compile=True)
+    optimizer = tf.optimizers.Adam()
+
+    @tf.function
+    def optimization_step():
+        optimizer.minimize(training_loss, model.trainable_variables)
+
+    for step in range(iterations):
+        optimization_step()
+        if step % 10 == 0:
+            elbo = -training_loss().numpy()
+            logf.append(elbo)
+    return logf
+
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter):
     """
     
@@ -125,18 +149,19 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
                 save_results(step)
             if model == "SVILasso":
                 train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
-                minibatch_size = minibatch_size
-                train_iter = iter(train_dataset.batch(minibatch_size))
-                training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
-                optimizer = tf.optimizers.Adam()
+                #minibatch_size = minibatch_size
+                run_adam(gpr_model,batch_iter,train_dataset,minibatch_size)
+                #train_iter = iter(train_dataset.batch(minibatch_size))
+                #training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
+                #optimizer = tf.optimizers.Adam()
 
-                @tf.function(experimental_relax_shapes=True)
-                def optimization_step(step):
-                    save_results(step)
-                    optimizer.minimize(training_loss, gpr_model.trainable_variables)
+                #@tf.function(experimental_relax_shapes=True)
+                #def optimization_step(step):
+                #    save_results(step)
+                #    optimizer.minimize(training_loss, gpr_model.trainable_variables)
 
-                for step in range(batch_iter):
-                    optimization_step(step)
+                #for step in range(batch_iter):
+                #    optimization_step(step)
                 
                 #for _ in range(batch_iter):
                 #    train_iter = iter(train_dataset.batch(minibatch_size))
