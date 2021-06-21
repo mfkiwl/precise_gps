@@ -41,7 +41,7 @@ class GPRHorseshoe(gpflow.models.GPR):
         if type(self.kernel) == FullGaussianKernel:
             L = tfp.math.fill_triangular(self.kernel.L)
             P = L@tf.transpose(L)
-            return tf.math.log(tf.math.reduce_sum(tf.math.log(1 + self.horseshoe**2*2*P**(-2))))
+            return self.horseshoe*tf.math.log(tf.math.reduce_sum(tf.math.log(1 + 2*P**(-2))))
         #else:
         #    return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(-2))))
 
