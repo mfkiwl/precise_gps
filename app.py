@@ -63,7 +63,6 @@ def main():
             for i in range(11):
                 Xnp[:,i] -= np.mean(Xnp[:,i])
                 Xnp[:,i] /= np.std(Xnp[:,i])
-
             # scale outputs to [0,1]
             ynp = data_[1:,-1]
             ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
@@ -74,7 +73,7 @@ def main():
                 mean = np.mean(Xnp[:,i])
                 std = np.std(Xnp[:,i])
                 Xnp[:,i] -= mean 
-                if std != 0:
+                if std < 0.00001:
                     Xnp[:,i] /= np.std(Xnp[:,i])
 
             # scale outputs to [0,1]
