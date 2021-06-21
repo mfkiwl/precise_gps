@@ -14,7 +14,7 @@ from gpflow.ci_utils import ci_niter
 possible_models = ["GPR", "GPRLasso", "SVILasso"] # current possible models to train
 possible_kernels = ["full", "own_ard", "gpflow_ard"] # current possible kernels to use
 
-def run_adam(model, iterations, train_dataset, minibatch_size):
+def run_adam(model, iterations, train_dataset, minibatch_size, lasso):
     """
     Utility function running the Adam optimizer
 
@@ -22,7 +22,6 @@ def run_adam(model, iterations, train_dataset, minibatch_size):
     :param interations: number of iterations
     """
     # Create an Adam Optimizer action
-    logf = []
     train_iter = iter(train_dataset.batch(minibatch_size))
     training_loss = model.training_loss_closure(train_iter, compile=True)
     optimizer = tf.optimizers.Adam()
@@ -33,10 +32,9 @@ def run_adam(model, iterations, train_dataset, minibatch_size):
 
     for step in range(iterations):
         optimization_step()
-        if step % 10 == 0:
+        if step % 100 == 0:
             elbo = -training_loss().numpy()
-            logf.append(elbo)
-    return logf
+            print("Lasso:", lasso, "Step:", step, "ELBO:", elbo)
 
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter):
     """
@@ -150,7 +148,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             if model == "SVILasso":
                 train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
                 #minibatch_size = minibatch_size
-                run_adam(gpr_model,batch_iter,train_dataset,minibatch_size)
+                run_adam(gpr_model,batch_iter,train_dataset,minibatch_size, l)
                 #train_iter = iter(train_dataset.batch(minibatch_size))
                 #training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
                 #optimizer = tf.optimizers.Adam()
