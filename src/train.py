@@ -104,7 +104,10 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
                     P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
                     params[l][counter].append(list(P))
 
-                value = gpr_model.maximum_log_likelihood_objective()
+                if model == "SVILasso":
+                    value = gpr_model.maximum_log_likelihood_objective((train_Xnp, train_ynp))
+                else:
+                    value = gpr_model.maximum_log_likelihood_objective((train_Xnp, train_ynp))      
                 lik_var = gpr_model.likelihood.variance
                 var = gpr_model.kernel.variance
                 variances[l][counter] = var
