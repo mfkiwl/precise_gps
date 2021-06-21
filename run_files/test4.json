@@ -1,0 +1,15 @@
+{
+    "horseshoe" : {
+        "model" : "GPRhs",
+        "kernel": "full",
+        "data": "data/wine",
+        "lassos": [0,1,10],
+        "max_iter": 500,
+        "num_runs": 5,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": 100,
+        "batch_iter": 20000
+    }
+}

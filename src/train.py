@@ -11,7 +11,7 @@ import tensorflow_probability as tfp
 from gpflow.ci_utils import ci_niter
 
 
-possible_models = ["GPR", "GPRLasso", "SVILasso"] # current possible models to train
+possible_models = ["GPR", "GPRLasso", "SVILasso", "GPRhs"] # current possible models to train
 possible_kernels = ["full", "own_ard", "gpflow_ard"] # current possible kernels to use
 
 def run_adam(model, iterations, train_dataset, minibatch_size, lasso, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls, kernel, model_name):
@@ -134,6 +134,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
                 gpr_model = GPRLasso((train_Xnp,train_ynp),_kernel,l)
             elif model == "SVILasso":
                 gpr_model = SVILasso((train_Xnp, train_ynp), _kernel, l, num_Z)
+            elif model == "GPRhs":
+                gpr_model = GPRHorseshoe((train_Xnp,train_ynp),_kernel,l)
             else:
                 gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), _kernel)
             
