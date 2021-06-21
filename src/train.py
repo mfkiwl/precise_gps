@@ -56,7 +56,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
         train_errors = []
         counter = 0
         df[l] = []
-        for _ in range(num_runs):
+        for num_run in range(num_runs):
+            print(f"Starting run: {num_run}")
             mlls[l][counter] = []
             params[l][counter] = []
             likelihood_variances[l][counter] = []
@@ -96,21 +97,22 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             """
             Optimizer
             """
-            def save_results():
-                if type(_kernel) == FullGaussianKernel:
-                    L = gpr_model.kernel.L
-                    params[l][counter].append(list(L))
-                else:
-                    P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
-                    params[l][counter].append(list(P))
-
+            def save_results(step):
                 if model == "SVILasso":
                     value = gpr_model.maximum_log_likelihood_objective((train_Xnp, train_ynp))
                 else:
                     value = gpr_model.maximum_log_likelihood_objective()
                 
-
-                print("MLL:", value)
+                if step % 100 == 0:
+                    if type(_kernel) == FullGaussianKernel:
+                        L = gpr_model.kernel.L
+                        params[l][counter].append(list(L))
+                    else:
+                        P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
+                        params[l][counter].append(list(P))
+                
+                    print("Step:", step, "MLL:", value.numpy())
+                
                 lik_var = gpr_model.likelihood.variance
                 var = gpr_model.kernel.variance
                 variances[l][counter] = var
@@ -120,8 +122,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
 
             optimizer = gpflow.optimizers.Scipy()
             def step_callback(step, variables, values):
-                if step % 100 == 0:
-                    save_results()
+                save_results(step)
             if model == "SVILasso":
                 train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
                 minibatch_size = minibatch_size
@@ -135,7 +136,6 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
                     gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
 
 
-            save_results()
             # Calculating error
             pred_mean, _ = gpr_model.predict_f(test_Xnp)
             pred_train,_ = gpr_model.predict_f(train_Xnp)
