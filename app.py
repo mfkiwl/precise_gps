@@ -71,8 +71,11 @@ def main():
             data_ = genfromtxt(data_path + "/data.txt", delimiter='  ')
             Xnp = data_[:,0:-2]
             for i in range(16):
-                Xnp[:,i] -= np.mean(Xnp[:,i])
-                Xnp[:,i] /= np.std(Xnp[:,i])
+                mean = np.mean(Xnp[:,i])
+                std = np.std(Xnp[:,i])
+                Xnp[:,i] -= mean 
+                if std != 0:
+                    Xnp[:,i] /= np.std(Xnp[:,i])
 
             # scale outputs to [0,1]
             ynp = data_[:,-1]

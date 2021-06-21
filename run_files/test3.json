@@ -1,6 +1,6 @@
 {
     "svi_full" : {
-        "model" : "GPRLaso",
+        "model" : "GPRLasso",
         "kernel": "full",
         "data": "data/naval",
         "lassos": [0,1,5],
