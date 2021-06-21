@@ -76,7 +76,7 @@ def main():
 
             # scale outputs to [0,1]
             ynp = data_[:,-1]
-            #ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
+            ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
         # standardize each covariate to mean 0 var 1
 
 
