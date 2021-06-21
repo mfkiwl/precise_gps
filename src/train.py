@@ -132,7 +132,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
 
                 @tf.function
                 def optimization_step(step):
-                    save_results(step)
+                    #save_results(step)
                     optimizer.minimize(training_loss, gpr_model.trainable_variables)
 
                 for step in range(batch_iter):
