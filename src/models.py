@@ -39,8 +39,9 @@ class SVILasso(gpflow.models.SVGP):
         indusing_points = np.random.choice(N, M)
         new_X = data[0][indusing_points]
         new_Y = data[1][indusing_points]
+        # data = (new_X, new_Y)
 
-        super(SVILasso, self).__init__(kernel, gpflow.likelihoods.Gaussian(), (new_X, new_Y), num_data = N)
+        super(SVILasso, self).__init__(kernel, gpflow.likelihoods.Gaussian(), data, num_data = N)
         self.lasso = lasso # lasso coefficient
     
     def lasso_penalty(self):
