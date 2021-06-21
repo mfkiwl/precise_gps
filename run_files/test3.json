@@ -1,5 +1,5 @@
 {
-    "svi_full" : {
+    "svi_full_naval" : {
         "model" : "SVILasso",
         "kernel": "full",
         "data": "data/naval",
@@ -10,6 +10,6 @@
         "show": 0,
         "num_Z": 100,
         "minibatch": 100,
-        "batch_iter": 50
+        "batch_iter": 5000
     }
 }

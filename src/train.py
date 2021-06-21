@@ -8,6 +8,7 @@ import numpy as np
 import gpflow 
 import tensorflow as tf 
 import tensorflow_probability as tfp 
+from gpflow.ci_utils import ci_niter
 
 
 possible_models = ["GPR", "GPRLasso", "SVILasso"] # current possible models to train
@@ -120,18 +121,30 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
                 mlls[l][counter].append(value)
 
 
-            optimizer = gpflow.optimizers.Scipy()
             def step_callback(step, variables, values):
                 save_results(step)
             if model == "SVILasso":
                 train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
                 minibatch_size = minibatch_size
-                for _ in range(batch_iter):
-                    train_iter = iter(train_dataset.batch(minibatch_size))
-                    training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
-                    optimizer.minimize(
-                        training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
+                train_iter = iter(train_dataset.batch(minibatch_size))
+                training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
+                optimizer = tf.optimizers.Adam()
+
+                @tf.function
+                def optimization_step(step):
+                    save_results(step)
+                    optimizer.minimize(training_loss, model.trainable_variables)
+
+                for step in range(batch_iter):
+                    optimization_step(step)
+                
+                #for _ in range(batch_iter):
+                #    train_iter = iter(train_dataset.batch(minibatch_size))
+                #    training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
+                #    optimizer.minimize(
+                #        training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
             else:
+                optimizer = gpflow.optimizers.Scipy()
                 optimizer.minimize(
                     gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
 
