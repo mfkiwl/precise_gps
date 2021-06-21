@@ -100,7 +100,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             """
             def save_results(step):
                 if model == "SVILasso":
-                    value = -training_loss().numpy()
+                    value = 1#-training_loss().numpy()
                 else:
                     value = gpr_model.maximum_log_likelihood_objective()
                 
