@@ -3,7 +3,7 @@
         "model" : "GPRhs",
         "kernel": "full",
         "data": "data/wine",
-        "lassos": [10,10,100],
+        "lassos": [0.1,1,10],
         "max_iter": 500,
         "num_runs": 5,
         "randomized": 1,
