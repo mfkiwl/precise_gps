@@ -73,7 +73,7 @@ def main():
                 mean = np.mean(Xnp[:,i])
                 std = np.std(Xnp[:,i])
                 Xnp[:,i] -= mean 
-                if std < 0.00001:
+                if std > 0.00001:
                     Xnp[:,i] /= np.std(Xnp[:,i])
 
             # scale outputs to [0,1]
