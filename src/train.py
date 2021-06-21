@@ -100,9 +100,9 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             """
             def save_results(step):
                 if model == "SVILasso":
-                    value = gpr_model.maximum_log_likelihood_objective((train_Xnp, train_ynp))
+                    value = gpr_model.maximum_log_likelihood_objective((train_Xnp, train_ynp)).numpy()
                 else:
-                    value = gpr_model.maximum_log_likelihood_objective()
+                    value = gpr_model.maximum_log_likelihood_objective().numpy()
                 
                 if step % 100 == 0:
                     if type(_kernel) == FullGaussianKernel:
@@ -112,7 +112,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
                         P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
                         params[l][counter].append(list(P))
                 
-                    print("Step:", step, "MLL:", value.numpy())
+                    print("Step:", step, "MLL:", value)
                 
                 lik_var = gpr_model.likelihood.variance
                 var = gpr_model.kernel.variance
@@ -132,7 +132,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
 
                 @tf.function(experimental_relax_shapes=True)
                 def optimization_step(step):
-                    #save_results(step)
+                    save_results(step)
                     optimizer.minimize(training_loss, gpr_model.trainable_variables)
 
                 for step in range(batch_iter):
