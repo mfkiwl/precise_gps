@@ -14,7 +14,7 @@ from gpflow.ci_utils import ci_niter
 possible_models = ["GPR", "GPRLasso", "SVILasso"] # current possible models to train
 possible_kernels = ["full", "own_ard", "gpflow_ard"] # current possible kernels to use
 
-def run_adam(model, iterations, train_dataset, minibatch_size, lasso):
+def run_adam(model, iterations, train_dataset, minibatch_size, lasso, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls):
     """
     Utility function running the Adam optimizer
 
@@ -32,9 +32,32 @@ def run_adam(model, iterations, train_dataset, minibatch_size, lasso):
 
     for step in range(iterations):
         optimization_step()
+        save_results(model, step, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls)
         if step % 1000 == 0:
             elbo = -training_loss().numpy()
             print("Lasso:", lasso, "Step:", step, "ELBO:", elbo)
+
+def save_results(model, step, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls):
+    if model == "SVILasso":
+        value = model.maximum_log_likelihood_objective((train_Xnp, train_ynp))
+    else:
+        value = model.maximum_log_likelihood_objective()
+    
+    if step % 100 == 0:
+        if type(model.kernel) == FullGaussianKernel:
+            L = model.kernel.L.numpy()
+            params[l][counter].append(list(L))
+        else:
+            P = tf.linalg.diag(model.kernel.lengthscales.numpy()**(-2))
+            params[l][counter].append(list(P))
+    
+        print("Step:", step, "MLL:", value)
+    
+    lik_var = model.likelihood.variance
+    var = model.kernel.variance
+    variances[l][counter] = var
+    likelihood_variances[l][counter] = lik_var
+    mlls[l][counter].append(value)
 
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter):
     """
@@ -120,35 +143,14 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             """
             Optimizer
             """
-            def save_results(step):
-                if model == "SVILasso":
-                    value = gpr_model.maximum_log_likelihood_objective((train_Xnp, train_ynp))
-                else:
-                    value = gpr_model.maximum_log_likelihood_objective()
-                
-                if step % 100 == 0:
-                    if type(_kernel) == FullGaussianKernel:
-                        L = gpr_model.kernel.L.numpy()
-                        params[l][counter].append(list(L))
-                    else:
-                        P = tf.linalg.diag(gpr_model.kernel.lengthscales.numpy()**(-2))
-                        params[l][counter].append(list(P))
-                
-                    print("Step:", step, "MLL:", value)
-                
-                lik_var = gpr_model.likelihood.variance
-                var = gpr_model.kernel.variance
-                variances[l][counter] = var
-                likelihood_variances[l][counter] = lik_var
-                mlls[l][counter].append(value)
 
 
             def step_callback(step, variables, values):
-                save_results(step)
+                save_results(gpr_model,step,train_Xnp, train_ynp,params,l,counter,variances,likelihood_variances,mlls)
             if model == "SVILasso":
                 train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
                 #minibatch_size = minibatch_size
-                run_adam(gpr_model,batch_iter,train_dataset,minibatch_size, l)
+                run_adam(gpr_model,batch_iter,train_dataset,minibatch_size,l,train_Xnp,train_ynp,params,l,counter,variances,likelihood_variances,mlls)
                 #train_iter = iter(train_dataset.batch(minibatch_size))
                 #training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
                 #optimizer = tf.optimizers.Adam()

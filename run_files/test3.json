@@ -3,7 +3,7 @@
         "model" : "SVILasso",
         "kernel": "full",
         "data": "data/naval",
-        "lassos": [0,1,5],
+        "lassos": [0,1,2],
         "max_iter": 500,
         "num_runs": 10,
         "randomized": 1,
