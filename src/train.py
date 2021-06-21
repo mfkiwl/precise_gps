@@ -33,9 +33,6 @@ def run_adam(model, iterations, train_dataset, minibatch_size, lasso, train_Xnp,
     for step in range(iterations):
         optimization_step()
         save_results(model, step, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls, kernel, model_name)
-        if step % 1000 == 0:
-            elbo = -training_loss().numpy()
-            print("Lasso:", lasso, "Step:", step, "ELBO:", elbo)
 
 def save_results(model, step, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls, kernel, model_name):
     if model_name == "SVILasso":
