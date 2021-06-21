@@ -9,6 +9,7 @@
         "randomized": 1,
         "show": 0,
         "num_Z": 50,
-        "minibatch": 100
+        "minibatch": 100,
+        "batch_iter": 50
     }
 }

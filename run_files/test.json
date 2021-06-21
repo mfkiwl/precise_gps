@@ -9,7 +9,8 @@
         "randomized": 1,
         "show": 0,
         "num_Z": 0,
-        "minibatch": 100
+        "minibatch": 100,
+        "batch_iter": 50
     },
     "ard1" : {
         "model" : "GPR",
@@ -21,6 +22,7 @@
         "randomized": 1,
         "show": 0,
         "num_Z": 0,
-        "minibatch": 100
+        "minibatch": 100,
+        "batch_iter": 50
     }
 }
