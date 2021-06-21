@@ -40,7 +40,7 @@ def save_results(model, step, train_Xnp, train_ynp, params, l, counter, variance
     else:
         value = model.maximum_log_likelihood_objective()
     
-    if step % 1000 == 0:
+    if step % 100 == 0:
         if kernel == "full":
             L = model.kernel.L.numpy()
             params[l][counter].append(list(L))
