@@ -108,7 +108,9 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
                     value = gpr_model.maximum_log_likelihood_objective((train_Xnp, train_ynp))
                 else:
                     value = gpr_model.maximum_log_likelihood_objective()
+                
 
+                print("MLL:", value)
                 lik_var = gpr_model.likelihood.variance
                 var = gpr_model.kernel.variance
                 variances[l][counter] = var
