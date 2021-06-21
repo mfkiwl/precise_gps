@@ -130,7 +130,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
                 training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
                 optimizer = tf.optimizers.Adam()
 
-                @tf.function
+                @tf.function(experimental_relax_shapes=True)
                 def optimization_step(step):
                     #save_results(step)
                     optimizer.minimize(training_loss, gpr_model.trainable_variables)
