@@ -1,4 +1,4 @@
-name : precise_gps
+name : precise_gp
 dependencies :
   - pip
   - pip :

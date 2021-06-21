@@ -10,12 +10,12 @@ import tensorflow as tf
 import tensorflow_probability as tfp 
 
 
-possible_models = ["GPR", "GPRLasso"] # current possible models to train
+possible_models = ["GPR", "GPRLasso", "SVILasso"] # current possible models to train
 possible_kernels = ["full", "own_ard", "gpflow_ard"] # current possible kernels to use
 
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
     """
-    Training models with different kernels
+    
     """
 
     if model not in possible_models:
@@ -88,6 +88,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
             """
             if model == "GPRLasso":
                 gpr_model = GPRLasso((train_Xnp,train_ynp),_kernel,l)
+            elif model == "SVILasso":
+                gpr_model = SVILasso((train_Xnp, train_ynp), _kernel, l, 100)
             else:
                 gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), _kernel)
             

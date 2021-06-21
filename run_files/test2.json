@@ -1,12 +1,12 @@
 {
-    "ard1" : {
-        "model" : "gpflow_ard",
-        "kernel": "gpflow_ard",
+    "svi_full" : {
+        "model" : "SVILasso",
+        "kernel": "full",
         "data": "data/wine/winequality-red.csv",
-        "lassos": [0,1,2],
+        "lassos": [0,10,30],
         "max_iter": 500,
         "num_runs": 10,
         "randomized": 1,
-        "show": 1
+        "show": 0
     }
 }

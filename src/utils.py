@@ -72,6 +72,15 @@ def parse_pickle(path):
     return data 
 
 def init_precision(dim):
+    """
+    Initializes full gaussian kernel with random precision
+
+    Args:
+        dim (int) : dimension of the precision matrix (dim x dim)
+
+    Returns:
+        Cholesky decomposition of the precision in vector format
+    """
     full_L = np.random.uniform(-1,1,(dim,dim))
     P = full_L@np.transpose(full_L)
 
