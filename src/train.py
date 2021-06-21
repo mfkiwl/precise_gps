@@ -118,7 +118,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show):
                     save_results()
             if model == "SVILasso":
                 tensor_data = tuple(map(tf.convert_to_tensor, (train_Xnp, train_ynp)))
-                training_loss = gpr_model.training_loss_closure(tensor_data, compile=True)
+                training_loss = gpr_model.training_loss_closure((train_Xnp, train_ynp))
                 optimizer.minimize(
                     training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
             else:
