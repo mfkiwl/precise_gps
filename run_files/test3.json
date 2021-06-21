@@ -10,6 +10,6 @@
         "show": 0,
         "num_Z": 100,
         "minibatch": 100,
-        "batch_iter": 5000
+        "batch_iter": 20000
     }
 }

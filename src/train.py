@@ -32,7 +32,7 @@ def run_adam(model, iterations, train_dataset, minibatch_size, lasso):
 
     for step in range(iterations):
         optimization_step()
-        if step % 100 == 0:
+        if step % 1000 == 0:
             elbo = -training_loss().numpy()
             print("Lasso:", lasso, "Step:", step, "ELBO:", elbo)
 
