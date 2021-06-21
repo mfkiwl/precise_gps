@@ -40,7 +40,7 @@ class GPRHorseshoe(gpflow.models.GPR):
     def horseshoe_penalty(self):
         if type(self.kernel) == FullGaussianKernel:
             L = tfp.math.fill_triangular(self.kernel.L)
-            return self.horseshoe*np.log(np.sum(np.log(1 + 2*self.kernel.L**(-2))))
+            return self.horseshoe*tf.math.log(tf.math.reduce_sum(tf.math.log(1 + 2*self.kernel.L**(-2))))
         #else:
         #    return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(-2))))
 

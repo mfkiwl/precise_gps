@@ -42,10 +42,10 @@ def save_results(model, step, train_Xnp, train_ynp, params, l, counter, variance
     
     if step % 1000 == 0:
         if kernel == "full":
-            L = model.kernel.L
+            L = model.kernel.L.numpy()
             params[l][counter].append(list(L))
         else:
-            P = tf.linalg.diag(model.kernel.lengthscales**(-2))
+            P = tf.linalg.diag(model.kernel.lengthscales.numpy()**(-2))
             params[l][counter].append(list(P))
     
         print("Step:", step, "MLL:", value)
