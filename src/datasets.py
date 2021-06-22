@@ -74,12 +74,57 @@ class Naval(Dataset):
 class Boston(Dataset):
 
     def __init__(self, split):
-        super().__init__(path = "data/boston", split=split)
+        super(Boston, self).__init__(path = "data/boston", split=split)
 
     def read_data(self):
-        data = np.genfromtxt(self.path + "/data.txt", delimiter='  ')
         data = pd.read_fwf(self.path + "/housing.data", header=None).values
         X = data[:, :-1]
         y = data[:, -1]
         cols = self.get_cols(self.path)
         return X, y, cols 
+
+class Concrete(Dataset):
+
+    def __init__(self, split):
+        super(Concrete, self).__init__(path = "data/concrete", split=split)
+
+    def read_data(self):
+        data = pd.read_excel(self.path + "/Concrete_Data.xls").values
+        return data[:, :-1], data[:, -1], self.get_cols(self.path)
+
+class Energy(Dataset):
+
+    def __init__(self, split):
+        super(Energy, self).__init__(path = "data/energy", split=split)
+    
+    def read_data(self):
+        # NB this is the first output (aka Energy1, as opposed to Energy2)
+        data = pd.read_excel(self.path + "/ENB2012_data.xlsx").values[:, :-1]
+        return data[:, :-1], data[:, -1], self.get_cols(self.path)
+
+class Power(Dataset):
+
+    def __init__(self, split):
+         super(Power, self).__init__(path = "data/power", split=split)
+    
+    def read_data(self):
+        data = pd.read_excel(self.path + "/Folds5x2_pp.xlsx").values
+        return data[:, :-1], data[:, -1], self.get_cols(self.path)
+
+class Protein(Dataset):
+
+    def __init__(self, split):
+        super(Protein, self).__init__(path = "data/protein", split=split)
+    
+    def read_data(self):
+        data = pd.read_csv(self.path + "/CASP.csv").values
+        return data[:, 1:], data[:, 0], self.get_cols(self.path)
+
+class Yacht(Dataset):
+
+    def __init__(self, split):
+        super(Yacht, self).__init__(path = "data/yacht", split=split)
+    
+    def read_data(self):
+        data = pd.read_fwf(self.path, header=None).values[:-1, :]
+        return data[:, :-1], data[:, -1], self.get_cols(self.path)

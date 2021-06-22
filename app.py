@@ -6,6 +6,7 @@ import pickle
 from sklearn.model_selection import train_test_split
 from numpy import genfromtxt
 import pandas as pd 
+from src.datasets import * 
 
 '''
 Training different Gaussian process models is possible with this script. Running isntructions are given in
@@ -45,6 +46,8 @@ args = vars(ap.parse_args())
 save_path = "results"
 path = args["file"]
 
+possible_datasets = ['Redwine', 'Whitewine', 'Boston', 'Concrete', 'Power', 'Protein', 'Energy', 'Yacht', 'Naval']
+
 def main():
     file = open(path,)
     commands = json.load(file)
@@ -55,46 +58,62 @@ def main():
         model = current_run["model"]
         kernel = current_run["kernel"]
 
-        data_path = current_run["data"]
+        dataset = current_run["data"]
+        if dataset not in possible_datasets:
+            raise NameError(f"{dataset} is not part of the supported datasets:\n{possible_datasets}")
+        
+        data_instance = locals[dataset]()
+        data = {}
+        data["train_X"] = data_instance.train_X
+        data["train_y"] = data_instance.train_y
+        data["test_X"] = data_instance.test_X
+        data["test_y"] = data_instance.test_y
+        data["cols"] = data_instance.cols
 
-        if data_path == "data/redwine":
-            data_ = genfromtxt(data_path + "/data.csv", delimiter=';')
-            Xnp = data_[1:,0:-1]
-            for i in range(11):
-                Xnp[:,i] -= np.mean(Xnp[:,i])
-                Xnp[:,i] /= np.std(Xnp[:,i])
-            # scale outputs to [0,1]
-            ynp = data_[1:,-1]
-            ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
-        else:
-            data_ = genfromtxt(data_path + "/data.txt", delimiter='  ')
-            Xnp = data_[:,0:-2]
-            Xnp = np.delete(Xnp, [8, 11], axis=1)
-            for i in range(16):
-                mean = np.mean(Xnp[:,i])
-                std = np.std(Xnp[:,i])
-                Xnp[:,i] -= mean 
-                Xnp[:,i] /= std 
+        # data_path = current_run["data"]
 
-            # scale outputs to [0,1]
-            ynp = data_[:,-2]
-            ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
-        # standardize each covariate to mean 0 var 1
+        # if data_path == "data/redwine":
+        #     data_ = genfromtxt(data_path + "/data.csv", delimiter=';')
+        #     Xnp = data_[1:,0:-1]
+        #     for i in range(11):
+        #         Xnp[:,i] -= np.mean(Xnp[:,i])
+        #         Xnp[:,i] /= np.std(Xnp[:,i])
+        #     # scale outputs to [0,1]
+        #     ynp = data_[1:,-1]
+        #     ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
+        # else:
+        #     data_ = genfromtxt(data_path + "/data.txt", delimiter='  ')
+        #     Xnp = data_[:,0:-2]
+        #     Xnp = np.delete(Xnp, [8, 11], axis=1)
+        #     for i in range(16):
+        #         mean = np.mean(Xnp[:,i])
+        #         std = np.std(Xnp[:,i])
+        #         Xnp[:,i] -= mean 
+        #         Xnp[:,i] /= std 
+
+        #     # scale outputs to [0,1]
+        #     ynp = data_[:,-2]
+        #     ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
+        # # standardize each covariate to mean 0 var 1
 
 
-        train_Xnp, test_Xnp, train_ynp, test_ynp = train_test_split(Xnp, ynp, test_size=0.20, random_state=42)
-        train_data = {}
-        train_data["train_X"] = train_Xnp
-        train_data["train_y"] = train_ynp
-        train_data["test_X"] = test_Xnp
-        train_data["test_y"] = test_ynp
+        # train_Xnp, test_Xnp, train_ynp, test_ynp = train_test_split(Xnp, ynp, test_size=0.20, random_state=42)
+        # train_data = {}
+        # train_data["train_X"] = train_Xnp
+        # train_data["train_y"] = train_ynp
+        # train_data["test_X"] = test_Xnp
+        # train_data["test_y"] = test_ynp
 
-        features = [d.strip("'") for d in list(pd.read_csv(data_path + "/features.csv", delimiter=','))]
-        train_data["cols"] = features
+        # features = [d.strip("'") for d in list(pd.read_csv(data_path + "/features.csv", delimiter=','))]
+        # train_data["cols"] = features
 
 
         l = current_run["lassos"]
-        lassos = np.arange(l[0], l[2], l[1])
+
+        if len(l) == 3:
+            lassos = np.arange(l[0], l[2], l[1])
+        else:
+            lassos = np.array(0)
         
         max_iter = current_run["max_iter"]
         num_runs = current_run["num_runs"]
@@ -105,7 +124,7 @@ def main():
         minibatch_size = current_run["minibatch"]
         batch_iter = current_run["batch_iter"]
 
-        result = train(model, kernel, train_data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter)
+        result = train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter)
 
         # Save results
         save = open(f"results/{key}.pkl", "wb")
