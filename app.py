@@ -69,15 +69,15 @@ def main():
         else:
             data_ = genfromtxt(data_path + "/data.txt", delimiter='  ')
             Xnp = data_[:,0:-2]
+            Xnp = np.delete(Xnp, [8, 11], axis=1)
             for i in range(16):
                 mean = np.mean(Xnp[:,i])
                 std = np.std(Xnp[:,i])
                 Xnp[:,i] -= mean 
-                if std > 0.00001:
-                    Xnp[:,i] /= np.std(Xnp[:,i])
+                Xnp[:,i] /= std 
 
             # scale outputs to [0,1]
-            ynp = data_[:,-1]
+            ynp = data_[:,-2]
             ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
         # standardize each covariate to mean 0 var 1
 
