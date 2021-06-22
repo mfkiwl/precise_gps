@@ -2,7 +2,7 @@
     "horseshoe" : {
         "model" : "GPRhs",
         "kernel": "full",
-        "data": "data/wine",
+        "data": "data/redwine",
         "lassos": [10,10,100],
         "max_iter": 500,
         "num_runs": 5,

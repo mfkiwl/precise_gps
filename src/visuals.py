@@ -4,6 +4,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import math 
 
+COLORS = colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:olive", "tab:cyan", "tab:pink"]
+
 class MidpointNormalize(colors.Normalize):
     """
     Normalise the colorbar so that diverging bars work there way either side from a prescribed midpoint value)
@@ -109,4 +111,17 @@ def show_kernels(kernels, titles, cols, save, aspect = "own", show_nums = -1, sa
         fig.colorbar(pcm, cax=cax)
     if save_fig:
         plt.savefig("{}.pdf".format(save), bbox_inches='tight')
+    plt.show()
+
+def visualize_log_likelihood(log_liks):
+    plt.figure(figsize = (10,6))
+    for idx, log_lik in enumerate(log_liks):
+        lassos = log_lik.keys()
+        for l in lassos:
+            max_ll = np.argmax(log_lik[l])
+            for jdx, ll in enumerate(log_lik[l]):
+                if jdx == max_ll:
+                    plt.plot(l, ll, '*', color = COLORS[idx])
+                else:
+                    plt.plot(l, ll, '*', color = COLORS[idx], alpha = 0.5)
     plt.show()

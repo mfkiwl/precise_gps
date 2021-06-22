@@ -57,7 +57,7 @@ def main():
 
         data_path = current_run["data"]
 
-        if data_path == "data/wine":
+        if data_path == "data/redwine":
             data_ = genfromtxt(data_path + "/data.csv", delimiter=';')
             Xnp = data_[1:,0:-1]
             for i in range(11):

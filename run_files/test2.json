@@ -2,7 +2,7 @@
     "svi_full" : {
         "model" : "SVILasso",
         "kernel": "full",
-        "data": "data/wine",
+        "data": "data/redwine",
         "lassos": [0,10,30],
         "max_iter": 500,
         "num_runs": 10,
