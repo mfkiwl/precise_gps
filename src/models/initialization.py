@@ -30,9 +30,11 @@ def select_inducing_points(X, k):
     Returns:
         Tensor of inducing points
     """
-    _k = np.zeros((1,1))
-    while _k.shape[0] != k:
-        _k = kmeans2(X, k, minit='points')[0]
-    return _k 
+    
+    _k = kmeans2(X, k, minit='points')[0]
+    if _k.shape[0] != k:
+        return select_inducing_points(X, k)
+    else:
+        return _k
 
 

@@ -75,7 +75,7 @@ def main():
         if len(l) == 3:
             lassos = np.arange(l[0], l[2], l[1])
         else:
-            lassos = np.array(0)
+            lassos = np.array([0])
         
         max_iter = current_run["max_iter"]
         num_runs = current_run["num_runs"]

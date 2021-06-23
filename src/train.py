@@ -82,7 +82,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
         likelihood_variances[l], variances[l], log_likelihoods[l] = {}, {}, []
 
         for num_run in range(num_runs):
-            print(f"Starting run: {num_run+1}  / {num_runs}")
+            print(f"Starting run: {num_run+1} / {num_runs}")
             mlls[l][num_run] = []
             params[l][num_run] = []
             likelihood_variances[l][num_run] = []

@@ -22,7 +22,7 @@ def save_results(model, step, params, counter, variances, likelihood_variances, 
             params[l][counter].append(list(P))
 
     if step % 100 == 0:
-        print("Step:", step, "MLL:", value)
+        print("Lasso", l, "Step:", step, "MLL:", value)
 
     lik_var = model.likelihood.variance
     var = model.kernel.variance
