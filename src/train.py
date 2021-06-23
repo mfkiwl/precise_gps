@@ -3,22 +3,20 @@ from src.models.kernels import *
 from src.parse_results import * 
 from src.visuals.visuals import *
 from src.models.initialization import *
-from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 import numpy as np
 import gpflow 
 import tensorflow as tf 
 import tensorflow_probability as tfp 
-from gpflow.ci_utils import ci_niter
 from src.select import select_kernel, select_model
 from src.save_intermediate import save_results
 
-def run_adam(model, iterations, train_dataset, minibatch_size, lasso, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls, kernel, model_name):
+def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counter, variances, likelihood_variances, mlls):
     """
     Utility function running the Adam optimizer
 
-    :param model: GPflow model
-    :param interations: number of iterations
+    Args:
+        see function train() 
     """
     # Create an Adam Optimizer action
     train_iter = iter(train_dataset.batch(minibatch_size))
@@ -36,102 +34,112 @@ def run_adam(model, iterations, train_dataset, minibatch_size, lasso, train_Xnp,
 
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter):
     """
+    Training different models and kernels, commands specified by a json-file. 
+
+    Args:
+        model (src.models.models)    : instance of a model to be trained
+        kernel (src.models.kernels)  : instance of a kernel to be trained
+        data (src.datasets.datasets) : instance of a dataset
+        lassos (list)                : lost of lasso coefficients
+        max_iter (int)               : max number of iterations for Scipy
+        num_runs (int)               : number of runs with same initialization
+        randomized (bool)            : initialization is randomized if True
+        show (bool)                  : plot intermediate results if True
+        num_Z (int)                  : number of inducing points
+        minibatch_size (int)         : SVI minibatch size
+        batch_iter (int)             : number of iterations for Adam
     
+    Returns:
+        Saves a dictionary into "results/<instance name>.pkl where <instance name> is specified in the
+        json-file. The saved dictionary has the following keys
+        
+        dictionary (each key has structure dict[<lasso>][<num_runs>] if key is dictionary): 
+            data_train (tuple)          : X, y
+            data_test (tuple)           : X, y
+            lassos (list)               : lasso coefficients
+            test_errors (dict)          : test errors
+            train_errors (dict)         : train errors
+            mll (dict)                  : marginal log likelihoods 
+            params (dict)               : kernel params every 10th iteration
+            likelihood_variances (dict) : likelihood variances
+            variances (dict)            : signal variances
+            log_likelihoods (dict)      : log-likelihoods for test set
     """
 
     # There is no lasso penalty in standard GPR
     if type(model).__name__ == "Standard_GPR":
         lassos = [0]
 
-    train_Xnp = data.train_X
-    train_ynp = data.train_y
-    test_Xnp = data.test_X
-    test_ynp = data.test_y
-    cols = data.cols
-    dim = len(cols)
+    dim = len(data.cols) # number of features for inputs
+    
+    #Initialize dataframe and dataframe structure
     df = {}
+    test_errors, train_errors, mlls, params = {}, {}, {}, {}
+    likelihood_variances, variances, log_likelihoods = {}, {}, {}
 
-    test_errors_full = []
-    train_errors_full = []
-    mlls = {}
-    params = {}
-    likelihood_variances = {}
-    variances = {}
-    log_likelihoods = {}
     for l in lassos:
-        mlls[l] = {}
-        params[l] = {}
-        likelihood_variances[l] = {}
-        variances[l] = {}
-        log_likelihoods[l] = []
-        errors = []
-        train_errors = []
-        counter = 0
-        df[l] = []
-        for num_run in range(num_runs):
-            print(f"Starting run: {num_run}")
-            mlls[l][counter] = []
-            params[l][counter] = []
-            likelihood_variances[l][counter] = []
-            variances[l][counter] = []
+        test_errors[l], train_errors[l], mlls[l], params[l] = [], [], {}, {}
+        likelihood_variances[l], variances[l], log_likelihoods[l] = {}, {}, []
 
-            """
-            Selecting the correct kernel TODO: remove if-else structure
-            """
+        for num_run in range(num_runs):
+            print(f"Starting run: {num_run+1}  / {num_runs}")
+            mlls[l][num_run] = []
+            params[l][num_run] = []
+            likelihood_variances[l][num_run] = []
+            variances[l][num_run] = []
+
+            # Initializing kernel and model
             kernel_kwargs = {"randomized": randomized, "dim": dim}
             _kernel = select_kernel(kernel, **kernel_kwargs)
-            model_kwargs = {"data": (train_Xnp, train_ynp), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
+            model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
             gpr_model = select_model(model, **model_kwargs)
 
-            """
-            Optimizer
-            """
+            # Optimizing either using Scipy or Adam
             def step_callback(step, variables, values):
-                save_results(gpr_model, step, params, counter, variances, likelihood_variances, mlls, l)
+                save_results(gpr_model, step, params, num_run, variances, likelihood_variances, mlls, l)
             if type(gpr_model) == SVILasso:
-                train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
-                #minibatch_size = minibatch_size
-                run_adam(gpr_model,batch_iter,train_dataset,minibatch_size,l,train_Xnp,train_ynp,params,l,counter,variances,likelihood_variances,mlls,kernel,model)
+                train_dataset = tf.data.Dataset.from_tensor_slices((data.train_X, data.train_y)).repeat().shuffle(len(data.train_y))
+                run_adam(gpr_model,batch_iter,train_dataset,minibatch_size,l,data.train_X,data.train_y,params,l,num_run,variances,likelihood_variances,mlls,kernel,model)
 
             else:
                 optimizer = gpflow.optimizers.Scipy()
                 optimizer.minimize(
                     gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
 
+            # Calculating error and log-likelihood
+            pred_mean, _ = gpr_model.predict_f(data.test_X)
+            pred_train,_ = gpr_model.predict_f(data.train_X)
 
-            # Calculating error
-            pred_mean, _ = gpr_model.predict_f(test_Xnp)
-            pred_train,_ = gpr_model.predict_f(train_Xnp)
-            rms = mean_squared_error(test_ynp, pred_mean.numpy(), squared=False)
-            rms_train = mean_squared_error(train_ynp, pred_train.numpy(), squared=False)
-            errors.append(rms)
-            train_errors.append(rms_train)
-            counter += 1
-            log_lik = tf.math.reduce_sum(gpr_model.predict_log_density(data = (test_Xnp, test_ynp)))
+            rms_test = mean_squared_error(data.test_y, pred_mean.numpy(), squared=False)
+            rms_train = mean_squared_error(data.train_y, pred_train.numpy(), squared=False)
+
+            test_errors[l].append(rms_test)
+            train_errors[l].append(rms_train)
+
+            log_lik = tf.math.reduce_sum(gpr_model.predict_log_density(data = (data.test_X, data.test_y)))
             log_likelihoods[l].append(log_lik)
 
             if show:
-                if kernel == "full":
+                if kernel == "FullGaussianKernel":
                     L = gpr_model.kernel.L
                     L = tfp.math.fill_triangular(L)
-                    show_kernel(L @ tf.transpose(L), "Optimized precision matrix LL^T", cols, "", "center", 1)
+                    show_kernel(L @ tf.transpose(L), "Optimized precision matrix P", data.cols, "", "center", 1)
                 else:
                     P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
-                    show_kernel(P, "Optimized precision matrix LL^T", cols, "", "center", 1)
+                    show_kernel(P, "Optimized precision matrix P", data.cols, "", "center", 1)
 
-        current_mean = np.mean(errors)
-        train_mean = np.mean(train_errors)
+        current_mean = np.mean(test_errors[l])
+        train_mean = np.mean(train_errors[l])
         print("Lasso:", l, "Train error:", train_mean, "Test error", current_mean)
-        test_errors_full.append(current_mean)
-        train_errors_full.append(train_mean)
 
-    df["data"] = data
+    # Save results after running the experiments
+    df["data_train"] = (data.train_X, data.train_y)
+    df["data_test"] = (data.test_X, data.test_y)
     df["lassos"] = lassos
-    df["max_iter"] = max_iter 
-    df["test_errors"] = test_errors_full
-    df["train_errors"] = train_errors_full
+    df["test_errors"] = test_errors
+    df["train_errors"] = train_errors
     df["mll"] = mlls 
-    df["params"] = parse_traceL(params, lassos, max_iter = max_iter)
+    df["params"] = params 
     df["likelihood_variances"] = likelihood_variances
     df["variances"] = variances
     df["log_likelihoods"] = log_likelihoods
