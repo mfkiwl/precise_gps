@@ -10,7 +10,6 @@ class GPRLasso(gpflow.models.GPR):
     assumes that the underlying kernel is either full Gaussian kernel or ARD kernel.
     """
     
-    #def __init__(self, data, kernel, lasso):
     def __init__(self, **kwargs):
         data = kwargs["data"]
         kernel = kwargs["kernel"]
@@ -63,7 +62,6 @@ class SVILasso(gpflow.models.SVGP):
     assumes that the underlying kernel is either full Gaussian kernel or ARD kernel.
     """
     
-    #def __init__(self, data, kernel, lasso, M):
     def __init__(self, **kwargs):
         data = kwargs["data"]
         kernel = kwargs["kernel"]
@@ -75,6 +73,7 @@ class SVILasso(gpflow.models.SVGP):
 
         super(SVILasso, self).__init__(kernel, gpflow.likelihoods.Gaussian(), new_X, num_data = N)
         self.lasso = lasso # lasso coefficient
+        self.train_data = data
     
     def lasso_penalty(self):
         if type(self.kernel) == FullGaussianKernel:

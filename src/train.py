@@ -11,6 +11,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp 
 from gpflow.ci_utils import ci_niter
 from src.select import select_kernel, select_model
+from src.save_intermediate import save_results
 
 
 possible_models = ["GPR", "GPRLasso", "SVILasso", "GPRhs"] # current possible models to train
@@ -34,29 +35,8 @@ def run_adam(model, iterations, train_dataset, minibatch_size, lasso, train_Xnp,
 
     for step in range(iterations):
         optimization_step()
-        save_results(model, step, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls, kernel, model_name)
+        save_results(model, step, params, counter, variances, likelihood_variances, mlls, l)
 
-def save_results(model, step, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls, kernel, model_name):
-    if model_name == "SVILasso":
-        value = model.maximum_log_likelihood_objective((train_Xnp, train_ynp))
-    else:
-        value = model.maximum_log_likelihood_objective()
-    
-    if step % 100 == 0:
-        if kernel == "full":
-            L = model.kernel.L.numpy()
-            params[l][counter].append(list(L))
-        else:
-            P = tf.linalg.diag(model.kernel.lengthscales.numpy()**(-2))
-            params[l][counter].append(list(P))
-    
-        print("Step:", step, "MLL:", value)
-    
-    lik_var = model.likelihood.variance
-    var = model.kernel.variance
-    variances[l][counter] = var
-    likelihood_variances[l][counter] = lik_var
-    mlls[l][counter].append(value)
 
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter):
     """
@@ -151,8 +131,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             Optimizer
             """
             def step_callback(step, variables, values):
-                save_results(gpr_model,step,train_Xnp, train_ynp,params,l,counter,variances,likelihood_variances,mlls, kernel, model)
-            if model == "SVILasso":
+                save_results(gpr_model, step, params, counter, variances, likelihood_variances, mlls, l)
+            if type(gpr_model) == SVILasso:
                 train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
                 #minibatch_size = minibatch_size
                 run_adam(gpr_model,batch_iter,train_dataset,minibatch_size,l,train_Xnp,train_ynp,params,l,counter,variances,likelihood_variances,mlls,kernel,model)
