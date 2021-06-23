@@ -3,7 +3,7 @@ from src.models.kernels import *
 import tensorflow as tf
 
 def save_results(model, step, params, counter, variances, likelihood_variances, mlls, l):
-    print(type(model).__name__)
+    print(type(model).__name__, type(model).__name__ == 'SVILasso')
     if type(model).__name__ == "SVILasso":
         value = model.maximum_log_likelihood_objective(model.train_data)
     else:
