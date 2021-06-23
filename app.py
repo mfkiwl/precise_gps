@@ -62,7 +62,7 @@ def main():
         if dataset not in possible_datasets:
             raise NameError(f"{dataset} is not part of the supported datasets:\n{possible_datasets}")
         
-        data_instance = locals[dataset]()
+        data_instance = locals()[dataset]()
         data = {}
         data["train_X"] = data_instance.train_X
         data["train_y"] = data_instance.train_y
