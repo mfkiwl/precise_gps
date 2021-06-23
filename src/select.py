@@ -1,26 +1,27 @@
 import inspect, importlib 
 import src.models.kernels
 
-_possible_kernels = []
-kernels = inspect.getmembers(src.models.kernels, inspect.isclass)
-for k in kernels:
-    _possible_kernels.append(k[0][0])
+_possible_kernels = list(map (lambda x : x[0], inspect.getmembers(src.models.kernels, inspect.isclass)))
+#kernels = inspect.getmembers(src.models.kernels, inspect.isclass)
+#for k in kernels:
+#    _possible_kernels.append(k[0])
 
 
 import src.models.models
 _possible_models = []
 models = inspect.getmembers(src.models.models, inspect.isclass)
 for m in models:
-    _possible_models.append(m[0][0])
+    _possible_models.append(m[0])
 
 def select_kernel(kernel, **kwargs):
-    print(kernels)
+    #print(kernels)
     print(_possible_kernels)
     if kernel not in _possible_kernels:
         kernel = _possible_kernels[0]
 
     module = importlib.import_module("src.models.kernels")
     kernel_instance = getattr(module, kernel)(**kwargs)
+    print(kernel_instance)
 
     return kernel_instance 
 
