@@ -3,14 +3,14 @@ from src.models.kernels import *
 import tensorflow as tf
 
 def save_results(model, step, params, counter, variances, likelihood_variances, mlls, l):
-    print(model.__name__)
-    if model.__name__ == "SVILasso":
+    print(type(model).__name__)
+    if type(model).__name__ == "SVILasso":
         value = model.maximum_log_likelihood_objective(model.train_data)
     else:
         value = model.maximum_log_likelihood_objective()
     value = model.maximum_log_likelihood_objective()
     if step % 100 == 0:
-        if model.kernel.__name__ == "FullGaussianKernel":
+        if type(model.kernel).__name__ == "FullGaussianKernel":
             L = model.kernel.L.numpy()
             params[l][counter].append(list(L))
     else:
