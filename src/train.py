@@ -79,8 +79,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
     dim = len(cols)
     df = {}
 
-    train_ynp = np.expand_dims(train_ynp,-1)
-    test_ynp = np.expand_dims(test_ynp,-1)
+    #train_ynp = np.expand_dims(train_ynp,-1)
+    #test_ynp = np.expand_dims(test_ynp,-1)
 
     test_errors_full = []
     train_errors_full = []

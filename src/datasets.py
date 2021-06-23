@@ -42,7 +42,7 @@ class Redwine(Dataset):
     def read_data(self):
         data = np.genfromtxt(self.path + "/data.csv", delimiter=';')
         X = data[1:,0:-1]
-        y = data[1:,-1]
+        y = data[1:,-1].reshape(-1,1)
         cols = self.get_cols(self.path)
         return X, y, cols 
 
@@ -54,7 +54,7 @@ class Whitewine(Dataset):
     def read_data(self):
         data = np.genfromtxt(self.path + "/data.csv", delimiter=';')
         X = data[1:,0:-1]
-        y = data[1:,-1]
+        y = data[1:,-1].reshape(-1,1)
         cols = self.get_cols(self.path)
         return X, y, cols 
 
@@ -67,7 +67,7 @@ class Naval(Dataset):
         data = np.genfromtxt(self.path + "/data.txt", delimiter='  ')
         X = data[:,0:-2]
         X = np.delete(X, [8, 11], axis=1) # these have 0 variance
-        y = data[:,-2]
+        y = data[:,-2].reshape(-1,1)
         cols = self.get_cols(self.path)
         return X, y, cols 
 
@@ -79,7 +79,7 @@ class Boston(Dataset):
     def read_data(self):
         data = pd.read_fwf(self.path + "/housing.data", header=None).values
         X = data[:, :-1]
-        y = data[:, -1]
+        y = data[:, -1].reshape(-1,1)
         cols = self.get_cols(self.path)
         return X, y, cols 
 
@@ -90,7 +90,7 @@ class Concrete(Dataset):
 
     def read_data(self):
         data = pd.read_excel(self.path + "/Concrete_Data.xls").values
-        return data[:, :-1], data[:, -1], self.get_cols(self.path)
+        return data[:, :-1], data[:, -1].reshape(-1,1), self.get_cols(self.path)
 
 class Energy(Dataset):
 
@@ -100,7 +100,7 @@ class Energy(Dataset):
     def read_data(self):
         # NB this is the first output (aka Energy1, as opposed to Energy2)
         data = pd.read_excel(self.path + "/ENB2012_data.xlsx").values[:, :-1]
-        return data[:, :-1], data[:, -1], self.get_cols(self.path)
+        return data[:, :-1], data[:, -1].reshape(-1,1), self.get_cols(self.path)
 
 class Power(Dataset):
 
@@ -109,7 +109,7 @@ class Power(Dataset):
     
     def read_data(self):
         data = pd.read_excel(self.path + "/Folds5x2_pp.xlsx").values
-        return data[:, :-1], data[:, -1], self.get_cols(self.path)
+        return data[:, :-1], data[:, -1].reshape(-1,1), self.get_cols(self.path)
 
 class Protein(Dataset):
 
@@ -118,7 +118,7 @@ class Protein(Dataset):
     
     def read_data(self):
         data = pd.read_csv(self.path + "/CASP.csv").values
-        return data[:, 1:], data[:, 0], self.get_cols(self.path)
+        return data[:, 1:], data[:, 0].reshape(-1,1), self.get_cols(self.path)
 
 class Yacht(Dataset):
 
@@ -127,4 +127,4 @@ class Yacht(Dataset):
     
     def read_data(self):
         data = pd.read_fwf(self.path, header=None).values[:-1, :]
-        return data[:, :-1], data[:, -1], self.get_cols(self.path)
+        return data[:, :-1], data[:, -1].reshape(-1,1), self.get_cols(self.path)
