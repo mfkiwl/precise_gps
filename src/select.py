@@ -1,15 +1,15 @@
 import inspect, importlib 
-import src.models.kernels as kernels
+import src.models.kernels
 
 _possible_kernels = []
-kernels = inspect.getmembers(kernels, inspect.isclass)
+kernels = inspect.getmembers(src.models.kernels, inspect.isclass)
 for k in kernels:
     _possible_kernels.append(k[0][0])
 
 
-import src.models.models as models
+import src.models.models
 _possible_models = []
-models = inspect.getmembers(models, inspect.isclass)
+models = inspect.getmembers(src.models.models, inspect.isclass)
 for m in models:
     _possible_models.append(m[0][0])
 
