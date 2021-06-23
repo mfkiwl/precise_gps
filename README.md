@@ -12,12 +12,12 @@ python app.py -f <path to json file>
 
 Running the training script requires a `-f` or `--file` command. We have to provide a json-file which provides the instructions for the training. The json-file has the following format. 
 
-```json
+```jsonc
 {
     "<name>": {
         "model" : "GPRLasso", // string, possible models in src.models.models
-        "kernel": "FullGaussianKernel, // string, possible kernels in src.models.kernels
-        "data": "Redwine, // string, possible datasets in src.datasets.datasets
+        "kernel": "FullGaussianKernel", // string, possible kernels in src.models.kernels
+        "data": "Redwine", // string, possible datasets in src.datasets.datasets
         "lassos": [0,0.1,1], // list, where notation is [start, step, end]
         "max_iter": 1000, // int, max number of iterations for Scipy optimizer
         "num_runs": 5, // int, number of runs with the same initializations
