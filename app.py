@@ -52,7 +52,7 @@ path = args["file"] #json file containing the commands
 # List of possible datasets in src.datasets.datasets
 _possible_datasets = list(map (lambda x : x[0], inspect.getmembers(src.datasets.datasets, inspect.isclass)))
 
-def main():
+def main(path):
     file = open(path,)
     commands = json.load(file)
     file.close()
@@ -94,4 +94,4 @@ def main():
         save.close()
       
 if __name__ == "__main__":
-    main()
+    main(path)
