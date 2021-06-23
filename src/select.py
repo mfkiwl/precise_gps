@@ -1,18 +1,17 @@
-import sys, inspect, importlib 
-from src.models.kernels import *
+import inspect, importlib 
+import src.models.kernels as kernels
 
 _possible_kernels = []
-kernels = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+kernels = inspect.getmembers(kernels, inspect.isclass)
 for k in kernels:
     _possible_kernels.append(k[0][0])
 
 
-from src.models.models import *
+import src.models.models as models
 _possible_models = []
-models = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+models = inspect.getmembers(models, inspect.isclass)
 for m in models:
-    if m not in _possible_kernels:
-        _possible_models.append(m[0][0])
+    _possible_models.append(m[0][0])
 
 def select_kernel(kernel, **kwargs):
     print(_possible_kernels)
