@@ -1,15 +1,16 @@
-import src.models.models
-import src.models.kernels
+from src.models.models import *
+from src.models.kernels import *
 import tensorflow as tf
 
 def save_results(model, step, params, counter, variances, likelihood_variances, mlls, l):
-    if type(model) == src.models.models.SVILasso:
+    print(model.__name__)
+    if model.__name__ == "SVILasso":
         value = model.maximum_log_likelihood_objective(model.train_data)
     else:
         value = model.maximum_log_likelihood_objective()
     value = model.maximum_log_likelihood_objective()
     if step % 100 == 0:
-        if type(model.kernel) == src.models.kernels.FullGaussianKernel:
+        if model.kernel.__name__ == "FullGaussianKernel":
             L = model.kernel.L.numpy()
             params[l][counter].append(list(L))
     else:
