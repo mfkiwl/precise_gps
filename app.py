@@ -4,8 +4,8 @@ import src.datasets.datasets
 from src.datasets.datasets import *
 
 '''
-Training different Gaussian process models is possible with this script. Running isntructions are given in
-a json file with the following syntax.
+Training different Gaussian process models and kernels is possible with this script. 
+Running isntructions are given in a json file with the following syntax.
 
 {
     "<name>": {
@@ -16,20 +16,29 @@ a json file with the following syntax.
         "max_iter": (int),
         "num_runs": (int),
         "randomized": (bool),
-        "show": (bool)
+        "show": (bool),
+        "num_Z": (int),
+        "minibatch": (int),
+        "batch_iter": (int),
+        "split": (float)
     }
 
 }
     Args:
         name (string)     : name of the instance
-        model (string)    : name of the model ("full", "own_ard", "gpflow_ard")
-        kernel (string)   : name of the kernel that is used ("full", "own_ard", "gpflow_ard")
-        data (string)     : path to the data e.g. "data/wine/winequality-red.csv"
+        model (string)    : name of the model (src.models.models)
+        kernel (string)   : name of the kernel (src.models.kernels)
+        data (string)     : name of the dataset (src.datasets.datasets)
         lassos (list)     : [start, step, end] e.g. [0,0.1,10]
         max_iter (int)    : maximum number of iterations for Scipy
         num_runs (int)    : number of runs per a lasso coefficient
         randomized (bool) : initialization is randomized if True
         show (bool)       : show optimized precisions if True (these are saved anyway)
+        num_Z (int)       : number of indusing points
+        minibatch (int)   : number of points in minibatch
+        batch_iter (int)  : number of iterations for Adam
+        split (float)     : test/train split (tells the size of the testset, between 0-1)
+
 
 See example json-file in "run_files/test.json". Results are automatically saved in "results/<name>.pkl".
 Usage : python app.py -f <path to json>
@@ -38,9 +47,9 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-f", "--file", required=True, help="Path to the json file that is used for running the script.")
 args = vars(ap.parse_args())
 
-save_path = "results"
-path = args["file"]
+path = args["file"] #json file containing the commands
 
+# List of possible datasets in src.datasets.datasets
 _possible_datasets = list(map (lambda x : x[0], inspect.getmembers(src.datasets.datasets, inspect.isclass)))
 
 def main():
@@ -55,7 +64,10 @@ def main():
 
         dataset = current_run["data"]
         if dataset not in _possible_datasets:
-            raise NameError(f"{dataset} is not part of the supported datasets:\n{_possible_datasets}")
+            dataset = _possible_datasets[0]
+            print(f"Changed to dataset {dataset}")
+        else:
+            print(f"Using dataset {dataset}")
         
         data_instance = globals()[dataset](current_run["split"])
 
