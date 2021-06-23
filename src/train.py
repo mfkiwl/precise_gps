@@ -114,7 +114,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             kernel_kwargs = {"randomized": randomized, "dim": dim}
             _kernel = select_kernel(kernel, **kernel_kwargs)
             model_kwargs = {"data": (train_Xnp, train_ynp), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
-            gpr_model = select_model(model, model_kwargs)
+            gpr_model = select_model(model, **model_kwargs)
 
             # if kernel == "full":
             #     if not randomized:
