@@ -1,9 +1,6 @@
-import argparse
-import os 
-import json 
+import argparse, json, pickle, inspect
 from src.train import * 
-import pickle 
-from src.datasets.datasets import * 
+import src.datasets.datasets 
 
 '''
 Training different Gaussian process models is possible with this script. Running isntructions are given in
@@ -43,7 +40,7 @@ args = vars(ap.parse_args())
 save_path = "results"
 path = args["file"]
 
-possible_datasets = ['Redwine', 'Whitewine', 'Boston', 'Concrete', 'Power', 'Protein', 'Energy', 'Yacht', 'Naval']
+_possible_datasets = list(map (lambda x : x[0], inspect.getmembers(src.datasets.datasets, inspect.isclass)))
 
 def main():
     file = open(path,)
@@ -56,16 +53,10 @@ def main():
         kernel = current_run["kernel"]
 
         dataset = current_run["data"]
-        if dataset not in possible_datasets:
-            raise NameError(f"{dataset} is not part of the supported datasets:\n{possible_datasets}")
+        if dataset not in _possible_datasets:
+            raise NameError(f"{dataset} is not part of the supported datasets:\n{_possible_datasets}")
         
         data_instance = globals()[dataset](current_run["split"])
-        #data = {}
-        #data["train_X"] = data_instance.train_X
-        #data["train_y"] = data_instance.train_y
-        #data["test_X"] = data_instance.test_X
-        #data["test_y"] = data_instance.test_y
-        #data["cols"] = data_instance.cols
 
         l = current_run["lassos"]
         if len(l) == 3:
