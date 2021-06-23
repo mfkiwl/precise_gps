@@ -5,12 +5,12 @@
         "data": "Redwine",
         "lassos": [0,10,30],
         "max_iter": 500,
-        "num_runs": 10,
+        "num_runs": 5,
         "randomized": 1,
         "show": 0,
-        "num_Z": 50,
+        "num_Z": 100,
         "minibatch": 100,
-        "batch_iter": 50,
+        "batch_iter": 5000,
         "split": 0.2
     }
 }

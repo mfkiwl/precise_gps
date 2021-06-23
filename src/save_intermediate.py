@@ -11,11 +11,11 @@ def save_results(model, step, params, counter, variances, likelihood_variances, 
         if type(model.kernel).__name__ == "FullGaussianKernel":
             L = model.kernel.L.numpy()
             params[l][counter].append(list(L))
-    else:
-        P = tf.linalg.diag(model.kernel.lengthscales.numpy()**(-2))
-        params[l][counter].append(list(P))
+        else:
+            P = tf.linalg.diag(model.kernel.lengthscales.numpy()**(-2))
+            params[l][counter].append(list(P))
 
-    print("Step:", step, "MLL:", value)
+        print("Step:", step, "MLL:", value)
 
     lik_var = model.likelihood.variance
     var = model.kernel.variance
