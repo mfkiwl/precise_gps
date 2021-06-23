@@ -3,10 +3,7 @@ import os
 import json 
 from src.train import * 
 import pickle 
-from sklearn.model_selection import train_test_split
-from numpy import genfromtxt
-import pandas as pd 
-from src.datasets import * 
+from src.datasets.datasets import * 
 
 '''
 Training different Gaussian process models is possible with this script. Running isntructions are given in
@@ -69,44 +66,6 @@ def main():
         data["test_X"] = data_instance.test_X
         data["test_y"] = data_instance.test_y
         data["cols"] = data_instance.cols
-
-        # data_path = current_run["data"]
-
-        # if data_path == "data/redwine":
-        #     data_ = genfromtxt(data_path + "/data.csv", delimiter=';')
-        #     Xnp = data_[1:,0:-1]
-        #     for i in range(11):
-        #         Xnp[:,i] -= np.mean(Xnp[:,i])
-        #         Xnp[:,i] /= np.std(Xnp[:,i])
-        #     # scale outputs to [0,1]
-        #     ynp = data_[1:,-1]
-        #     ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
-        # else:
-        #     data_ = genfromtxt(data_path + "/data.txt", delimiter='  ')
-        #     Xnp = data_[:,0:-2]
-        #     Xnp = np.delete(Xnp, [8, 11], axis=1)
-        #     for i in range(16):
-        #         mean = np.mean(Xnp[:,i])
-        #         std = np.std(Xnp[:,i])
-        #         Xnp[:,i] -= mean 
-        #         Xnp[:,i] /= std 
-
-        #     # scale outputs to [0,1]
-        #     ynp = data_[:,-2]
-        #     ynp = (ynp - np.min(ynp)) / (np.max(ynp) - np.min(ynp))
-        # # standardize each covariate to mean 0 var 1
-
-
-        # train_Xnp, test_Xnp, train_ynp, test_ynp = train_test_split(Xnp, ynp, test_size=0.20, random_state=42)
-        # train_data = {}
-        # train_data["train_X"] = train_Xnp
-        # train_data["train_y"] = train_ynp
-        # train_data["test_X"] = test_Xnp
-        # train_data["test_y"] = test_ynp
-
-        # features = [d.strip("'") for d in list(pd.read_csv(data_path + "/features.csv", delimiter=','))]
-        # train_data["cols"] = features
-
 
         l = current_run["lassos"]
 

@@ -1,3 +1,4 @@
+from src.visuals.plot_kwargs import DEFAULT_KWARGS
 import matplotlib.pyplot as plt 
 import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -113,15 +114,34 @@ def show_kernels(kernels, titles, cols, save, aspect = "own", show_nums = -1, sa
         plt.savefig("{}.pdf".format(save), bbox_inches='tight')
     plt.show()
 
-def visualize_log_likelihood(log_liks):
-    plt.figure(figsize = (10,6))
+def visualize_log_likelihood(log_liks, names, savefig, **kwargs):
+
+    if not kwargs:
+        locals().update(DEFAULT_KWARGS)
+    else:
+        locals().update(kwargs)
+
+    plt.figure(figsize = figsize)
     for idx, log_lik in enumerate(log_liks):
         lassos = log_lik.keys()
+        counter = 0
         for l in lassos:
             max_ll = np.argmax(log_lik[l])
             for jdx, ll in enumerate(log_lik[l]):
                 if jdx == max_ll:
-                    plt.plot(l, ll, '*', color = COLORS[idx])
+                    if counter == 0:
+                      counter += 1
+                      plt.plot(l, ll, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                    else:
+                      plt.plot(l, ll, '.', color = COLORS[idx], markersize = 10)
                 else:
-                    plt.plot(l, ll, '*', color = COLORS[idx], alpha = 0.5)
+                    plt.plot(l, ll, '.', color = COLORS[idx], alpha = 0.2)
+    plt.ylim(ylim)
+    plt.xlim(xlim)
+    plt.grid(grid)
+    plt.xlabel("Lasso coefficient")
+    plt.ylabel("log-likelihood (test)")
+    plt.legend(**legend)
+    if savefig:
+        plt.savefig("logliks.pdf")
     plt.show()

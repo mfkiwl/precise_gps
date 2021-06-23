@@ -1,7 +1,8 @@
 import gpflow
 import tensorflow as tf 
 import tensorflow_probability as tfp 
-from src.kernels import *
+from src.models.kernels import *
+from src.models.initialization import select_inducing_points
 
 class GPRLasso(gpflow.models.GPR):
     """
@@ -61,10 +62,7 @@ class SVILasso(gpflow.models.SVGP):
     def __init__(self, data, kernel, lasso, M):
         
         N = len(data[1])
-        indusing_points = np.random.choice(N, M)
-        new_X = data[0][indusing_points]
-        new_Y = data[1][indusing_points]
-        # data = (new_X, new_Y)
+        new_X = select_inducing_points(data[0], M)
 
         super(SVILasso, self).__init__(kernel, gpflow.likelihoods.Gaussian(), new_X, num_data = N)
         self.lasso = lasso # lasso coefficient
