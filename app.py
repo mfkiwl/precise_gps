@@ -1,6 +1,7 @@
 import argparse, json, pickle, inspect
 from src.train import * 
 import src.datasets.datasets 
+from src.datasets.datasets import *
 
 '''
 Training different Gaussian process models is possible with this script. Running isntructions are given in
