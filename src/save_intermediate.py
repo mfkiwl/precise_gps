@@ -1,6 +1,7 @@
 from src.models.models import *
 
 def save_results(model, step, params, counter, variances, likelihood_variances, mlls, l):
+    print(type(model))
     if type(model) == SVILasso:
         value = model.maximum_log_likelihood_objective(model.train_data)
     else:
