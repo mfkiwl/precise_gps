@@ -100,7 +100,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             if type(_model) == SVILasso:
                 train_dataset = tf.data.Dataset.from_tensor_slices((data.train_X, data.train_y)).repeat().shuffle(len(data.train_y))
                 gpflow.set_trainable(_model.inducing_variable, False) # Inducing variables not trainable
-                run_adam(_model,batch_iter,train_dataset,minibatch_size,l,data.train_X,data.train_y,params,l,num_run,variances,likelihood_variances,mlls,kernel,model)
+                run_adam(_model,batch_iter,train_dataset,minibatch_size,params,l,num_runs,variances,likelihood_variances,mlls)
 
             else:
                 optimizer = gpflow.optimizers.Scipy()
