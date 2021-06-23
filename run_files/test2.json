@@ -10,6 +10,7 @@
         "show": 0,
         "num_Z": 50,
         "minibatch": 100,
-        "batch_iter": 50
+        "batch_iter": 50,
+        "split": 0.2
     }
 }

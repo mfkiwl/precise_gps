@@ -10,7 +10,8 @@
         "show": 0,
         "num_Z": 0,
         "minibatch": 100,
-        "batch_iter": 50
+        "batch_iter": 50,
+        "split": 0.2
     },
     "ard_wine" : {
         "model" : "GPR",
@@ -23,7 +24,8 @@
         "show": 0,
         "num_Z": 0,
         "minibatch": 100,
-        "batch_iter": 50
+        "batch_iter": 50,
+        "split": 0.2
     },
     "svi_full_wine" : {
         "model" : "SVILasso",
@@ -36,6 +38,7 @@
         "show": 0,
         "num_Z": 100,
         "minibatch": 100,
-        "batch_iter": 8000
+        "batch_iter": 8000,
+        "split": 0.2
     }
 }
