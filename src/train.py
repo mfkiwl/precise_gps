@@ -92,23 +92,24 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             kernel_kwargs = {"randomized": randomized, "dim": dim}
             _kernel = select_kernel(kernel, **kernel_kwargs)
             model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
-            gpr_model = select_model(model, **model_kwargs)
+            _model = select_model(model, **model_kwargs)
 
             # Optimizing either using Scipy or Adam
             def step_callback(step, variables, values):
-                save_results(gpr_model, step, params, num_run, variances, likelihood_variances, mlls, l)
-            if type(gpr_model) == SVILasso:
+                save_results(_model, step, params, num_run, variances, likelihood_variances, mlls, l)
+            if type(_model) == SVILasso:
                 train_dataset = tf.data.Dataset.from_tensor_slices((data.train_X, data.train_y)).repeat().shuffle(len(data.train_y))
-                run_adam(gpr_model,batch_iter,train_dataset,minibatch_size,l,data.train_X,data.train_y,params,l,num_run,variances,likelihood_variances,mlls,kernel,model)
+                gpflow.set_trainable(_model.inducing_variable, False) # Inducing variables not trainable
+                run_adam(_model,batch_iter,train_dataset,minibatch_size,l,data.train_X,data.train_y,params,l,num_run,variances,likelihood_variances,mlls,kernel,model)
 
             else:
                 optimizer = gpflow.optimizers.Scipy()
                 optimizer.minimize(
-                    gpr_model.training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
+                    _model.training_loss, _model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
 
             # Calculating error and log-likelihood
-            pred_mean, _ = gpr_model.predict_f(data.test_X)
-            pred_train,_ = gpr_model.predict_f(data.train_X)
+            pred_mean, _ = _model.predict_f(data.test_X)
+            pred_train,_ = _model.predict_f(data.train_X)
 
             rms_test = mean_squared_error(data.test_y, pred_mean.numpy(), squared=False)
             rms_train = mean_squared_error(data.train_y, pred_train.numpy(), squared=False)
@@ -116,16 +117,16 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             test_errors[l].append(rms_test)
             train_errors[l].append(rms_train)
 
-            log_lik = tf.math.reduce_sum(gpr_model.predict_log_density(data = (data.test_X, data.test_y)))
+            log_lik = tf.math.reduce_sum(_model.predict_log_density(data = (data.test_X, data.test_y)))
             log_likelihoods[l].append(log_lik)
 
             if show:
                 if kernel == "FullGaussianKernel":
-                    L = gpr_model.kernel.L
+                    L = _model.kernel.L
                     L = tfp.math.fill_triangular(L)
                     show_kernel(L @ tf.transpose(L), "Optimized precision matrix P", data.cols, "", "center", 1)
                 else:
-                    P = tf.linalg.diag(gpr_model.kernel.lengthscales**(-2))
+                    P = tf.linalg.diag(_model.kernel.lengthscales**(-2))
                     show_kernel(P, "Optimized precision matrix P", data.cols, "", "center", 1)
 
         current_mean = np.mean(test_errors[l])
