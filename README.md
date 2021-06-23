@@ -12,7 +12,7 @@ python app.py -f <path to json file>
 
 Running the training script requires a `-f` or `--file` command. We have to provide a json-file which provides the instructions for the training. The json-file has the following format. 
 
-```js
+```jsonc
 {
     "<name>": {
         "model" : "GPRLasso", // string, possible models in src.models.models
