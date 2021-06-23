@@ -35,6 +35,4 @@ def select_inducing_points(X, k):
     except:
         return select_inducing_points(X, k)
     
-    return _k 
-
-
+    return _k

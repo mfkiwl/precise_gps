@@ -1,0 +1,61 @@
+{
+    "yacht_gpr_full" : {
+        "model" : "GPRLasso",
+        "kernel": "FullGaussianKernel",
+        "data": "Yacht",
+        "lassos": [0,10,150],
+        "max_iter": 500,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 0,
+        "minibatch": 0,
+        "batch_iter": 0,
+        "split": 0.2
+    },
+
+    "yacht_gpr_ard" : {
+        "model" : "GPRLasso",
+        "kernel": "ARD_gpflow",
+        "data": "Yacht",
+        "lassos": [0],
+        "max_iter": 500,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 0,
+        "minibatch": 0,
+        "batch_iter": 0,
+        "split": 0.2
+    },
+
+    "yacht_svi_full" : {
+        "model" : "SVILasso",
+        "kernel": "FullGaussianKernel",
+        "data": "Yacht",
+        "lassos": [0,10,100],
+        "max_iter": 500,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": 100,
+        "batch_iter": 5000,
+        "split": 0.2
+    },
+
+    "yacht_svi_ard" : {
+        "model" : "SVILasso",
+        "kernel": "ARD_gpflow",
+        "data": "Yacht",
+        "lassos": [0],
+        "max_iter": 500,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": 100,
+        "batch_iter": 5000,
+        "split": 0.2
+    }
+}

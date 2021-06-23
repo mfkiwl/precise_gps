@@ -89,7 +89,7 @@ def main():
         result = train(model, kernel, data_instance, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter)
 
         # Save results
-        save = open(f"results/{key}.pkl", "wb")
+        save = open(f"results/raw/{key}.pkl", "wb")
         pickle.dump(result, save)
         save.close()
       
