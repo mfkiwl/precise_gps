@@ -60,15 +60,14 @@ def main():
             raise NameError(f"{dataset} is not part of the supported datasets:\n{possible_datasets}")
         
         data_instance = globals()[dataset](current_run["split"])
-        data = {}
-        data["train_X"] = data_instance.train_X
-        data["train_y"] = data_instance.train_y
-        data["test_X"] = data_instance.test_X
-        data["test_y"] = data_instance.test_y
-        data["cols"] = data_instance.cols
+        #data = {}
+        #data["train_X"] = data_instance.train_X
+        #data["train_y"] = data_instance.train_y
+        #data["test_X"] = data_instance.test_X
+        #data["test_y"] = data_instance.test_y
+        #data["cols"] = data_instance.cols
 
         l = current_run["lassos"]
-
         if len(l) == 3:
             lassos = np.arange(l[0], l[2], l[1])
         else:
@@ -83,7 +82,7 @@ def main():
         minibatch_size = current_run["minibatch"]
         batch_iter = current_run["batch_iter"]
 
-        result = train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter)
+        result = train(model, kernel, data_instance, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter)
 
         # Save results
         save = open(f"results/{key}.pkl", "wb")

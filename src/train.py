@@ -13,10 +13,6 @@ from gpflow.ci_utils import ci_niter
 from src.select import select_kernel, select_model
 from src.save_intermediate import save_results
 
-
-possible_models = ["GPR", "GPRLasso", "SVILasso", "GPRhs"] # current possible models to train
-possible_kernels = ["full", "own_ard", "gpflow_ard"] # current possible kernels to use
-
 def run_adam(model, iterations, train_dataset, minibatch_size, lasso, train_Xnp, train_ynp, params, l, counter, variances, likelihood_variances, mlls, kernel, model_name):
     """
     Utility function running the Adam optimizer
@@ -43,26 +39,17 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
     
     """
 
-    if model not in possible_models:
-        print(f"Model {model} is not part of the models. Changed to gpflow.models.GPR!")
-        model = "GPR"
-    if kernel not in possible_kernels:
-        print(f"Model {kernel} is not part of the kernels. Changed to gpflow.SquaredExponential!")
-        kernel = "gpflow_ard"
-    
-    if model == "GPR":
+    # There is no lasso penalty in standard GPR
+    if type(model).__name__ == "Standard_GPR":
         lassos = [0]
 
-    train_Xnp = data["train_X"]
-    train_ynp = data["train_y"]
-    test_Xnp = data["test_X"]
-    test_ynp = data["test_y"]
-    cols = data["cols"]
+    train_Xnp = data.train_X
+    train_ynp = data.train_y
+    test_Xnp = data.test_X
+    test_ynp = data.test_y
+    cols = data.cols
     dim = len(cols)
     df = {}
-
-    #train_ynp = np.expand_dims(train_ynp,-1)
-    #test_ynp = np.expand_dims(test_ynp,-1)
 
     test_errors_full = []
     train_errors_full = []
@@ -96,37 +83,6 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             model_kwargs = {"data": (train_Xnp, train_ynp), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
             gpr_model = select_model(model, **model_kwargs)
 
-            # if kernel == "full":
-            #     if not randomized:
-            #         L = np.ones((dim*(dim+1))//2)
-            #     else:
-            #         L = init_precision(dim)
-            #     _kernel = FullGaussianKernel(variance=1, L=L)
-            # elif model == "own_ard":
-            #     if not randomized:
-            #         lengthscales = np.ones(dim)
-            #     else:
-            #         lengthscales = np.random.uniform(0.5,3,dim)
-            #     _kernel = ARD(variance=1, lengthscales=lengthscales)
-            # else:
-            #     if not randomized:
-            #         lengthscales = np.ones(dim)
-            #     else:
-            #         lengthscales = np.random.uniform(0.5,3,dim)
-            #     _kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=lengthscales)
-            # """
-            # Selecting the correct model TODO: remove if-else structure
-            # """
-            # if model == "GPRLasso":
-            #     gpr_model = GPRLasso((train_Xnp,train_ynp),_kernel,l)
-            # elif model == "SVILasso":
-            #     gpr_model = SVILasso((train_Xnp, train_ynp), _kernel, l, num_Z)
-            # elif model == "GPRhs":
-            #     gpr_model = GPRHorseshoe((train_Xnp,train_ynp),_kernel,l)
-            # else:
-            #     gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), _kernel)
-
-            
             """
             Optimizer
             """
@@ -136,23 +92,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
                 train_dataset = tf.data.Dataset.from_tensor_slices((train_Xnp, train_ynp)).repeat().shuffle(len(train_ynp))
                 #minibatch_size = minibatch_size
                 run_adam(gpr_model,batch_iter,train_dataset,minibatch_size,l,train_Xnp,train_ynp,params,l,counter,variances,likelihood_variances,mlls,kernel,model)
-                #train_iter = iter(train_dataset.batch(minibatch_size))
-                #training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
-                #optimizer = tf.optimizers.Adam()
 
-                #@tf.function(experimental_relax_shapes=True)
-                #def optimization_step(step):
-                #    save_results(step)
-                #    optimizer.minimize(training_loss, gpr_model.trainable_variables)
-
-                #for step in range(batch_iter):
-                #    optimization_step(step)
-                
-                #for _ in range(batch_iter):
-                #    train_iter = iter(train_dataset.batch(minibatch_size))
-                #    training_loss = gpr_model.training_loss_closure(train_iter, compile = True)
-                #    optimizer.minimize(
-                #        training_loss, gpr_model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
             else:
                 optimizer = gpflow.optimizers.Scipy()
                 optimizer.minimize(
