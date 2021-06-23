@@ -9,3 +9,4 @@ dependencies :
     - tensorflow_probability
     - pandas
     - scikit-learn
+    - tensorflow_transform

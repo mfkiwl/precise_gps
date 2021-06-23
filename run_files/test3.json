@@ -2,7 +2,7 @@
     "svi_full_naval" : {
         "model" : "SVILasso",
         "kernel": "full",
-        "data": "data/naval",
+        "data": "Naval",
         "lassos": [0,1,2],
         "max_iter": 500,
         "num_runs": 5,

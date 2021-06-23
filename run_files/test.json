@@ -2,7 +2,7 @@
     "full_wine" : {
         "model" : "GPRLasso",
         "kernel": "full",
-        "data": "data/redwine",
+        "data": "Redwine",
         "lassos": [0,10,300],
         "max_iter": 500,
         "num_runs": 10,
@@ -15,7 +15,7 @@
     "ard_wine" : {
         "model" : "GPR",
         "kernel": "gpflow_ard",
-        "data": "data/redwine",
+        "data": "Redwine",
         "lassos": [0],
         "max_iter": 500,
         "num_runs": 10,
@@ -28,7 +28,7 @@
     "svi_full_wine" : {
         "model" : "SVILasso",
         "kernel": "full",
-        "data": "data/redwine",
+        "data": "Redwine",
         "lassos": [0,10,300],
         "max_iter": 500,
         "num_runs": 10,
