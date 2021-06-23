@@ -15,6 +15,7 @@ for m in models:
         _possible_models.append(m[0][0])
 
 def select_kernel(kernel, **kwargs):
+    print(_possible_kernels)
     if kernel not in _possible_kernels:
         kernel = _possible_kernels[0]
 
