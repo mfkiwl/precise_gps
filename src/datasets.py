@@ -30,7 +30,7 @@ class Dataset(object):
     def read_data(self):
         raise NotImplementedError
     
-    def get_cols(path):
+    def get_cols(self, path):
         return [d.strip("'") for d in list(pd.read_csv(path + "/features.csv", delimiter=','))]
 
 
