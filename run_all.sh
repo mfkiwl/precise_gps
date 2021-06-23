@@ -5,5 +5,5 @@ cd ..
 for file in $files
 do
     echo "Startin process for $file ..."
-    python app.py -f "$file"
+    python app.py -f "run_files/$file"
 done
