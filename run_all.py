@@ -1,5 +1,5 @@
 import os
-from app import *
+from app import main 
 
 def listdir_nohidden(path):
     '''
