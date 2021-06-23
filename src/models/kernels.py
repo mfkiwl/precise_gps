@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gpflow
 import tensorflow_probability as tfp 
+from src.models.initialization import *
     
 
 class ARD(gpflow.kernels.Kernel):
@@ -15,8 +16,15 @@ class ARD(gpflow.kernels.Kernel):
         variance (float)           : signal variance which scales the whole kernel
         lengthscales (numpy array) : list of lengthscales (should match the dimension of the input)
     """
-    def __init__(self, variance, lengthscales):        
+    def __init__(self, randomized, dim):        
         super().__init__()
+        if not randomized:
+            lengthscales = np.ones(dim)
+            variance = 1.0
+        else:
+            lengthscales = np.random.uniform(0.5,3,dim)
+            variance = 1.0
+
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
         self.lengthscales = gpflow.Parameter(lengthscales, transform = gpflow.utilities.positive())
         
@@ -49,6 +57,16 @@ class ARD(gpflow.kernels.Kernel):
 
         return K
 
+class ARD_gpflow(gpflow.kernels.SquaredExponential):
+    def __init__(self, randomized, dim):
+        if not randomized:
+            lengthscales = np.ones(dim)
+            variance = 1.0
+        else:
+            lengthscales = np.random.uniform(0.5,3,dim)
+            variance = 1.0       
+        super().__init__(variance, lengthscales)
+
 class FullGaussianKernel(gpflow.kernels.Kernel):
     """
     Implementation of the full Gaussian kernel which introduces also the off-diagonal
@@ -60,8 +78,15 @@ class FullGaussianKernel(gpflow.kernels.Kernel):
         L (numpy array)  : vector representation of L, where LL^T = P : precision
     """
     
-    def __init__(self, variance, L):
+    def __init__(self, randomized, dim):
         super().__init__()
+        if not randomized:
+            L = np.ones((dim*(dim+1))//2)
+            variance = 1.0
+        else:
+            L = init_precision(dim)
+            variance = 1.0 
+
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
         self.L = gpflow.Parameter(L)
 

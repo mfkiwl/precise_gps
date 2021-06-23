@@ -10,6 +10,7 @@ import gpflow
 import tensorflow as tf 
 import tensorflow_probability as tfp 
 from gpflow.ci_utils import ci_niter
+from src.select import select_kernel, select_model
 
 
 possible_models = ["GPR", "GPRLasso", "SVILasso", "GPRhs"] # current possible models to train
@@ -110,41 +111,45 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             """
             Selecting the correct kernel TODO: remove if-else structure
             """
-            if kernel == "full":
-                if not randomized:
-                    L = np.ones((dim*(dim+1))//2)
-                else:
-                    L = init_precision(dim)
-                _kernel = FullGaussianKernel(variance=1, L=L)
-            elif model == "own_ard":
-                if not randomized:
-                    lengthscales = np.ones(dim)
-                else:
-                    lengthscales = np.random.uniform(0.5,3,dim)
-                _kernel = ARD(variance=1, lengthscales=lengthscales)
-            else:
-                if not randomized:
-                    lengthscales = np.ones(dim)
-                else:
-                    lengthscales = np.random.uniform(0.5,3,dim)
-                _kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=lengthscales)
-            """
-            Selecting the correct model TODO: remove if-else structure
-            """
-            if model == "GPRLasso":
-                gpr_model = GPRLasso((train_Xnp,train_ynp),_kernel,l)
-            elif model == "SVILasso":
-                gpr_model = SVILasso((train_Xnp, train_ynp), _kernel, l, num_Z)
-            elif model == "GPRhs":
-                gpr_model = GPRHorseshoe((train_Xnp,train_ynp),_kernel,l)
-            else:
-                gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), _kernel)
+            kernel_kwargs = {"randomized": randomized, "dim": dim}
+            _kernel = select_kernel(kernel, **kernel_kwargs)
+            model_kwargs = {"data": (train_Xnp, train_ynp), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
+            gpr_model = select_model(model, model_kwargs)
+
+            # if kernel == "full":
+            #     if not randomized:
+            #         L = np.ones((dim*(dim+1))//2)
+            #     else:
+            #         L = init_precision(dim)
+            #     _kernel = FullGaussianKernel(variance=1, L=L)
+            # elif model == "own_ard":
+            #     if not randomized:
+            #         lengthscales = np.ones(dim)
+            #     else:
+            #         lengthscales = np.random.uniform(0.5,3,dim)
+            #     _kernel = ARD(variance=1, lengthscales=lengthscales)
+            # else:
+            #     if not randomized:
+            #         lengthscales = np.ones(dim)
+            #     else:
+            #         lengthscales = np.random.uniform(0.5,3,dim)
+            #     _kernel = gpflow.kernels.SquaredExponential(variance=1, lengthscales=lengthscales)
+            # """
+            # Selecting the correct model TODO: remove if-else structure
+            # """
+            # if model == "GPRLasso":
+            #     gpr_model = GPRLasso((train_Xnp,train_ynp),_kernel,l)
+            # elif model == "SVILasso":
+            #     gpr_model = SVILasso((train_Xnp, train_ynp), _kernel, l, num_Z)
+            # elif model == "GPRhs":
+            #     gpr_model = GPRHorseshoe((train_Xnp,train_ynp),_kernel,l)
+            # else:
+            #     gpr_model = gpflow.models.GPR((train_Xnp, train_ynp), _kernel)
+
             
             """
             Optimizer
             """
-
-
             def step_callback(step, variables, values):
                 save_results(gpr_model,step,train_Xnp, train_ynp,params,l,counter,variances,likelihood_variances,mlls, kernel, model)
             if model == "SVILasso":
