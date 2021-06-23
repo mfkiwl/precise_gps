@@ -62,7 +62,7 @@ def main():
         if dataset not in possible_datasets:
             raise NameError(f"{dataset} is not part of the supported datasets:\n{possible_datasets}")
         
-        data_instance = globals()[dataset]()
+        data_instance = globals()[dataset](current_run["split"])
         data = {}
         data["train_X"] = data_instance.train_X
         data["train_y"] = data_instance.train_y
