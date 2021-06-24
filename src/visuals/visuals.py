@@ -186,5 +186,13 @@ def visualize_errors(errors, names, lassos, error_type, savefig = None):
         plt.savefig(savefig, bbox_inches='tight')
     plt.show()
 
+def visualize_loss_landscape(params, gradient):
+    """
+    Visualize the loss landscape of the parameters using pca.
 
+    Args:
+        params (list)   : parameters through iteration steps
+        gradient (bool) : wheter pca is calculated for gradient of parameters or just parameters
+    """
+    
 

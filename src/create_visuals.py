@@ -1,4 +1,8 @@
+from src.parse_results import parse_pickle
 
+def create_visuals(file):
 
-def create_visuals():
+    data = parse_pickle(file)
+    
+
     pass 

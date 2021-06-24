@@ -3,12 +3,31 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 
 
+# This file provides dataset object that automatically preprocess the raw data,
+# and creates train and test sets.
+
 def normalize(X):
+    """
+    Normalizes tensor X
+
+    Args:
+        X : tensor
+    
+    Returns:
+        Normalized tensor
+    """
     X_mean = np.average(X, 0)[None, :]
     X_std = 1e-6 + np.std(X, 0)[None, :]
     return (X - X_mean) / X_std, X_mean, X_std
 
 class Dataset(object):
+    """
+    Automatically preprocesses data and creates train and test set for the specified dataset.
+
+    Args:
+        path (sitring to directory) : contains data and the input column names
+        split (float)               : test/train split specifies testset size (between 0-1) 
+    """
 
     def __init__(self, path, split = 0.2):
         self.path = path 
