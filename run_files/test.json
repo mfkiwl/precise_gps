@@ -5,7 +5,7 @@
         "data": "Boston",
         "lassos": [0],
         "max_iter": 500,
-        "num_runs": 100,
+        "num_runs": 1000,
         "randomized": 1,
         "show": 0,
         "num_Z": 0,
