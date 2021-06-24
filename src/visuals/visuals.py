@@ -4,6 +4,7 @@ import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import math 
+from src.visuals.process_results import pca_to_params, transform_M, combine_params, loss_landscape
 
 COLORS = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:olive", "tab:cyan", "tab:pink"]
 
@@ -194,5 +195,14 @@ def visualize_loss_landscape(params, gradient):
         params (list)   : parameters through iteration steps
         gradient (bool) : wheter pca is calculated for gradient of parameters or just parameters
     """
-    pass 
+    res1, comp1, var1, pca1 = pca_to_params(combine_params(data["params"][50][0], data["variances"][50][0], data["likelihood_variances"][50][0]), True)
+    ll = loss_landscape("GPRLasso", "FullGaussianKernel", 50, data["data_train"], data["params"][50][0], data["variances"][50][0], data["likelihood_variances"][50][0], comp1, np.linspace(-6,6,50),np.linspace(-6,6,50))
+
+    plt.figure(figsize = (6,6))
+    plt.imshow(ll, extent=[-6,6,-6,6])
+    for i in range(10):
+        res, _, _, _ = pca_to_params(combine_params(data["params"][50][i], data["variances"][50][i], data["likelihood_variances"][50][i]), True)
+        a, b = transform_M(pca1, res).T
+        plt.plot(a,b, color = 'tab:red', alpha = 0.8)
+    plt.show()
 
