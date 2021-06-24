@@ -65,8 +65,7 @@ class ARD_gpflow(gpflow.kernels.SquaredExponential):
         else:
             lengthscales = np.random.uniform(0.5,3,dim)
             variance = 1.0       
-        super().__init__(variance, lengthscales)
-        self.lengthscales.transform = gpflow.utilities.positive(lower = 0.001) # control cholesky factorization
+        super().__init__(variance, gpflow.Parameter(lengthscales, transform = gpflow.utilities.positive(lower = 0.001)))
 
 class FullGaussianKernel(gpflow.kernels.Kernel):
     """
