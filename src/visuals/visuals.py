@@ -194,5 +194,5 @@ def visualize_loss_landscape(params, gradient):
         params (list)   : parameters through iteration steps
         gradient (bool) : wheter pca is calculated for gradient of parameters or just parameters
     """
-    
+    pass 
 

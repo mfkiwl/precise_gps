@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-import tensorflow_transform as tft
 
 
 def sub_kernel(kernel, dim1, dim2):

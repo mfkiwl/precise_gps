@@ -20,12 +20,12 @@ def save_results(model, step, params, counter, variances, likelihood_variances, 
         else:
             P = tf.linalg.diag(model.kernel.lengthscales.numpy()**(-2))
             params[l][counter].append(list(P))
+        
+        lik_var = model.likelihood.variance.numpy()
+        var = model.kernel.variance.numpy()
+        variances[l][counter].append(var)
+        likelihood_variances[l][counter].append(lik_var)
+        mlls[l][counter].append(value)
 
     if step % 100 == 0:
         print("Lasso", l, "Step:", step, "MLL:", value)
-
-    lik_var = model.likelihood.variance
-    var = model.kernel.variance
-    variances[l][counter] = var
-    likelihood_variances[l][counter] = lik_var
-    mlls[l][counter].append(value)

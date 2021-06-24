@@ -56,6 +56,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
         dictionary (each key has structure dict[<lasso>][<num_runs>] if key is dictionary): 
             data_train (tuple)          : X, y
             data_test (tuple)           : X, y
+            model (string)              : model that was used
+            kernel (string)             : kernel that was used 
             lassos (list)               : lasso coefficients
             test_errors (dict)          : test errors
             train_errors (dict)         : train errors
@@ -136,6 +138,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
     # Save results after running the experiments
     df["data_train"] = (data.train_X, data.train_y)
     df["data_test"] = (data.test_X, data.test_y)
+    df["model"] = type(_model).__name__
+    df["kernel"] = type(_kernel).__name__
     df["lassos"] = lassos
     df["test_errors"] = test_errors
     df["train_errors"] = train_errors
