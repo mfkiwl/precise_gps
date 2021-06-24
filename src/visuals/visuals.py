@@ -159,3 +159,32 @@ def visualize_log_likelihood(log_liks, names, savefig = None):
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
     plt.show()
+
+def visualize_errors(errors, names, lassos, error_type, savefig = None):
+
+    plt.figure(figsize = (10,6))
+    for idx, model_errors in enumerate(errors):
+        model_lassos = lassos[idx]
+        counter = 0
+        for lasso_idx, ers in enumerate(model_errors):
+            min_e = np.argmin(ers)
+            for jdx, e in enumerate(ers):
+                if jdx == min_e:
+                    if counter == 0:
+                      counter += 1
+                      plt.plot(model_lassos[lasso_idx], e, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                    else:
+                      plt.plot(model_lassos[lasso_idx], e, '.', color = COLORS[idx], markersize = 10)
+                else:
+                    plt.plot(model_lassos[lasso_idx], e, '.', color = COLORS[idx], alpha = 0.2)
+
+    plt.grid(True)
+    plt.xlabel("Lasso coefficient")
+    plt.ylabel(f"{error_type} error")
+    plt.legend(prop = {'size': 14})
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight')
+    plt.show()
+
+
+
