@@ -4,13 +4,13 @@ The goal of this project is to try to exploit the full potential of the covarian
 
 ## Usage
 
-Training models is possible by running the training script with a specified json-file containing the instructions
+Training  different models is possible by running the training script with a specified json-file containing the instructions
 
 ```
 python app.py -f <path to json file>
 ```
 
-Running the training script requires a `-f` or `--file` command. We have to provide a json-file which provides the instructions for the training. The json-file has the following format. 
+Running the training script requires a `-f` or `--file` command since we have to provide a json-file which gives the instructions for the training (what model to use etc.). The json-file has the following format. 
 
 ```jsonc
 {
@@ -21,8 +21,8 @@ Running the training script requires a `-f` or `--file` command. We have to prov
         "lassos": [0,0.1,1], // list, where notation is [start, step, end]
         "max_iter": 1000, // int, max number of iterations for Scipy optimizer
         "num_runs": 5, // int, number of runs with the same initializations
-        "randomized": True, // bool, initialization randomized if True
-        "show": False, // bool, shows intermediate plot during process if True
+        "randomized": 1, // bool, initialization randomized if True
+        "show": 0, // bool, shows intermediate plot during process if True
         "num_Z": 100, // int, number of inducing points
         "minibatch": 100, // int, number datapoints in minibatch
         "batch_iter": 5000, // int, number of iterations for Adam optimizer
@@ -31,6 +31,4 @@ Running the training script requires a `-f` or `--file` command. We have to prov
 }
 ```
 
-Here name denotes the training instance. For further explanation see `app.py`. See example json-files in `run_files`. We are able to run multiple separate instances with one run command. The results are saved into `results/<name>.pkl`.
-
-
+Here `<name>` denotes the training instance, and it can be any string. For further explanation see `app.py`, also, you can check json-file examples from `run_files`. We are able to run multiple separate instances with one run command. The results are saved into `results/raw/<name>.pkl`. If you want to run many json-files at the same time, see `run_all.sh`.
