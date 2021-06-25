@@ -4,7 +4,7 @@ import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import math 
-from src.visuals.process_results import pca_to_params, transform_M, combine_params, loss_landscape
+from src.visuals.process_results import pca_to_params, transform_M, loss_landscape
 
 COLORS = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:olive", "tab:cyan", "tab:pink"]
 
