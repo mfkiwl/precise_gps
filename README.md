@@ -31,4 +31,11 @@ Running the training script requires a `-f` or `--file` command since we have to
 }
 ```
 
-Here `<name>` denotes the training instance, and it can be any string. For further explanation see `app.py`, also, you can check json-file examples from `run_files`. We are able to run multiple separate instances with one run command. The results are saved into `results/raw/<name>.pkl`. If you want to run many json-files at the same time, see `run_all.sh`.
+Here `<name>` denotes the training instance, and it can be any string. For further explanation see `app.py`, also, you can check json-file examples from `run_files`. We are able to run multiple separate instances with one run command. The results are saved into `results/raw/<name>.pkl`. If you want to run many json-files at the same time, see `run_all.sh`. You can create a folder with many json-files (like `run_files`).
+
+```
+chmod +x run_all.sh
+./run_all.sh <path to folder>
+```
+
+
