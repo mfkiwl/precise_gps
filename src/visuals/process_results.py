@@ -4,11 +4,26 @@ from src.select import select_model, select_kernel
 
 
 def sub_kernel(kernel, dim1, dim2):
+    """
+    Constructs a sub-kernel of a kernel.
+
+    Args:
+        kernel (tensor) : kernel matrix
+        dim1 (tuple)    : start, end
+        dim2 (tuple)    : start, end
+    """
 
     sub_kernel = kernel[dim1[0]:dim1[1],dim2[0]:dim2[1]]
     return sub_kernel
 
 def pca_to_params(list_of_params, gradient):
+    """
+    Create two new features with PCA that are used to visualize the loss-landscape.
+
+    Args:
+        list_of_params (list) : list of parameters
+        gradient (bool)       : whether PCA is calculted through difference (True) or just through parameters (False) 
+    """
     num_of_params = len(list_of_params[0])
     num_of_rows = len(list_of_params)
     
@@ -26,10 +41,17 @@ def pca_to_params(list_of_params, gradient):
     _pca.fit(M)
     return M, _pca.components_, _pca.explained_variance_, _pca
 
-def combine_params(param_list, var_list, logvar_list):
-     return np.array(list(map(lambda vl, ll, pl : [vl] + [ll] + pl, var_list, logvar_list, param_list)))
-
 def transform_M(pca, M):
+    """
+    Transform values to the new feature space.
+
+    Args:
+        pca (sklearn.decomposition.PCA) : fitted PCA object
+        M (numpy array)                 : parameters or parameter differences
+    
+    Returns:
+        Transformed values
+    """
     return pca.transform(M)
 
 def loss_landscape(model, kernel, lasso, data, params, variances, log_variances, directions, alphas, betas):
@@ -47,9 +69,9 @@ def loss_landscape(model, kernel, lasso, data, params, variances, log_variances,
     
     for idx_alpha, alpha in enumerate(alphas):
         for idx_beta, beta in enumerate(betas):
-            model.kernel.L = center_params + alpha*directions[0][2:] + beta*directions[1][2:]
-            model.kernel.variance = center_var #+ abs(alpha)*directions[0][0] + beta*directions[1][0]
-            model.likelihood.variance = center_logvar #+ alpha*directions[0][1] + beta*directions[1][1]
+            model.kernel.L = center_params + alpha*directions[0] + beta*directions[1]
+            model.kernel.variance = center_var
+            model.likelihood.variance = center_logvar
             
             loss = -model.maximum_log_likelihood_objective()
             losses[idx_alpha, idx_beta] = loss
