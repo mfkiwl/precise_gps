@@ -19,7 +19,11 @@ def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counte
         see function train() 
     """
     # Create an Adam Optimizer action
-    train_iter = iter(train_dataset.batch(minibatch_size))
+    if minibatch_size == -1:
+        train_iter = iter(train_dataset)
+    else:
+        train_iter = iter(train_dataset.batch(minibatch_size))
+        
     training_loss = model.training_loss_closure(train_iter, compile=True)
     optimizer = tf.optimizers.Adam()
 

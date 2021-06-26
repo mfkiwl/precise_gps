@@ -24,7 +24,7 @@
         "randomized": 1,
         "show": 0,
         "num_Z": 0,
-        "minibatch": 0,
+        "minibatch": -1,
         "batch_iter": 0,
         "split": 0.2
     },
@@ -39,7 +39,7 @@
         "randomized": 1,
         "show": 0,
         "num_Z": 100,
-        "minibatch": 100,
+        "minibatch": -1,
         "batch_iter": 5000,
         "split": 0.2
     },
@@ -54,7 +54,7 @@
         "randomized": 1,
         "show": 0,
         "num_Z": 100,
-        "minibatch": 100,
+        "minibatch": -1,
         "batch_iter": 5000,
         "split": 0.2
     }

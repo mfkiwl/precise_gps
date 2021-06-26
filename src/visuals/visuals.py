@@ -187,7 +187,7 @@ def visualize_errors(errors, names, lassos, error_type, savefig = None):
         plt.savefig(savefig, bbox_inches='tight')
     plt.show()
 
-def visualize_loss_landscape(params, gradient):
+def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, r, num_runs):
     """
     Visualize the loss landscape of the parameters using pca.
 
@@ -195,13 +195,14 @@ def visualize_loss_landscape(params, gradient):
         params (list)   : parameters through iteration steps
         gradient (bool) : wheter pca is calculated for gradient of parameters or just parameters
     """
-    res1, comp1, var1, pca1 = pca_to_params(combine_params(data["params"][50][0], data["variances"][50][0], data["likelihood_variances"][50][0]), True)
-    ll = loss_landscape("GPRLasso", "FullGaussianKernel", 50, data["data_train"], data["params"][50][0], data["variances"][50][0], data["likelihood_variances"][50][0], comp1, np.linspace(-6,6,50),np.linspace(-6,6,50))
+    _, comp1, _, pca1 = pca_to_params(results["params"][lasso][0], gradient)
+    _range = np.linspace(r[0], r[1], 50)
+    ll = loss_landscape(model, kernel, lasso, data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
 
-    plt.figure(figsize = (6,6))
-    plt.imshow(ll, extent=[-6,6,-6,6])
-    for i in range(10):
-        res, _, _, _ = pca_to_params(combine_params(data["params"][50][i], data["variances"][50][i], data["likelihood_variances"][50][i]), True)
+    plt.figure(figsize = (8,8))
+    plt.imshow(ll, extent=[r[0],r[1],r[0],r[1]])
+    for i in range(num_runs):
+        res, _, _, _ = pca_to_params(results["params"][lasso][i], gradient)
         a, b = transform_M(pca1, res).T
         plt.plot(a,b, color = 'tab:red', alpha = 0.8)
     plt.show()
