@@ -89,9 +89,10 @@ def main(path):
         result = train(model, kernel, data_instance, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter)
 
         # Save results
-        save_path = f"results/raw/{dataset.lower()}"
+        save_path = f"results/raw/{dataset.lower()}/{os.path.basename(path).split('.')[0]}"
         if not os.path.exists(save_path):
             os.makedirs(save_path)
+        print(os.path.basename(path))
 
         save = open(save_path + f"/{key}.pkl", "wb")
         pickle.dump(result, save)
