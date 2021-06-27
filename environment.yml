@@ -1,13 +1,13 @@
 name : precise_gp
 dependencies :
+  - python == 3.9.1
   - pip
   - pip :
-    - numpy
-    - matplotlib
-    - tensorflow
-    - gpflow
-    - tensorflow_probability
-    - pandas
-    - scikit-learn
-    - tensorflow_transform
-    - scipy 
+    - numpy == 1.19.5
+    - matplotlib == 3.4.2
+    - tensorflow == 2.5.0
+    - gpflow == 2.2.1
+    - tensorflow_probability == 0.13.0
+    - pandas == 1.2.5
+    - scikit-learn == 0.24.2
+    - scipy == 1.7.0
