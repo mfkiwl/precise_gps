@@ -120,3 +120,60 @@ class FullGaussianKernel(gpflow.kernels.Kernel):
         K = self.variance*tf.exp(-0.5 * (X11 - 2*X12 + X22))
 
         return K
+
+class LowRankFullGaussianKernel(gpflow.kernels.Kernel):
+    """
+    Implementation of the full Gaussian kernel which introduces also the off-diagonal
+    covariates of the precision matrix. Randomizing the initialization should be handled outside
+    of this class.
+
+    Args:
+        variance (float) : signal variance which scales the whole kernel
+        L (numpy array)  : vector representation of L, where LL^T = P : precision
+    """
+    
+    def __init__(self, randomized, dim):
+        super().__init__()
+        if not randomized:
+            L = np.ones((dim*(dim+1))//2)
+            variance = 1.0
+        else:
+            L = init_lowrank_precision(dim)
+            variance = 1.0 
+
+        self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
+        self.L = gpflow.Parameter(L)
+
+    def K_diag(self, X):
+        """
+        Returns the diagonal vector when X1 == X2 (used in the background of gpflow)
+        """
+        return self.variance * tf.ones_like(X[:,0])
+    
+    def K(self, X1, X2=None):
+        """
+        Returns the full Gaussian kernel.
+
+        Args:
+            X1 (numpy array) : shaped N x D
+            X2 (numpy array) : shaped M x D (D denotes the number of dimensions of the input)
+        """
+        if X2 is None:
+            X2 = X1
+        
+        L = tfp.math.fill_lowrank_triangular(self.L) # matrix representation of L
+
+        A = X1 @ L
+        B = X2 @ L 
+
+        X11 = tf.squeeze(tf.expand_dims(A, axis = 1) @ tf.expand_dims(A, axis = -1), axis = -1) # (N, 1)
+        X22 = tf.transpose(tf.squeeze(tf.expand_dims(B, axis = 1) @ tf.expand_dims(B, axis = -1), axis = -1))  # (1,M)
+        X12 = A @ tf.transpose(B) # (N,M)
+
+        # kernel  (N,1) - (N,M) + (1,M)
+        K = self.variance*tf.exp(-0.5 * (X11 - 2*X12 + X22))
+
+        return K
+
+
+#tfp.math.pivoted_cholesky

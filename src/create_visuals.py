@@ -21,10 +21,13 @@ def create_visuals(dataset, directory, num_lassos, step = 1):
     if not os.path.exists(result_path):
         os.makedirs(result_path)
     
-    #MLLS and log-likelihoods
+    #MLLS, log-likelihoods, and errors
     names = []
     mlls = []
     log_liks = []
+    train_errors = []
+    test_errors = []
+    all_lassos = []
     for key in df.keys():
         data = df[key]
         model = data["model"]
@@ -32,9 +35,14 @@ def create_visuals(dataset, directory, num_lassos, step = 1):
         names.append(model + " " + kernel)
         mlls.append(data["mll"])
         log_liks.append(data["log_likelihoods"])
+        train_errors.append(data["train_errors"])
+        test_errors.append(data["test_errors"])
+        all_lassos.append(data["lassos"])
     
     visualize_mlls(mlls, names, result_path + "/mlls.pdf")
     visualize_log_likelihood(log_liks, names, result_path + "/log_liks.pdf")
+    visualize_errors(train_errors,names,all_lassos,"train","train_errors.pdf")
+    visualize_errors(test_errors,names,all_lassos,"test","test_errors.pdf")
 
     # Kernels
     for key in df.keys():
