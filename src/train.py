@@ -33,7 +33,8 @@ def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counte
 
     for step in range(iterations):
         optimization_step()
-        save_results(model, step, params, counter, variances, likelihood_variances, mlls, l)
+        if step % 50 == 0:
+            save_results(model, step, params, counter, variances, likelihood_variances, mlls, l)
 
 
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter):
@@ -106,7 +107,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
 
             # Optimizing either using Scipy or Adam
             def step_callback(step, variables, values):
-                save_results(_model, step, params, num_run, variances, likelihood_variances, mlls, l)
+                if step % 5 == 0:
+                    save_results(_model, step, params, num_run, variances, likelihood_variances, mlls, l)
             
             if type(_model) == SVILasso:
                 train_dataset = tf.data.Dataset.from_tensor_slices((data.train_X, data.train_y)).repeat().shuffle(len(data.train_y))

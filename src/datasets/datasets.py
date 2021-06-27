@@ -68,7 +68,7 @@ class Redwine(Dataset):
 class Whitewine(Dataset):
 
     def __init__(self, split):
-        super(Redwine, self).__init__(path = "data/whitewine", split=split)
+        super(Whitewine, self).__init__(path = "data/whitewine", split=split)
     
     def read_data(self):
         data = np.genfromtxt(self.path + "/data.csv", delimiter=';')
@@ -80,7 +80,7 @@ class Whitewine(Dataset):
 class Naval(Dataset):
 
     def __init__(self, split):
-        super(Redwine, self).__init__(path = "data/naval", split=split)
+        super(Naval, self).__init__(path = "data/naval", split=split)
     
     def read_data(self):
         data = np.genfromtxt(self.path + "/data.txt", delimiter='  ')
