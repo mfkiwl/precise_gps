@@ -145,5 +145,5 @@ class Yacht(Dataset):
         super(Yacht, self).__init__(path = "data/yacht", split=split)
     
     def read_data(self):
-        data = pd.read_fwf(self.path, header=None).values[:-1, :]
+        data = pd.read_fwf(self.path + "/yacht_hydrodynamics.data", header=None).values[:-1, :]
         return data[:, :-1], data[:, -1].reshape(-1,1), self.get_cols(self.path)
