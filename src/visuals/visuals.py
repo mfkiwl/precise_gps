@@ -89,7 +89,6 @@ def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig 
     for j in range(num_rows):
       for i in range(3):
         kernel = kernels[j*3+i]
-        #print(kernel.shape, len(cols))
         maximum = max(abs(np.min(kernel)), np.max(kernel))
         ax = axs[j*3+i]
         divider = make_axes_locatable(ax)
@@ -108,7 +107,7 @@ def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig 
                 for j in range(num_rows):
                     text = ax.text(j, i, np.around(kernel[i, j],show_nums),
                                 ha="center", va="center", color="black")
-        ax.set_title(titles[j*3+i])
+        ax.set_title(titles[j*3+i], fontsize =12)
         fig.colorbar(pcm, cax=cax)
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
@@ -214,7 +213,7 @@ def visualize_errors(errors, names, error_type, savefig = None):
         plt.savefig(savefig, bbox_inches='tight')
     plt.show()
 
-def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, r, num_runs):
+def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_runs, savefig = None):
     """
     Visualize the loss landscape of the parameters using pca.
 
@@ -222,15 +221,36 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, r, n
         params (list)   : parameters through iteration steps
         gradient (bool) : wheter pca is calculated for gradient of parameters or just parameters
     """
-    _, comp1, _, pca1 = pca_to_params(results["params"][lasso][0], gradient)
-    _range = np.linspace(r[0], r[1], 50)
-    ll = loss_landscape(model, kernel, lasso, data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
-
+    _, comp1, explained_variance, pca1 = pca_to_params(np.array(results["params"][lasso][0]), gradient)
+    
     plt.figure(figsize = (8,8))
-    plt.imshow(ll, extent=[r[0],r[1],r[0],r[1]])
+    maximum = -np.inf
+    minimum = np.inf
     for i in range(num_runs):
-        res, _, _, _ = pca_to_params(results["params"][lasso][i], gradient)
+        res, _, _, _ = pca_to_params(np.array(results["params"][lasso][i]), gradient)
+        a, b = transform_M(pca1, res).T
+        if np.max(a) > maximum:
+            maximum = np.max(a) 
+        if np.max(b) > maximum:
+            maximum = np.max(b)
+        if np.min(a) < minimum:
+            minimum = np.min(a) 
+        if np.min(b) < minimum:
+            minimum = np.min(b)
+        plt.plot(a,b, color = 'tab:red', alpha = 0.8)
+    
+
+    _range = np.linspace(minimum-0.1, maximum+0.1, 50)
+    # TODO : results["num_Z"]
+    ll = loss_landscape(model, kernel, lasso, 100, data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
+    plt.imshow(ll, extent=[minimum-0.1,maximum + 0.1,minimum -0.1,maximum + 0.1], origin='lower')
+    for i in range(num_runs):
+        res, _, _, _ = pca_to_params(np.array(results["params"][lasso][i]), gradient)
         a, b = transform_M(pca1, res).T
         plt.plot(a,b, color = 'tab:red', alpha = 0.8)
+    plt.xlabel(f"PCA component 1: {round(explained_variance[0]*100,2)}%")
+    plt.ylabel(f"PCA component 2: {round(explained_variance[1]*100,2)}%")
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight')
     plt.show()
 

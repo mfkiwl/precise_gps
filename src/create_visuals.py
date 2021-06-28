@@ -1,9 +1,11 @@
 import os 
 import tensorflow as tf
-import tensorflow_probability as tfp 
+import tensorflow_probability as tfp
+import pandas as pd 
 from src.parse_results import parse_pickle
 from src.visuals.visuals import * 
 from src.datasets.datasets import *
+from src.visuals.process_results import *
 
 plt.rcParams.update({'font.size': 14}) # Global fontsize
 
@@ -59,31 +61,56 @@ def create_visuals(dataset, directory, num_lassos, step = 1):
     
     visualize_mlls(mlls, mll_names, result_path + "/mlls.pdf")
     visualize_log_likelihood(log_liks, names, result_path + "/log_liks.pdf")
-    visualize_errors(train_errors,names,"train","train_errors.pdf")
-    visualize_errors(test_errors,names,"test","test_errors.pdf")
+    visualize_errors(train_errors,names,"train",result_path + "/train_errors.pdf")
+    visualize_errors(test_errors,names,"test",result_path + "/test_errors.pdf")
 
     # Kernels
     for key in df.keys():
         data = df[key]
-        lassos = data["lassos"][0::step]
-        lassos = lassos[0:min(len(lassos), num_lassos)]
-        for l in lassos:
+        for l in data["lassos"]:
             precisions = []
             p_names = []
             for i in range(9):
-                print(data["kernel"])
                 if data["kernel"] == "FullGaussianKernel":
                     L = data["params"][l][i][-1]
-                    print("L:", L.shape)
                     L = tfp.math.fill_triangular(L)
                     precisions.append(L @ tf.transpose(L))
-                    p_names.append(data["kernel"] + " " + str(l))
+                    p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +" TE: " + str(round(data["test_errors"][l][i],2)))
                 else:
-                    print(data["params"][l][i][-1])
-                    precisions.append(data["params"][l][i][-1][0])
-                    p_names.append(data["kernel"] + " " + str(l))
+                    precisions.append(tf.linalg.diag(np.array(data["params"][l][i][-1])**(-2)))
+                    p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +" TE: " + str(round(data["test_errors"][l][i],2)))
             data_instance = globals()[dataset](0.2)
             cols = data_instance.cols
-            print(len(precisions), len(p_names))
-            show_kernels(precisions,p_names,cols,"global",-1,data["kernel"] + str(l) + ".pdf")
+            if not os.path.exists(result_path + "/kernels"):
+                os.makedirs(result_path + "/kernels")
+
+            show_kernels(precisions,p_names,cols,"own",-1,result_path + "/kernels" + "/" + data["model"] + data["kernel"] + str(l) + ".pdf")
+
+    # Eigenvalues
+    for key in df.keys():
+        data = df[key]
+        eigen_dataframe = {}
+        ret = pd.DataFrame(data=eigen_dataframe)
+        for l in data["lassos"]:
+            for i in range(10):
+                if data["kernel"] == "FullGaussianKernel":
+                    L = data["params"][l][i][-1]
+                    L = tfp.math.fill_triangular(L)
+                    eigen_vals = eigen(L@tf.transpose(L))
+                    ret[(l,i)] = list(eigen_vals)
+        if not os.path.exists(result_path + "/eigen"):
+            os.makedirs(result_path + "/eigen")
+        ret.to_csv(result_path + "/eigen/{}_{}".format(data["model"], data["kernel"]))
+
+
+
+
+    # Loss landscape
+    if not os.path.exists(result_path + "/loss_landscape"):
+        os.makedirs(result_path + "/loss_landscape")
+    for key in df.keys():
+        data = df[key]
+        if data["kernel"] == "FullGaussianKernel":
+            for l in data["lassos"]:
+                visualize_loss_landscape(data, data["model"], data["kernel"], data["data_train"], l, False,10, result_path + "/loss_landscape/" + "{}_{}_{}".format(data["model"], data["kernel"], l))
 

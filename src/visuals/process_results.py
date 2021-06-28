@@ -39,7 +39,7 @@ def pca_to_params(list_of_params, gradient):
             
     _pca = PCA(n_components = 2) # Choose number of components
     _pca.fit(M)
-    return M, _pca.components_, _pca.explained_variance_, _pca
+    return M, _pca.components_, _pca.explained_variance_ratio_, _pca
 
 def transform_M(pca, M):
     """
@@ -54,12 +54,12 @@ def transform_M(pca, M):
     """
     return pca.transform(M)
 
-def loss_landscape(model, kernel, lasso, data, params, variances, log_variances, directions, alphas, betas):
+def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_variances, directions, alphas, betas):
     kernel_kwargs = {"randomized": True, "dim": data[0].shape[1]}
     _kernel = select_kernel(kernel, **kernel_kwargs)
     
-    model_kwargs = {"data": data, "kernel": _kernel, "lasso": lasso}
-    model = select_model(model, **model_kwargs)
+    model_kwargs = {"data": data, "kernel": _kernel, "lasso": lasso, "M": num_Z}
+    _model = select_model(model, **model_kwargs)
     
     center_params = params[-1]
     center_var = variances[-1]
@@ -69,11 +69,13 @@ def loss_landscape(model, kernel, lasso, data, params, variances, log_variances,
     
     for idx_alpha, alpha in enumerate(alphas):
         for idx_beta, beta in enumerate(betas):
-            model.kernel.L = center_params + alpha*directions[0] + beta*directions[1]
-            model.kernel.variance = center_var
-            model.likelihood.variance = center_logvar
-            
-            loss = -model.maximum_log_likelihood_objective()
+            _model.kernel.L = center_params + alpha*directions[0] + beta*directions[1]
+            _model.kernel.variance = center_var
+            _model.likelihood.variance = center_logvar
+            if model == "SVILasso":
+                loss = -_model.maximum_log_likelihood_objective(data)
+            else:
+                loss = -_model.maximum_log_likelihood_objective()
             losses[idx_alpha, idx_beta] = loss
             
     return losses
