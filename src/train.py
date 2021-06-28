@@ -75,7 +75,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
     """
 
     # Change default jitter level
-    gpflow.config.set_default_jitter(0.001)
+    gpflow.config.set_default_jitter(0.01)
 
     # There is no lasso penalty in standard GPR
     if type(model).__name__ == "Standard_GPR":
