@@ -151,6 +151,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
     df["model"] = type(_model).__name__
     df["kernel"] = type(_kernel).__name__
     df["dataset"] = type(data).__name__
+    df["num_Z"] = num_Z
     df["lassos"] = lassos
     df["test_errors"] = test_errors
     df["train_errors"] = train_errors
