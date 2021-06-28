@@ -27,7 +27,7 @@ def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counte
     training_loss = model.training_loss_closure(train_iter, compile=True)
     optimizer = tf.optimizers.Adam()
 
-    @tf.function
+    @tf.function()
     def optimization_step():
         optimizer.minimize(training_loss, model.trainable_variables)
 
@@ -75,7 +75,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
     """
 
     # Change default jitter level
-    gpflow.config.set_default_jitter(0.01)
+    gpflow.config.set_default_jitter(0.001)
 
     # There is no lasso penalty in standard GPR
     if type(model).__name__ == "Standard_GPR":
