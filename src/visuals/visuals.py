@@ -89,14 +89,15 @@ def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig 
     for j in range(num_rows):
       for i in range(3):
         kernel = kernels[j*3+i]
+        #print(kernel.shape, len(cols))
         maximum = max(abs(np.min(kernel)), np.max(kernel))
         ax = axs[j*3+i]
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.15)
         if aspect == "own":
-            pcm = ax.imshow(kernel,mcmap='bwr', norm = MidpointNormalize(midpoint = 0, vmin = -maximum, vmax = maximum))
+            pcm = ax.imshow(kernel,cmap='bwr', norm = MidpointNormalize(midpoint = 0, vmin = -maximum, vmax = maximum))
         else:
-            pcm = ax.imshow(kernel,mcmap='bwr', norm = MidpointNormalize(midpoint = 0, vmin = -global_maximum, vmax = global_maximum))
+            pcm = ax.imshow(kernel,cmap='bwr', norm = MidpointNormalize(midpoint = 0, vmin = -global_maximum, vmax = global_maximum))
         if i == 0:
           ax.set_yticks(np.arange(len(cols)))
           ax.set_yticklabels(cols)
@@ -114,20 +115,38 @@ def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig 
     plt.show()
 
 def visualize_mlls(mlls, names, savefig = None):
+    """
+    Visualizes marginal log likelihood through iterations for different models.
+
+    Args:
+        mlls (list)      : dictionary of different runs for specific model and lasso
+        names (list)     : list of strings
+        savefig (string) : path in which figure is saved, if None -> not saving anywhere
+    """
+
+    minimum = np.inf
+    maximum = -np.inf 
+
     plt.figure(figsize = (10,6))
     for idx, log_lik in enumerate(mlls):
-        lassos = log_lik.keys()
-        for l in lassos:
-            counter = 0
-            for mll in log_lik[l]:
-                if not counter:
-                    plt.plot(l, mll, color = COLORS[idx], label = names[idx], alpha = 0.8)
-                else:
-                    plt.plot(l, mll, color = COLORS[idx], alpha = 0.8)
+        iterations = log_lik.keys()
+        counter = 0
+        for jdx in iterations:
+            current = log_lik[jdx][-1]
+            if current < minimum:
+                minimum = current
+            if current > maximum:
+                maximum = current 
+            
+            if counter == 0:
                 counter += 1
+                plt.plot(log_lik[jdx], color = COLORS[idx], label = names[idx], alpha = 0.8)
+            else:
+                plt.plot(log_lik[jdx], color = COLORS[idx], alpha = 0.8)
     
     plt.grid(True)
-    plt.xlabel("Lasso coefficient")
+    plt.ylim([maximum - 2*(maximum - minimum), maximum + int(1/4*(maximum - minimum))])
+    plt.xlabel("Iteration")
     plt.ylabel("MLL (train)")
     plt.legend(prop = {'size': 14})
     if savefig:
@@ -136,6 +155,14 @@ def visualize_mlls(mlls, names, savefig = None):
 
 
 def visualize_log_likelihood(log_liks, names, savefig = None):
+    """
+    Visualizes log-likelihoods for different models for all lasso-coefficients used in optimization.
+
+    Args:
+        log_liks (list) : dictionary of log_likelihoods (all lasso-coefficients included)
+        names (list)    : list of strings
+        savefig (string) : path in which figure is saved, if None -> not saving anywhere
+    """
 
     plt.figure(figsize = (10,6))
     for idx, log_lik in enumerate(log_liks):
@@ -161,23 +188,23 @@ def visualize_log_likelihood(log_liks, names, savefig = None):
         plt.savefig(savefig, bbox_inches='tight')
     plt.show()
 
-def visualize_errors(errors, names, lassos, error_type, savefig = None):
+def visualize_errors(errors, names, error_type, savefig = None):
 
     plt.figure(figsize = (10,6))
     for idx, model_errors in enumerate(errors):
-        model_lassos = lassos[idx]
+        model_lassos = model_errors.keys()
         counter = 0
-        for lasso_idx, ers in enumerate(model_errors):
-            min_e = np.argmin(ers)
-            for jdx, e in enumerate(ers):
+        for l in model_lassos:
+            min_e = np.argmin(model_errors[l])
+            for jdx, e in enumerate(model_errors[l]):
                 if jdx == min_e:
                     if counter == 0:
-                      counter += 1
-                      plt.plot(model_lassos[lasso_idx], e, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                        counter += 1
+                        plt.plot(l, e, '.', color = COLORS[idx], markersize = 10, label = names[idx])
                     else:
-                      plt.plot(model_lassos[lasso_idx], e, '.', color = COLORS[idx], markersize = 10)
+                        plt.plot(l, e, '.', color = COLORS[idx], markersize = 10)
                 else:
-                    plt.plot(model_lassos[lasso_idx], e, '.', color = COLORS[idx], alpha = 0.2)
+                    plt.plot(l, e, '.', color = COLORS[idx], alpha = 0.2)
 
     plt.grid(True)
     plt.xlabel("Lasso coefficient")

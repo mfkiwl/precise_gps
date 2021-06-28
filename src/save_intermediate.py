@@ -18,8 +18,8 @@ def save_results(model, step, params, counter, variances, likelihood_variances, 
         L = model.kernel.L.numpy()
         params[l][counter].append(list(L))
     else:
-        P = tf.linalg.diag(model.kernel.lengthscales.numpy()**(-2))
-        params[l][counter].append(list(P))
+        lengthscales = model.kernel.lengthscales.numpy()
+        params[l][counter].append(list(lengthscales))
     
     lik_var = model.likelihood.variance.numpy()
     var = model.kernel.variance.numpy()
