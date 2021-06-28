@@ -1,14 +1,14 @@
 name : precise_gps_env
 dependencies :
-  - python == 3.9.1
-  - pip
+  - python == 3.7.10
+  - pip == 19.3.1 
   - pip :
     - numpy == 1.19.5
-    - matplotlib == 3.4.2
+    - matplotlib == 3.2.2
     - tensorflow == 2.5.0
     - gpflow == 2.2.1
-    - tensorflow_probability == 0.13.0
-    - pandas == 1.2.5
-    - scikit-learn == 0.24.2
-    - scipy == 1.7.0
-    - xlrd
+    - tensorflow_probability == 0.12.1
+    - pandas == 1.1.5
+    - scikit-learn == 0.22.2.post1
+    - scipy == 1.4.1 
+    - xlrd == 1.1.0
