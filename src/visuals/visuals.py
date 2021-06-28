@@ -237,17 +237,22 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_
             minimum = np.min(a) 
         if np.min(b) < minimum:
             minimum = np.min(b)
-        plt.plot(a,b, color = 'tab:red', alpha = 0.8)
+        #plt.plot(a,b, color = 'tab:red', alpha = 0.8)
     
 
-    _range = np.linspace(minimum-0.1, maximum+0.1, 50)
+    _range = np.linspace(minimum-0.1, maximum+0.1, 30)
     # TODO : results["num_Z"]
+    #ax = plt.gca()
+    #divider = make_axes_locatable(ax)
+    #cax = divider.append_axes("right", size="5%", pad=0.15)
     ll = loss_landscape(model, kernel, lasso, 100, data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
-    plt.imshow(ll, extent=[minimum-0.1,maximum + 0.1,minimum -0.1,maximum + 0.1], origin='lower')
+    im = plt.imshow(ll, extent=[minimum-0.1,maximum + 0.1,minimum -0.1,maximum + 0.1], origin='lower')
+    #plt.colorbar(im, cax = cax)
     for i in range(num_runs):
         res, _, _, _ = pca_to_params(np.array(results["params"][lasso][i]), gradient)
         a, b = transform_M(pca1, res).T
-        plt.plot(a,b, color = 'tab:red', alpha = 0.8)
+        plt.plot(a,b, color = 'tab:red', alpha = 0.5)
+        plt.plot(a[-1], b[-1],'.', color = 'tab:red', markersize = 20)
     plt.xlabel(f"PCA component 1: {round(explained_variance[0]*100,2)}%")
     plt.ylabel(f"PCA component 2: {round(explained_variance[1]*100,2)}%")
     if savefig:

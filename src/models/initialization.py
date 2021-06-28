@@ -54,7 +54,8 @@ def init_lowrank_precision(dim):
     return tfp.math.fill_lowrank_triangular_inverse(lowrank_L)
 
 # TODO:
-def fill_lowrank_triangular(n, d):
+def fill_lowrank_triangular(vect, dim):
+    
     pass
 
 def fill_lowrank_triangular_inverse(L):

@@ -112,5 +112,5 @@ def create_visuals(dataset, directory, num_lassos, step = 1):
         data = df[key]
         if data["kernel"] == "FullGaussianKernel":
             for l in data["lassos"]:
-                visualize_loss_landscape(data, data["model"], data["kernel"], data["data_train"], l, False,10, result_path + "/loss_landscape/" + "{}_{}_{}".format(data["model"], data["kernel"], l))
+                visualize_loss_landscape(data, data["model"], data["kernel"], data["data_train"], l, True,10, result_path + "/loss_landscape/" + "{}_{}_{}".format(data["model"], data["kernel"], l))
 
