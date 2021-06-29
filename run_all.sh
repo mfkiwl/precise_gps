@@ -9,5 +9,5 @@ cd -
 for file in $files
 do
     echo "Startin process for $file ..."
-    python app.py -f "$1/$file"
+    python train_models.py -f "$1/$file"
 done

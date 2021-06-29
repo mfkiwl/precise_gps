@@ -34,7 +34,6 @@ def select_inducing_points(X, k):
         _k = kmeans2(X, k, minit='points', missing="raise")[0]
     except:
         return select_inducing_points(X, k)
-    
     return _k
 
 def init_lowrank_precision(dim):
