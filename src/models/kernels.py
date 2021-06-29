@@ -16,8 +16,10 @@ class ARD(gpflow.kernels.Kernel):
         variance (float)           : signal variance which scales the whole kernel
         lengthscales (numpy array) : list of lengthscales (should match the dimension of the input)
     """
-    def __init__(self, randomized, dim):        
+    def __init__(self, **kwargs):        
         super().__init__()
+        randomized = kwargs["randomized"]
+        dim = kwargs["dim"]
         if not randomized:
             lengthscales = np.ones(dim)
             variance = 1.0
@@ -58,7 +60,9 @@ class ARD(gpflow.kernels.Kernel):
         return K
 
 class ARD_gpflow(gpflow.kernels.SquaredExponential):
-    def __init__(self, randomized, dim):
+    def __init__(self, **kwargs):
+        randomized = kwargs["randomized"]
+        dim = kwargs["dim"]
         if not randomized:
             lengthscales = np.ones(dim)
             variance = 1.0
@@ -78,8 +82,10 @@ class FullGaussianKernel(gpflow.kernels.Kernel):
         L (numpy array)  : vector representation of L, where LL^T = P : precision
     """
     
-    def __init__(self, randomized, dim):
+    def __init__(self, **kwargs):
         super().__init__()
+        randomized = kwargs["randomized"]
+        dim = kwargs["dim"]
         if not randomized:
             L = np.ones((dim*(dim+1))//2)
             variance = 1.0
@@ -132,8 +138,11 @@ class LowRankFullGaussianKernel(gpflow.kernels.Kernel):
         L (numpy array)  : vector representation of L, where LL^T = P : precision
     """
     
-    def __init__(self, randomized, dim, rank):
+    def __init__(self, **kwargs):
         super().__init__()
+        randomized = kwargs["randomized"]
+        dim = kwargs["dim"]
+        rank = kwargs["rank"]
         if not randomized:
             L = np.ones((dim*(dim+1))//2)
             variance = 1.0
