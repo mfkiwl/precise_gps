@@ -17,7 +17,7 @@
 
     "whitewine_gpr_ard" : {
         "model" : "GPRLasso",
-        "kernel": "ARD_gpflow",
+        "kernel": "ARD",
         "data": "Whitewine",
         "lassos": [0],
         "max_iter": 700,
@@ -49,7 +49,7 @@
 
     "whitewine_svi_ard" : {
         "model" : "SVILasso",
-        "kernel": "ARD_gpflow",
+        "kernel": "ARD",
         "data": "Whitewine",
         "lassos": [0],
         "max_iter": 700,

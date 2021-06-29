@@ -17,7 +17,7 @@
 
     "naval_svi_ard" : {
         "model" : "SVILasso",
-        "kernel": "ARD_gpflow",
+        "kernel": "ARD",
         "data": "Naval",
         "lassos": [0],
         "max_iter": 700,
