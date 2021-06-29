@@ -47,7 +47,7 @@ class ARD(gpflow.kernels.Kernel):
             X2 = X1
             
         # Precision is the inverse squared of the lengthscales
-        P = tf.linalg.diag(self.lengthscales**(-2))    
+        P = tf.linalg.diag(self.lengthscales**(2))    
         X11 = tf.squeeze(tf.expand_dims(X1,axis = 1) @ P @ tf.expand_dims(X1,axis = -1),-1)  # (N,1)
         X22 = tf.transpose(tf.squeeze(tf.expand_dims(X2,axis = 1) @ P @ tf.expand_dims(X2,axis = -1),-1))  # (1,M)
         X12 = X1 @ P @ tf.transpose(X2) # (N,M)

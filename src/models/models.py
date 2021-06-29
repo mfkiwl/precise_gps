@@ -4,6 +4,16 @@ import tensorflow_probability as tfp
 from src.models.kernels import *
 from src.models.initialization import select_inducing_points
 
+def _lasso_penalty(model):
+    if type(model.kernel) == FullGaussianKernel:
+        L = tfp.math.fill_triangular(model.kernel.L)
+        return model.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
+    elif type(model.kernel) == LowRankFullGaussianKernel:
+        L = fill_lowrank_triangular(model.kernel.L)
+        return model.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
+    else:
+        return model.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(model.kernel.lengthscales**(-2))))
+
 class GPRLasso(gpflow.models.GPR):
     """
     Basic Gaussian process regression, but L1 penalty term is added to the loss. This model
@@ -25,7 +35,7 @@ class GPRLasso(gpflow.models.GPR):
             L = fill_lowrank_triangular(self.kernel.L)
             return self.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
         else:
-            return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(-2))))
+            return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(2))))
 
     def maximum_log_likelihood_objective(self):
         """
@@ -83,7 +93,7 @@ class SVILasso(gpflow.models.SVGP):
             L = tfp.math.fill_triangular(self.kernel.L)
             return self.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
         else:
-            return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(-2))))
+            return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(2))))
 
     def maximum_log_likelihood_objective(self, data):
         """

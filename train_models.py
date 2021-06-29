@@ -85,8 +85,9 @@ def main(path):
         num_Z = current_run["num_Z"]
         minibatch_size = current_run["minibatch"]
         batch_iter = current_run["batch_iter"]
+        rank = current_run["rank"] 
 
-        result = train(model, kernel, data_instance, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter)
+        result = train(model, kernel, data_instance, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter, rank)
 
         # Save results
         save_path = f"results/raw/{dataset.lower()}/{os.path.basename(path).split('.')[0]}"
