@@ -2,7 +2,7 @@ import gpflow
 import tensorflow as tf 
 import tensorflow_probability as tfp 
 from src.models.kernels import *
-from src.models.initialization import select_inducing_pointsx
+from src.models.initialization import select_inducing_points
 
 class GPRLasso(gpflow.models.GPR):
     """

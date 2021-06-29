@@ -1,36 +1,4 @@
 {
-    "naval_gpr_full" : {
-        "model" : "GPRLasso",
-        "kernel": "FullGaussianKernel",
-        "data": "Naval",
-        "lassos": [0,10,110],
-        "max_iter": 700,
-        "num_runs": 10,
-        "randomized": 1,
-        "show": 0,
-        "num_Z": 0,
-        "minibatch": 0,
-        "batch_iter": 0,
-        "split": 0.2,
-        "rank":0
-    },
-
-    "naval_gpr_ard" : {
-        "model" : "GPRLasso",
-        "kernel": "ARD_gpflow",
-        "data": "Naval",
-        "lassos": [0],
-        "max_iter": 700,
-        "num_runs": 10,
-        "randomized": 1,
-        "show": 0,
-        "num_Z": 0,
-        "minibatch": 0,
-        "batch_iter": 0,
-        "split": 0.2,
-        "rank":0
-    },
-
     "naval_svi_full" : {
         "model" : "SVILasso",
         "kernel": "FullGaussianKernel",
