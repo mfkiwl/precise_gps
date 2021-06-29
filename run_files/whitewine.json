@@ -42,7 +42,7 @@
         "show": 0,
         "num_Z": 100,
         "minibatch": -1,
-        "batch_iter": 5000,
+        "batch_iter": 20000,
         "split": 0.2,
         "rank":0
     },
@@ -58,7 +58,7 @@
         "show": 0,
         "num_Z": 100,
         "minibatch": -1,
-        "batch_iter": 5000,
+        "batch_iter": 20000,
         "split": 0.2,
         "rank":0
     }
