@@ -9,7 +9,20 @@ from src.visuals.process_results import *
 
 plt.rcParams.update({'font.size': 14}) # Global fontsize
 
-def create_visuals(dataset, directory, num_lassos, step = 1):
+def create_results(dataset, directory, num_lassos, step = 1):
+    """
+    Create visualizations form the raw .pkl files. This function also forms some
+    dataframes. 
+
+    Args:
+        dataset (string)   : path to the dataset folder
+        directory (string) : dataset directory for analysis
+        num_lassos (int)   : number of lasso coefficients (used for some visualizations)
+        step (int)         : step between the lasso coefficients
+    
+    Returns:
+        Saves visualizations and dataframes to results/processed
+    """
 
     data_path = f"results/raw/{dataset.lower()}/{directory}/"
     pkl_files = [file for file in os.listdir(data_path) if '.pkl' in file] # Extract only pickle files
@@ -21,7 +34,7 @@ def create_visuals(dataset, directory, num_lassos, step = 1):
     
     dataset = data["dataset"]
 
-    result_path = "results/processed/" + f"{dataset.lower()}/{directory}" # current_file.split('.')[0]
+    result_path = "results/processed/" + f"{dataset.lower()}/{directory}"
     if not os.path.exists(result_path):
         os.makedirs(result_path)
     
