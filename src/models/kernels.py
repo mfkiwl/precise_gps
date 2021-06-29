@@ -132,13 +132,13 @@ class LowRankFullGaussianKernel(gpflow.kernels.Kernel):
         L (numpy array)  : vector representation of L, where LL^T = P : precision
     """
     
-    def __init__(self, randomized, dim):
+    def __init__(self, randomized, dim, rank):
         super().__init__()
         if not randomized:
             L = np.ones((dim*(dim+1))//2)
             variance = 1.0
         else:
-            L = init_lowrank_precision(dim)
+            L = init_lowrank_precision(dim, rank) 
             variance = 1.0 
 
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
@@ -161,7 +161,7 @@ class LowRankFullGaussianKernel(gpflow.kernels.Kernel):
         if X2 is None:
             X2 = X1
         
-        L = tfp.math.fill_lowrank_triangular(self.L) # matrix representation of L
+        L = fill_lowrank_triangular(self.L) # matrix representation of L
 
         A = X1 @ L
         B = X2 @ L 
@@ -174,6 +174,3 @@ class LowRankFullGaussianKernel(gpflow.kernels.Kernel):
         K = self.variance*tf.exp(-0.5 * (X11 - 2*X12 + X22))
 
         return K
-
-
-#tfp.math.pivoted_cholesky

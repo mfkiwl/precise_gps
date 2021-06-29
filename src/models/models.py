@@ -2,7 +2,7 @@ import gpflow
 import tensorflow as tf 
 import tensorflow_probability as tfp 
 from src.models.kernels import *
-from src.models.initialization import select_inducing_points
+from src.models.initialization import select_inducing_pointsx
 
 class GPRLasso(gpflow.models.GPR):
     """
@@ -20,6 +20,9 @@ class GPRLasso(gpflow.models.GPR):
     def lasso_penalty(self):
         if type(self.kernel) == FullGaussianKernel:
             L = tfp.math.fill_triangular(self.kernel.L)
+            return self.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
+        elif type(self.kernel) == LowRankFullGaussianKernel:
+            L = fill_lowrank_triangular(self.kernel.L)
             return self.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
         else:
             return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(-2))))

@@ -36,7 +36,7 @@ def select_inducing_points(X, k):
         return select_inducing_points(X, k)
     return _k
 
-def init_lowrank_precision(dim):
+def init_lowrank_precision(dim, rank):
     """
     Initializes full gaussian kernel with random precision
 
@@ -49,13 +49,20 @@ def init_lowrank_precision(dim):
     full_L = np.random.uniform(-1,1,(dim,dim))
     P = full_L@np.transpose(full_L)
 
-    lowrank_L = tfp.math.pivoted_cholesky(P)
-    return tfp.math.fill_lowrank_triangular_inverse(lowrank_L)
+    lowrank_L = tfp.math.pivoted_cholesky(P, rank)
+    return fill_lowrank_triangular_inverse(lowrank_L)
 
-# TODO:
 def fill_lowrank_triangular(vect, dim):
+    """
+    """
+    length = len(vect)
+    if length % dim != 0:
+        raise ValueError("Dimension mismatch!")
     
-    pass
+    lowrank_matrix = vect.reshape(dim, int(len(vect) / dim))
+    return lowrank_matrix
 
 def fill_lowrank_triangular_inverse(L):
-    pass
+    """
+    """
+    return L.flatten()

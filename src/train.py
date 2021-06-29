@@ -37,7 +37,7 @@ def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counte
             save_results(model, step, params, counter, variances, likelihood_variances, mlls, l)
 
 
-def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter):
+def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter, rank):
     """
     Training different models and kernels, commands specified by a json-file. 
 
@@ -65,6 +65,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             kernel (string)             : kernel that was used 
             dataset (string)            : dataset that was used
             lassos (list)               : lasso coefficients
+            rank (int)                  : lower rank dimensions (if lowrank is used) 
             test_errors (dict)          : test errors
             train_errors (dict)         : train errors
             mll (dict)                  : marginal log likelihoods 
@@ -100,7 +101,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             variances[l][num_run] = []
 
             # Initializing kernel and model
-            kernel_kwargs = {"randomized": randomized, "dim": dim}
+            kernel_kwargs = {"randomized": randomized, "dim": dim, "rank": rank}
             _kernel = select_kernel(kernel, **kernel_kwargs)
             model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
             _model = select_model(model, **model_kwargs)
@@ -160,6 +161,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
     df["likelihood_variances"] = likelihood_variances
     df["variances"] = variances
     df["log_likelihoods"] = log_likelihoods
+    df["rank"] = rank
     return df 
 
 
