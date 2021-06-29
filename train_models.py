@@ -40,7 +40,7 @@ Running isntructions are given in a json file with the following syntax.
         split (float)     : test/train split (tells the size of the testset, between 0-1)
 
 
-See example json-file in "run_files/test.json". Results are automatically saved in "results/<name>.pkl".
+See example json-files in "run_files". Results are automatically saved in "results/<name>.pkl".
 Usage : python app.py -f <path to json>
 '''
 ap = argparse.ArgumentParser()
