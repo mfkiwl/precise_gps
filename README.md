@@ -7,7 +7,7 @@ The goal of this project is to try to exploit the full potential of the covarian
 Training  different models is possible by running the training script with a specified json-file containing the instructions
 
 ```
-python app.py -f <path to json file>
+python train_models.py -f <path to json file>
 ```
 
 Running the training script requires a `-f` or `--file` command since we have to provide a json-file which gives the instructions for the training (what model to use etc.). The json-file has the following format. 
