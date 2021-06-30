@@ -1,6 +1,5 @@
 from src.models.models import *
 from src.models.kernels import *
-import tensorflow as tf
 
 def save_results(model, step, params, counter, variances, likelihood_variances, mlls, l):
     """
@@ -14,7 +13,7 @@ def save_results(model, step, params, counter, variances, likelihood_variances, 
     else:
         value = model.maximum_log_likelihood_objective()
         
-    if type(model.kernel).__name__ == "FullGaussianKernel":
+    if type(model.kernel).__name__ == "FullGaussianKernel" or type(model.kernel).__name__ == "LowRankFullGaussianKernel":
         L = model.kernel.L.numpy()
         params[l][counter].append(list(L))
     else:

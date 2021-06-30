@@ -4,6 +4,10 @@ import tensorflow_probability as tfp
 from sklearn.decomposition import PCA
 from src.select import select_model, select_kernel
 
+# TODO : this need cleaning up
+# TODO :
+# TODO :
+
 
 def sub_kernel(kernel, dim1, dim2):
     """

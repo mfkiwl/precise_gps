@@ -6,6 +6,10 @@ import numpy as np
 import math 
 from src.visuals.process_results import average_frobenius, pca_to_params, transform_M, loss_landscape
 
+# TODO : this needs cleaning up
+# TODO :
+# TODO :
+
 COLORS = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:olive", "tab:cyan", "tab:pink"]
 
 class MidpointNormalize(colors.Normalize):

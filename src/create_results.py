@@ -9,6 +9,10 @@ from src.visuals.process_results import *
 
 plt.rcParams.update({'font.size': 14}) # Global fontsize
 
+# TODO: this needs cleaning up
+# TODO:
+# TODO:
+
 def create_results(dataset, directory, num_lassos, step = 1):
     """
     Create visualizations form the raw .pkl files. This function also forms some
