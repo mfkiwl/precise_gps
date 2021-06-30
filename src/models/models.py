@@ -11,8 +11,10 @@ def _lasso_penalty(model):
     elif type(model.kernel) == LowRankFullGaussianKernel:
         L = fill_lowrank_triangular(model.kernel.L)
         return model.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
-    else:
+    elif type(model.kernel) == ARD:
         return model.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(model.kernel.lengthscales**(2))))
+    else:
+        return model.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(model.kernel.lengthscales**(-2))))
 
 class GPRLasso(gpflow.models.GPR):
     """
@@ -27,22 +29,12 @@ class GPRLasso(gpflow.models.GPR):
         super(GPRLasso, self).__init__(data, kernel)
         self.lasso = lasso # lasso coefficient
     
-    def lasso_penalty(self):
-        if type(self.kernel) == FullGaussianKernel:
-            L = tfp.math.fill_triangular(self.kernel.L)
-            return self.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
-        elif type(self.kernel) == LowRankFullGaussianKernel:
-            L = fill_lowrank_triangular(self.kernel.L)
-            return self.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
-        else:
-            return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(2))))
-
     def maximum_log_likelihood_objective(self):
         """
         Overwrites the gpflow.models.GPR.maximum_likelihood_objective
         See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
-        return self.log_marginal_likelihood() - _lasso_penalty(self)#self.lasso_penalty()
+        return self.log_marginal_likelihood() - _lasso_penalty(self)
 
 class GPRHorseshoe(gpflow.models.GPR):
     """
@@ -59,8 +51,6 @@ class GPRHorseshoe(gpflow.models.GPR):
             L = tfp.math.fill_triangular(self.kernel.L)
             P = L@tf.transpose(L)
             return self.horseshoe*tf.math.log(tf.math.reduce_sum(tf.math.log(1 + 2*P**(-2))))
-        #else:
-        #    return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(-2))))
 
     def maximum_log_likelihood_objective(self):
         """
@@ -87,20 +77,13 @@ class SVILasso(gpflow.models.SVGP):
         super(SVILasso, self).__init__(kernel, gpflow.likelihoods.Gaussian(), new_X, num_data = N)
         self.lasso = lasso # lasso coefficient
         self.train_data = data
-    
-    def lasso_penalty(self):
-        if type(self.kernel) == FullGaussianKernel:
-            L = tfp.math.fill_triangular(self.kernel.L)
-            return self.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
-        else:
-            return self.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(self.kernel.lengthscales**(2))))
 
     def maximum_log_likelihood_objective(self, data):
         """
         Overwrites the gpflow.models.SVGP.maximum_likelihood_objective
         See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
-        return self.elbo(data) - _lasso_penalty(self)#self.lasso_penalty()
+        return self.elbo(data) - _lasso_penalty(self)
 
 class Standard_GPR(gpflow.models.GPR):
 

@@ -46,11 +46,12 @@ def create_results(dataset, directory, num_lassos, step = 1):
     train_errors = []
     test_errors = []
     all_lassos = []
+    precisions = []
+    all_precisions = []
     for key in df.keys():
         data = df[key]
         model = data["model"]
         kernel = data["kernel"]
-
         if "ARD" in kernel:
             kernel = "ARD"
         else:
@@ -67,6 +68,11 @@ def create_results(dataset, directory, num_lassos, step = 1):
         for l in lassos:
             mlls.append(data["mll"][l])
             mll_names.append(model + " " + kernel + " " + str(l))
+        
+        for l in data["lassos"]:
+            precisions.append(data["params"][l])
+        
+        all_precisions.append(precisions)
         log_liks.append(data["log_likelihoods"])
         train_errors.append(data["train_errors"])
         test_errors.append(data["test_errors"])
@@ -84,6 +90,7 @@ def create_results(dataset, directory, num_lassos, step = 1):
             precisions = []
             p_names = []
             for i in range(9):
+                # TODO params_to_precisions
                 if data["kernel"] == "FullGaussianKernel":
                     L = data["params"][l][i][-1]
                     L = tfp.math.fill_triangular(L)
@@ -106,6 +113,7 @@ def create_results(dataset, directory, num_lassos, step = 1):
         ret = pd.DataFrame(data=eigen_dataframe)
         for l in data["lassos"]:
             for i in range(10):
+                # TODO params_to_precisions
                 if data["kernel"] == "FullGaussianKernel":
                     L = data["params"][l][i][-1]
                     L = tfp.math.fill_triangular(L)

@@ -1,4 +1,6 @@
 import numpy as np
+import tensorflow as tf 
+import tensorflow_probability as tfp
 from sklearn.decomposition import PCA
 from src.select import select_model, select_kernel
 
@@ -83,3 +85,41 @@ def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_var
 def eigen(M):
     values, vectors = np.linalg.eig(M)
     return values, vectors
+
+def average_frobenius(kernels, num_runs): 
+    """
+    Returns the mean frobenius norm of a dictionary of kernels.
+
+    Args:
+        kernels (dict) : A dictionary of parameters
+        num_runs (int) : number of random iterations
+    
+    Returns:
+        mean of the norm (float)
+    """
+    norms = []
+    for i in range(num_runs): 
+        norms.append(tf.norm(kernels[i], 'fro'))
+    
+    return np.mean(norms)
+
+def params_to_precision(params, kernel):
+    """
+    Transform parameters (L or lengthscales) to precision matrix
+
+    Args:
+        params (tensor) : either L or lengthscales
+        kernl (string)  : name of the kernel
+    
+    Returns:
+        precision matrix
+    """
+
+    if kernel == "ARD":
+        P = tf.linalg.diag(params**(2))
+        return P 
+    
+    if kernel == "FullGaussianKernel":
+        L = tfp.math.fill_triangular(params)
+        P = L@tf.transpose(L)
+        return P

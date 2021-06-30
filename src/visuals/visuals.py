@@ -4,7 +4,7 @@ import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import math 
-from src.visuals.process_results import pca_to_params, transform_M, loss_landscape
+from src.visuals.process_results import average_frobenius, pca_to_params, transform_M, loss_landscape
 
 COLORS = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:olive", "tab:cyan", "tab:pink"]
 
@@ -153,13 +153,16 @@ def visualize_mlls(mlls, names, savefig = None):
     plt.show()
 
 
-def visualize_log_likelihood(log_liks, names, savefig = None):
+def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, savefig = None):
     """
     Visualizes log-likelihoods for different models for all lasso-coefficients used in optimization.
 
     Args:
-        log_liks (list) : dictionary of log_likelihoods (all lasso-coefficients included)
-        names (list)    : list of strings
+        log_liks (list)  : dictionary of log_likelihoods (all lasso-coefficients included)
+        names (list)     : list of strings
+        kernels (list)   : dictionary of parameters (all lasso-coefficients included)
+        num_runs (int)   : number of random initializations
+        fro (bool)       : whether log-likelihood is plotted against Frobenius norm
         savefig (string) : path in which figure is saved, if None -> not saving anywhere
     """
 
@@ -170,6 +173,8 @@ def visualize_log_likelihood(log_liks, names, savefig = None):
         for l in lassos:
             max_ll = np.argmax(log_lik[l])
             for jdx, ll in enumerate(log_lik[l]):
+                if fro:
+                    l = average_frobenius(kernels, num_runs)
                 if jdx == max_ll:
                     if counter == 0:
                       counter += 1
@@ -237,15 +242,13 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_
             minimum = np.min(a) 
         if np.min(b) < minimum:
             minimum = np.min(b)
-        #plt.plot(a,b, color = 'tab:red', alpha = 0.8)
     
 
     _range = np.linspace(minimum-0.1, maximum+0.1, 30)
-    # TODO : results["num_Z"]
     #ax = plt.gca()
     #divider = make_axes_locatable(ax)
     #cax = divider.append_axes("right", size="5%", pad=0.15)
-    ll = loss_landscape(model, kernel, lasso, 100, data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
+    ll = loss_landscape(model, kernel, lasso, results["num_Z"], data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
     im = plt.imshow(ll, extent=[minimum-0.1,maximum + 0.1,minimum -0.1,maximum + 0.1], origin='lower')
     #plt.colorbar(im, cax = cax)
     for i in range(num_runs):

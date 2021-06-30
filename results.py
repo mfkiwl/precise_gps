@@ -18,8 +18,6 @@ step = args["step"] # step number
 
 def main(dataset, directory, lassos, step):
     create_results(dataset, directory, lassos, step)
-    
-    
       
 if __name__ == "__main__":
     main(dataset, directory, lassos, step)
