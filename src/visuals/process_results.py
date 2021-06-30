@@ -91,6 +91,15 @@ def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_var
     return losses
 
 def eigen(M):
+    """
+    Calculate eigen values of a matrix
+
+    Args:
+        M (tensor) : matrix
+    
+    Returns:
+        eigen values and vectors
+    """
     values, vectors = np.linalg.eig(M)
     return values, vectors
 

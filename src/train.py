@@ -162,6 +162,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
     df["variances"] = variances
     df["log_likelihoods"] = log_likelihoods
     df["rank"] = rank
+    df["cols"] = data.cols 
     return df 
 
 

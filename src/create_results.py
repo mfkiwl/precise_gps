@@ -99,7 +99,7 @@ def create_results(dataset, directory, num_lassos, step = 1):
             for i in range(9):
                 P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
                 precisions.append(P)
-                p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +" TE: " + str(round(data["test_errors"][l][i],2)))
+                p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +" TE: " + str(round(data["test_errors"][l][i],2)) + "Var: " + str(round(data["variances"][l][i].numpy(),2)))
             data_instance = globals()[dataset](0.2)
             cols = data_instance.cols
             if not os.path.exists(result_path + "/kernels"):
@@ -115,11 +115,11 @@ def create_results(dataset, directory, num_lassos, step = 1):
         for l in data["lassos"]:
             for i in range(10):
                 P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
-                eigen_vals = eigen(P)
+                eigen_vals, _ = eigen(P)
                 ret[(l,i)] = list(eigen_vals)
         if not os.path.exists(result_path + "/eigen"):
             os.makedirs(result_path + "/eigen")
-        ret.to_csv(result_path + "/eigen/{}_{}".format(data["model"], data["kernel"]))
+        ret.to_csv(result_path + "/eigen/{}_{}.csv".format(data["model"], data["kernel"]))
 
 
 
