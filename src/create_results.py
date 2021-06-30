@@ -99,7 +99,7 @@ def create_results(dataset, directory, num_lassos, step = 1):
             for i in range(9):
                 P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
                 precisions.append(P)
-                p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +" TE: " + str(round(data["test_errors"][l][i],2)) + "Var: " + str(round(data["variances"][l][i].numpy(),2)))
+                p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +", TE: " + str(round(data["test_errors"][l][i],2)) + ", Var: " + str(np.round(data["variances"][l][i][-1],2)))
             data_instance = globals()[dataset](0.2)
             cols = data_instance.cols
             if not os.path.exists(result_path + "/kernels"):
@@ -131,5 +131,5 @@ def create_results(dataset, directory, num_lassos, step = 1):
         data = df[key]
         if data["kernel"] == "FullGaussianKernel":
             for l in data["lassos"]:
-                visualize_loss_landscape(data, data["model"], data["kernel"], data["data_train"], l, False,10, result_path + "/loss_landscape/" + "{}_{}_{}".format(data["model"], data["kernel"], l))
+                visualize_loss_landscape(data, data["model"], data["kernel"], data["data_train"], l, False,10, result_path + "/loss_landscape/" + "{}_{}_{}.pdf".format(data["model"], data["kernel"], l))
 

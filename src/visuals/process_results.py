@@ -41,7 +41,7 @@ def pca_to_params(list_of_params, gradient):
             M[idx] = param - last_element
     else:
         for idx, param in enumerate(list_of_params):
-            M[idx] = param 
+            M[idx] = param
             
     _pca = PCA(n_components = 2) # Choose number of components
     _pca.fit(M)
@@ -75,7 +75,7 @@ def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_var
     
     for idx_alpha, alpha in enumerate(alphas):
         for idx_beta, beta in enumerate(betas):
-            if kernel == "ARD" or "ARD_gpflow":
+            if kernel == "ARD" or kernel == "ARD_gpflow":
                 _model.kernel.lengthscales = center_params + alpha*directions[0] + beta*directions[1]
             else:
                 _model.kernel.L = center_params + alpha*directions[0] + beta*directions[1]

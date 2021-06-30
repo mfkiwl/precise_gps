@@ -1,4 +1,3 @@
-from src.visuals.plot_kwargs import DEFAULT_KWARGS
 import matplotlib.pyplot as plt 
 import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -10,7 +9,7 @@ from src.visuals.process_results import average_frobenius, pca_to_params, transf
 # TODO :
 # TODO :
 
-COLORS = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:olive", "tab:cyan", "tab:pink"]
+COLORS = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:olive", "tab:cyan", "tab:pink", "tab:brown", "tab:gray"]
 
 class MidpointNormalize(colors.Normalize):
     """
@@ -141,11 +140,16 @@ def visualize_mlls(mlls, names, savefig = None):
             if current > maximum:
                 maximum = current 
             
+            if "SVI" in names[idx]:
+                x_value = np.arange(len(log_lik[jdx]))*50
+            else:
+                x_value = np.arange(len(log_lik[jdx]))*5
+            
             if counter == 0:
                 counter += 1
-                plt.plot(log_lik[jdx], color = COLORS[idx], label = names[idx], alpha = 0.8)
+                plt.plot(x_value, log_lik[jdx], color = COLORS[idx], label = names[idx], alpha = 0.8)
             else:
-                plt.plot(log_lik[jdx], color = COLORS[idx], alpha = 0.8)
+                plt.plot(x_value, log_lik[jdx], color = COLORS[idx], alpha = 0.8)
     
     plt.grid(True)
     plt.ylim([maximum - 2*(maximum - minimum), maximum + int(1/4*(maximum - minimum))])
@@ -193,7 +197,10 @@ def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, sa
                     plt.plot(x_value, ll, '.', color = COLORS[idx], alpha = 0.2)
 
     plt.grid(True)
-    plt.xlabel("Lasso coefficient")
+    if fro:
+        plt.xlabel("Frobenius norm")
+    else:
+        plt.xlabel("Lasso coefficient")
     plt.ylabel("log-likelihood (test)")
     plt.legend(prop = {'size': 14})
     if savefig:
@@ -231,7 +238,10 @@ def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, 
                     plt.plot(x_value, e, '.', color = COLORS[idx], alpha = 0.2)
 
     plt.grid(True)
-    plt.xlabel("Lasso coefficient")
+    if fro:
+        plt.xlabel("Frobenius norm")
+    else:
+        plt.xlabel("Lasso coefficient")
     plt.ylabel(f"{error_type} error")
     plt.legend(prop = {'size': 14})
     if savefig:
@@ -266,16 +276,17 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_
 
     _range = np.linspace(minimum-0.1, maximum+0.1, 30)
     #ax = plt.gca()
+    # ADD: results["num_Z"]
     #divider = make_axes_locatable(ax)
     #cax = divider.append_axes("right", size="5%", pad=0.15)
-    ll = loss_landscape(model, kernel, lasso, results["num_Z"], data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
-    im = plt.imshow(ll, extent=[minimum-0.1,maximum + 0.1,minimum -0.1,maximum + 0.1], origin='lower')
+    ll = loss_landscape(model, kernel, lasso, 100, data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
+    im = plt.contourf(ll, extent=[minimum-0.1,maximum + 0.1,minimum -0.1,maximum + 0.1], origin='lower')
     #plt.colorbar(im, cax = cax)
     for i in range(num_runs):
         res, _, _, _ = pca_to_params(np.array(results["params"][lasso][i]), gradient)
         a, b = transform_M(pca1, res).T
-        plt.plot(a,b, color = COLORS[i], alpha = 0.5)
-        plt.plot(a[-1], b[-1],'.', color = COLORS[i], markersize = 20, alpha = 0.5)
+        plt.plot(a,b, color = COLORS[i % len(COLORS)], alpha = 0.7, linewidth = 2.5)
+        plt.plot(a[-1], b[-1],'.', color = COLORS[i % len(COLORS)], markersize = 20, alpha = 0.7)
     plt.xlabel(f"PCA component 1: {round(explained_variance[0]*100,2)}%")
     plt.ylabel(f"PCA component 2: {round(explained_variance[1]*100,2)}%")
     if savefig:
