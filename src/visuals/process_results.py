@@ -71,7 +71,11 @@ def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_var
     
     for idx_alpha, alpha in enumerate(alphas):
         for idx_beta, beta in enumerate(betas):
-            _model.kernel.L = center_params + alpha*directions[0] + beta*directions[1]
+            if kernel == "ARD" or "ARD_gpflow":
+                _model.kernel.lengthscales = center_params + alpha*directions[0] + beta*directions[1]
+            else:
+                _model.kernel.L = center_params + alpha*directions[0] + beta*directions[1]
+            
             _model.kernel.variance = center_var
             _model.likelihood.variance = center_logvar
             if model == "SVILasso":
@@ -99,7 +103,7 @@ def average_frobenius(kernels, num_runs):
     """
     norms = []
     for i in range(num_runs): 
-        norms.append(tf.norm(kernels[i], 'fro'))
+        norms.append(tf.norm(kernels[i], 'euclidean'))
     
     return np.mean(norms)
 
@@ -117,6 +121,10 @@ def params_to_precision(params, kernel):
 
     if kernel == "ARD":
         P = tf.linalg.diag(params**(2))
+        return P 
+    
+    if kernel == "ARD_gpflow":
+        P = tf.linalg.diag(params**(-2))
         return P 
     
     if kernel == "FullGaussianKernel":

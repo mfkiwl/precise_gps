@@ -170,19 +170,23 @@ def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, sa
     for idx, log_lik in enumerate(log_liks):
         lassos = log_lik.keys()
         counter = 0
-        for l in lassos:
+        for lasso_idx, l in enumerate(lassos):
             max_ll = np.argmax(log_lik[l])
+            if fro:
+                frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs)
             for jdx, ll in enumerate(log_lik[l]):
                 if fro:
-                    l = average_frobenius(kernels, num_runs)
+                    x_value = frobenius
+                else:
+                    x_value = l
                 if jdx == max_ll:
                     if counter == 0:
                       counter += 1
-                      plt.plot(l, ll, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                      plt.plot(x_value, ll, '.', color = COLORS[idx], markersize = 10, label = names[idx])
                     else:
-                      plt.plot(l, ll, '.', color = COLORS[idx], markersize = 10)
+                      plt.plot(x_value, ll, '.', color = COLORS[idx], markersize = 10)
                 else:
-                    plt.plot(l, ll, '.', color = COLORS[idx], alpha = 0.2)
+                    plt.plot(x_value, ll, '.', color = COLORS[idx], alpha = 0.2)
 
     plt.grid(True)
     plt.xlabel("Lasso coefficient")
@@ -192,23 +196,35 @@ def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, sa
         plt.savefig(savefig, bbox_inches='tight')
     plt.show()
 
-def visualize_errors(errors, names, error_type, savefig = None):
+def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, savefig = None):
+
+    """
+    kernels (list)   : dictionary of parameters (all lasso-coefficients included)
+    num_runs (int)   : number of random initializations
+    fro (bool)       : whether log-likelihood is plotted against Frobenius norm
+    """
 
     plt.figure(figsize = (10,6))
     for idx, model_errors in enumerate(errors):
         model_lassos = model_errors.keys()
         counter = 0
-        for l in model_lassos:
+        for lasso_idx, l in enumerate(model_lassos):
+            if fro:
+                frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs)
             min_e = np.argmin(model_errors[l])
             for jdx, e in enumerate(model_errors[l]):
+                if fro:
+                    x_value = frobenius
+                else:
+                    x_value = l
                 if jdx == min_e:
                     if counter == 0:
                         counter += 1
-                        plt.plot(l, e, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                        plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 10, label = names[idx])
                     else:
-                        plt.plot(l, e, '.', color = COLORS[idx], markersize = 10)
+                        plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 10)
                 else:
-                    plt.plot(l, e, '.', color = COLORS[idx], alpha = 0.2)
+                    plt.plot(x_value, e, '.', color = COLORS[idx], alpha = 0.2)
 
     plt.grid(True)
     plt.xlabel("Lasso coefficient")

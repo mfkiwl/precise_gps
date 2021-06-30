@@ -70,7 +70,10 @@ def create_results(dataset, directory, num_lassos, step = 1):
             mll_names.append(model + " " + kernel + " " + str(l))
         
         for l in data["lassos"]:
-            precisions.append(data["params"][l])
+            new_params = {}
+            for i in range(10):
+                new_params[i] = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
+            precisions.append(new_params) 
         
         all_precisions.append(precisions)
         log_liks.append(data["log_likelihoods"])
@@ -79,9 +82,9 @@ def create_results(dataset, directory, num_lassos, step = 1):
         all_lassos.append(data["lassos"])
     
     visualize_mlls(mlls, mll_names, result_path + "/mlls.pdf")
-    visualize_log_likelihood(log_liks, names, result_path + "/log_liks.pdf")
-    visualize_errors(train_errors,names,"train",result_path + "/train_errors.pdf")
-    visualize_errors(test_errors,names,"test",result_path + "/test_errors.pdf")
+    visualize_log_likelihood(log_liks, names, all_precisions, 10, True, result_path + "/log_liks.pdf")
+    visualize_errors(train_errors,names,"train", all_precisions, 10, True, result_path + "/train_errors.pdf")
+    visualize_errors(test_errors,names,"test", all_precisions, 10, True, result_path + "/test_errors.pdf")
 
     # Kernels
     for key in df.keys():
@@ -90,15 +93,9 @@ def create_results(dataset, directory, num_lassos, step = 1):
             precisions = []
             p_names = []
             for i in range(9):
-                # TODO params_to_precisions
-                if data["kernel"] == "FullGaussianKernel":
-                    L = data["params"][l][i][-1]
-                    L = tfp.math.fill_triangular(L)
-                    precisions.append(L @ tf.transpose(L))
-                    p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +" TE: " + str(round(data["test_errors"][l][i],2)))
-                else:
-                    precisions.append(tf.linalg.diag(np.array(data["params"][l][i][-1])**(-2)))
-                    p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +" TE: " + str(round(data["test_errors"][l][i],2)))
+                P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
+                precisions.append(P)
+                p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +" TE: " + str(round(data["test_errors"][l][i],2)))
             data_instance = globals()[dataset](0.2)
             cols = data_instance.cols
             if not os.path.exists(result_path + "/kernels"):
@@ -113,12 +110,9 @@ def create_results(dataset, directory, num_lassos, step = 1):
         ret = pd.DataFrame(data=eigen_dataframe)
         for l in data["lassos"]:
             for i in range(10):
-                # TODO params_to_precisions
-                if data["kernel"] == "FullGaussianKernel":
-                    L = data["params"][l][i][-1]
-                    L = tfp.math.fill_triangular(L)
-                    eigen_vals = eigen(L@tf.transpose(L))
-                    ret[(l,i)] = list(eigen_vals)
+                P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
+                eigen_vals = eigen(P)
+                ret[(l,i)] = list(eigen_vals)
         if not os.path.exists(result_path + "/eigen"):
             os.makedirs(result_path + "/eigen")
         ret.to_csv(result_path + "/eigen/{}_{}".format(data["model"], data["kernel"]))
