@@ -251,8 +251,8 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_
     for i in range(num_runs):
         res, _, _, _ = pca_to_params(np.array(results["params"][lasso][i]), gradient)
         a, b = transform_M(pca1, res).T
-        plt.plot(a,b, color = 'tab:red', alpha = 0.5)
-        plt.plot(a[-1], b[-1],'.', color = 'tab:red', markersize = 20)
+        plt.plot(a,b, color = COLORS[i], alpha = 0.5)
+        plt.plot(a[-1], b[-1],'.', color = COLORS[i], markersize = 20, alpha = 0.5)
     plt.xlabel(f"PCA component 1: {round(explained_variance[0]*100,2)}%")
     plt.ylabel(f"PCA component 2: {round(explained_variance[1]*100,2)}%")
     if savefig:

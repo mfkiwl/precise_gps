@@ -12,7 +12,7 @@ def _lasso_penalty(model):
         L = fill_lowrank_triangular(model.kernel.L)
         return model.lasso*tf.math.reduce_sum(tf.abs(L @ tf.transpose(L)))
     else:
-        return model.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(model.kernel.lengthscales**(-2))))
+        return model.lasso*tf.math.reduce_sum(tf.abs(tf.linalg.diag(model.kernel.lengthscales**(2))))
 
 class GPRLasso(gpflow.models.GPR):
     """
@@ -42,7 +42,7 @@ class GPRLasso(gpflow.models.GPR):
         Overwrites the gpflow.models.GPR.maximum_likelihood_objective
         See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
-        return self.log_marginal_likelihood() - self.lasso_penalty()
+        return self.log_marginal_likelihood() - _lasso_penalty(self)#self.lasso_penalty()
 
 class GPRHorseshoe(gpflow.models.GPR):
     """
@@ -100,7 +100,7 @@ class SVILasso(gpflow.models.SVGP):
         Overwrites the gpflow.models.SVGP.maximum_likelihood_objective
         See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
-        return self.elbo(data) - self.lasso_penalty()
+        return self.elbo(data) - _lasso_penalty(self)#self.lasso_penalty()
 
 class Standard_GPR(gpflow.models.GPR):
 
