@@ -3,6 +3,12 @@ from src.create_results import *
 
 '''
 Analyze results that are saved as .pkl files in results/raw.
+
+Args:
+    name (string)      : dataset name
+    directory (string) : directory name 
+    lassos (int)       : number of lassos for some plots (MLL)
+    step (int)         : steps between lassos (see above)
 '''
 ap = argparse.ArgumentParser()
 ap.add_argument("-n", "--name", required=True, help="Name of the dataset.")
