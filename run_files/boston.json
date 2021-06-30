@@ -35,7 +35,7 @@
         "model" : "SVILasso",
         "kernel": "FullGaussianKernel",
         "data": "Boston",
-        "lassos": [0,0.2,12],
+        "lassos": [0,0.2,2.2],
         "max_iter": 700,
         "num_runs": 10,
         "randomized": 1,
