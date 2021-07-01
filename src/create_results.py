@@ -57,87 +57,86 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0):
 
     
     #MLLS, log-likelihoods, and errors
-    # names = []
-    # mll_names_gpr = []
-    # mll_names_svi = []
-    # mlls_gpr = []
-    # mlls_svi = []
-    # log_liks = []
-    # train_errors = []
-    # test_errors = []
-    # all_lassos = []
-    # precisions = []
-    # all_precisions = []
-    # for key in df.keys():
-    #     data = df[key]
-    #     model = data["model"]
-    #     kernel = data["kernel"]
-    #     if "ARD" in kernel:
-    #         kernel = "ARD"
-    #     else:
-    #         kernel = "FULL"
+    names = []
+    mll_names_gpr = []
+    mll_names_svi = []
+    mlls_gpr = []
+    mlls_svi = []
+    log_liks = []
+    train_errors = []
+    test_errors = []
+    all_lassos = []
+    precisions = []
+    all_precisions = []
+    for key in df.keys():
+        data = df[key]
+        model = data["model"]
+        kernel = data["kernel"]
+        if "ARD" in kernel:
+            kernel = "ARD"
+        else:
+            kernel = "FULL"
         
-    #     if "GPR" in model:
-    #         model = "GPR"
-    #     else:
-    #         model = "SVI"
+        if "GPR" in model:
+            model = "GPR"
+        else:
+            model = "SVI"
 
-    #     names.append(model + " " + kernel)
-    #     lassos = data["lassos"][0::step]
-    #     lassos = lassos[0:min(len(lassos), num_lassos)]
-    #     for l in lassos:
-    #         if model == "SVI":
-    #             mlls_svi.append(data["mll"][l])
-    #             mll_names_svi.append(model + " " + kernel + " " + str(l))
-    #         else:
-    #             mlls_gpr.append(data["mll"][l])
-    #             mll_names_gpr.append(model + " " + kernel + " " + str(l))
+        names.append(model + " " + kernel)
+        lassos = data["lassos"][0::step]
+        lassos = lassos[0:min(len(lassos), num_lassos)]
+        for l in lassos:
+            if model == "SVI":
+                mlls_svi.append(data["mll"][l])
+                mll_names_svi.append(model + " " + kernel + " " + str(l))
+            else:
+                mlls_gpr.append(data["mll"][l])
+                mll_names_gpr.append(model + " " + kernel + " " + str(l))
 
         
-    #     for l in data["lassos"]:
-    #         new_params = {}
-    #         for i in range(10):
-    #             new_params[i] = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
-    #         precisions.append(new_params) 
+        for l in data["lassos"]:
+            new_params = {}
+            for i in range(10):
+                new_params[i] = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
+            precisions.append(new_params) 
         
-    #     all_precisions.append(precisions)
-    #     log_liks.append(data["log_likelihoods"])
-    #     train_errors.append(data["train_errors"])
-    #     test_errors.append(data["test_errors"])
-    #     all_lassos.append(data["lassos"])
+        all_precisions.append(precisions)
+        log_liks.append(data["log_likelihoods"])
+        train_errors.append(data["train_errors"])
+        test_errors.append(data["test_errors"])
+        all_lassos.append(data["lassos"])
     
-    # visualize_mlls(mlls_svi, mll_names_svi, plot_path + "/mlls_svi.pdf", show)
-    # visualize_mlls(mlls_gpr, mll_names_gpr, plot_path + "/mlls_gpr.pdf", show)
-    # visualize_log_likelihood(log_liks, names, all_precisions, 10, True, plot_path + "/log_liks_fro.pdf", show)
-    # visualize_errors(train_errors,names,"train", all_precisions, 10, True, plot_path + "/train_errors_fro.pdf", show)
-    # visualize_errors(test_errors,names,"test", all_precisions, 10, True, plot_path + "/test_errors_fro.pdf", show)
+    visualize_mlls(mlls_svi, mll_names_svi, plot_path + "/mlls_svi.pdf", show)
+    visualize_mlls(mlls_gpr, mll_names_gpr, plot_path + "/mlls_gpr.pdf", show)
+    visualize_log_likelihood(log_liks, names, all_precisions, 10, True, plot_path + "/log_liks_fro.pdf", show)
+    visualize_errors(train_errors,names,"train", all_precisions, 10, True, plot_path + "/train_errors_fro.pdf", show)
+    visualize_errors(test_errors,names,"test", all_precisions, 10, True, plot_path + "/test_errors_fro.pdf", show)
 
-    # visualize_log_likelihood(log_liks, names, all_precisions, 10, False, plot_path + "/log_liks.pdf", show)
-    # visualize_errors(train_errors,names,"train", all_precisions, 10, False, plot_path + "/train_errors.pdf", show)
-    # visualize_errors(test_errors,names,"test", all_precisions, 10, False, plot_path + "/test_errors.pdf", show)
+    visualize_log_likelihood(log_liks, names, all_precisions, 10, False, plot_path + "/log_liks.pdf", show)
+    visualize_errors(train_errors,names,"train", all_precisions, 10, False, plot_path + "/train_errors.pdf", show)
+    visualize_errors(test_errors,names,"test", all_precisions, 10, False, plot_path + "/test_errors.pdf", show)
 
-    # # Kernels
-    # for key in df.keys():
-    #     data = df[key]
-    #     for l in data["lassos"]:
-    #         precisions = []
-    #         p_names = []
-    #         for i in range(9):
-    #             P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
-    #             precisions.append(P)
-    #             p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +", TE: " + str(round(data["test_errors"][l][i],2)) + ", Var: " + str(np.round(data["variances"][l][i][-1],2)))
-    #         data_instance = globals()[dataset](0.2)
-    #         cols = data_instance.cols
-    #         if not os.path.exists(plot_path + "/kernels"):
-    #             os.makedirs(plot_path + "/kernels")
+    # Kernels
+    for key in df.keys():
+        data = df[key]
+        for l in data["lassos"]:
+            precisions = []
+            p_names = []
+            for i in range(9):
+                P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
+                precisions.append(P)
+                p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +", TE: " + str(round(data["test_errors"][l][i],2)) + ", Var: " + str(np.round(data["variances"][l][i][-1],2)))
+            data_instance = globals()[dataset](0.2)
+            cols = data_instance.cols
+            if not os.path.exists(plot_path + "/kernels"):
+                os.makedirs(plot_path + "/kernels")
 
-    #         show_kernels(precisions,p_names,cols,"global",-1,plot_path + "/kernels" + "/" + data["model"] + data["kernel"] + str(round(l,1)) + ".pdf", show)
+            show_kernels(precisions,p_names,cols,"global",-1,plot_path + "/kernels" + "/" + data["model"] + data["kernel"] + str(round(l,1)) + ".pdf", show)
 
     new_names = []
     new_log_liks = []
     new_train_errors = []
     new_test_errors = []
-    print("Len:", len(df))
     for key in df.keys():
         data = df[key]
         model = data["model"]
