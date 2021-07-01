@@ -2,6 +2,18 @@ import latextable as ltx
 import numpy as np 
 
 def save_eigen_table(data, name, dim, path):
+    """
+    Save eigenvalues of precision matrix into a latex table.
+
+    Args:
+        data (list)   : each index is a list of eigenvalues of a specific iteration
+        name (string) : name of the model
+        dim (int)     : number of eigenvalues
+        path (string) : results saved
+    
+    Returns:
+        tex-file that is saved into path
+    """
     table = ltx.Texttable()
     table.set_cols_align(["c"]*(dim+1))
     rows = [['Iter'] + [str(i) for i in range(dim)]]
@@ -15,6 +27,19 @@ def save_eigen_table(data, name, dim, path):
         file.write(ltx.draw_latex(table, caption=f"{name}"))
 
 def save_results_table(log_liks, train_errors, test_errors, names, path):
+    """
+    Save results of different models to a tex-file as a table.
+
+    Args:
+        log_liks (list)     : log likelihoods for different models (each index is a list)
+        train_errors (list) : train errors for different models (each index is a list)
+        test_errors (list)  : test errors for different models (each index is a list)
+        names (list)        : names of different models 
+        path (string)       : results saved
+    
+    Returns:
+        tex-file that is saved into path
+    """
     table = ltx.Texttable()
     table.set_cols_align(["c"]*7)
     rows = [["Model", "ll (mean)", "Best ll", "mrmse (train)", "best rmse (train)", "mrmse (test)", "best rmse (test)"]]
