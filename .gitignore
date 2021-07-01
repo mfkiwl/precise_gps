@@ -52,6 +52,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 *.out
+*.pkl
 
 # Translations
 *.mo
