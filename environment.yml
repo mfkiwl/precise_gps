@@ -12,3 +12,4 @@ dependencies :
     - scikit-learn == 0.22.2.post1
     - scipy == 1.4.1 
     - xlrd == 1.1.0
+    - latextable == 0.1.1

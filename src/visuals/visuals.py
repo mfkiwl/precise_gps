@@ -24,7 +24,7 @@ class MidpointNormalize(colors.Normalize):
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y), np.isnan(value))
 
-def show_kernel(kernel, title, cols, aspect = "minmax", show_nums = -1, savefig = None):
+def show_kernel(kernel, title, cols, aspect = "minmax", show_nums = -1, savefig = None, show = 0):
     """
     Visualizes the kernel with colors.
 
@@ -65,9 +65,12 @@ def show_kernel(kernel, title, cols, aspect = "minmax", show_nums = -1, savefig 
     plt.colorbar(im, cax=cax)
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
-def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig = None):
+def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig = None, show = 0):
     """
     Visualizes a list of kernel with colors.
 
@@ -114,9 +117,12 @@ def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig 
         fig.colorbar(pcm, cax=cax)
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
-def visualize_mlls(mlls, names, savefig = None):
+def visualize_mlls(mlls, names, savefig = None, show = 0):
     """
     Visualizes marginal log likelihood through iterations for different models.
 
@@ -158,10 +164,13 @@ def visualize_mlls(mlls, names, savefig = None):
     plt.legend(prop = {'size': 14})
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()    
 
 
-def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, savefig = None):
+def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, savefig = None, show = 0):
     """
     Visualizes log-likelihoods for different models for all lasso-coefficients used in optimization.
 
@@ -178,6 +187,8 @@ def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, sa
     for idx, log_lik in enumerate(log_liks):
         lassos = log_lik.keys()
         counter = 0
+        log_liks_as_list = np.array([ll for ll in log_lik.values()])
+        max_ll_model = np.unravel_index(np.argmax(log_liks_as_list, axis=None), log_liks_as_list.shape)
         for lasso_idx, l in enumerate(lassos):
             max_ll = np.argmax(log_lik[l])
             if fro:
@@ -185,29 +196,40 @@ def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, sa
             for jdx, ll in enumerate(log_lik[l]):
                 if fro:
                     x_value = frobenius
+                    if (lasso_idx, jdx) == max_ll_model:
+                        plt.plot(x_value, ll, '.', color = COLORS[idx], markersize = 15, label = names[idx])
+                        plt.text(x_value+0.15, ll, round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
+                    else:
+                        plt.plot(x_value, ll, '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
                 else:
                     x_value = l
-                if jdx == max_ll:
-                    if counter == 0:
-                      counter += 1
-                      plt.plot(x_value, ll, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                    if jdx == max_ll:
+                        if counter == 0:
+                            counter += 1
+                            plt.plot(x_value, ll, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                        else:
+                            plt.plot(x_value, ll, '.', color = COLORS[idx], markersize = 10)
                     else:
-                      plt.plot(x_value, ll, '.', color = COLORS[idx], markersize = 10)
-                else:
-                    plt.plot(x_value, ll, '.', color = COLORS[idx], alpha = 0.2)
+                        plt.plot(x_value, ll, '.', color = COLORS[idx], alpha = 0.2)
 
     plt.grid(True)
     if fro:
         plt.xlabel("Frobenius norm")
+        leg = plt.legend(prop = {'size': 14})
+        for lh in leg.legendHandles: 
+            lh.set_alpha(1)
     else:
         plt.xlabel("Lasso coefficient")
+        plt.legend(prop = {'size': 14})
     plt.ylabel("log-likelihood (test)")
-    plt.legend(prop = {'size': 14})
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
-def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, savefig = None):
+def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, savefig = None, show = 0):
 
     """
     kernels (list)   : dictionary of parameters (all lasso-coefficients included)
@@ -219,6 +241,8 @@ def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, 
     for idx, model_errors in enumerate(errors):
         model_lassos = model_errors.keys()
         counter = 0
+        errors_as_list = np.array([er for er in model_errors.values()])
+        min_e_model = np.unravel_index(np.argmin(errors_as_list, axis=None), errors_as_list.shape)
         for lasso_idx, l in enumerate(model_lassos):
             if fro:
                 frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs)
@@ -226,16 +250,21 @@ def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, 
             for jdx, e in enumerate(model_errors[l]):
                 if fro:
                     x_value = frobenius
+                    if (lasso_idx, jdx) == min_e_model:
+                        plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 15, label = names[idx])
+                        plt.text(x_value+0.15, e, round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
+                    else:
+                        plt.plot(x_value, e, '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
                 else:
                     x_value = l
-                if jdx == min_e:
-                    if counter == 0:
-                        counter += 1
-                        plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                    if jdx == min_e:
+                        if counter == 0:
+                            counter += 1
+                            plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                        else:
+                            plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 10)
                     else:
-                        plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 10)
-                else:
-                    plt.plot(x_value, e, '.', color = COLORS[idx], alpha = 0.2)
+                        plt.plot(x_value, e, '.', color = COLORS[idx], alpha = 0.2)
 
     plt.grid(True)
     if fro:
@@ -246,9 +275,12 @@ def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, 
     plt.legend(prop = {'size': 14})
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
-def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_runs, savefig = None):
+def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_runs, savefig = None, show = 0):
     """
     Visualize the loss landscape of the parameters using pca.
 
@@ -274,14 +306,9 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_
             minimum = np.min(b)
     
 
-    _range = np.linspace(minimum-0.1, maximum+0.1, 30)
-    #ax = plt.gca()
-    # ADD: results["num_Z"]
-    #divider = make_axes_locatable(ax)
-    #cax = divider.append_axes("right", size="5%", pad=0.15)
-    ll = loss_landscape(model, kernel, lasso, 100, data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
-    im = plt.contourf(ll, extent=[minimum-0.1,maximum + 0.1,minimum -0.1,maximum + 0.1], origin='lower')
-    #plt.colorbar(im, cax = cax)
+    _range = np.linspace(minimum-1, maximum+1, 25)
+    ll = loss_landscape(model, kernel, lasso, results["num_Z"], data, results["params"][lasso][0], results["variances"][lasso][0], results["likelihood_variances"][lasso][0], comp1, _range,_range)
+    im = plt.contourf(ll, extent=[minimum-1,maximum+1,minimum-1,maximum+1], origin='lower')
     for i in range(num_runs):
         res, _, _, _ = pca_to_params(np.array(results["params"][lasso][i]), gradient)
         a, b = transform_M(pca1, res).T
@@ -291,5 +318,8 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_
     plt.ylabel(f"PCA component 2: {round(explained_variance[1]*100,2)}%")
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
