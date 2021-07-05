@@ -163,6 +163,7 @@ class LowRankFullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
 
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
         self.L = gpflow.Parameter(L)
+        self.rank = rank
 
     def K_diag(self, X) -> tf.Tensor:
         """
