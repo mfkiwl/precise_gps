@@ -68,7 +68,7 @@ def fill_lowrank_triangular(vect, dim) -> tf.Tensor:
     if length % dim != 0:
         raise ValueError("Dimension mismatch!")
     
-    lowrank_matrix = vect.reshape(dim, int(len(vect) / dim))
+    lowrank_matrix = tf.reshape(vect,[dim, int(len(vect) / dim)])
     return lowrank_matrix
 
 def fill_lowrank_triangular_inverse(L) -> tf.Tensor:
