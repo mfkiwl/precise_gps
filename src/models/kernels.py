@@ -181,7 +181,7 @@ class LowRankFullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
         if X2 is None:
             X2 = X1
         
-        L = fill_lowrank_triangular(self.L) # matrix representation of L
+        L = fill_lowrank_triangular(self.L, self.rank) # matrix representation of L
 
         A = X1 @ L
         B = X2 @ L 
@@ -196,5 +196,5 @@ class LowRankFullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
         return K
     
     def precision(self) -> tf.Tensor:
-        L = fill_lowrank_triangular(self.L)
+        L = fill_lowrank_triangular(self.L, self.rank)
         return L@tf.transpose(L)
