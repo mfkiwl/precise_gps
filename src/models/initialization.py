@@ -81,4 +81,4 @@ def fill_lowrank_triangular_inverse(L) -> tf.Tensor:
     Returns:
         M in vector format 
     """
-    return L.flatten()
+    return tf.reshape(L, -1)
