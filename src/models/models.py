@@ -31,7 +31,7 @@ class GPRPenalty(gpflow.models.GPR):
         Overwrites the gpflow.models.GPR.maximum_likelihood_objective
         See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
-        return super().log_marginal_likelihood() - getattr(Penalty(), self.penalty)
+        return super().log_marginal_likelihood() - getattr(Penalty(), self.penalty)(self)
 
 class SVIPenalty(gpflow.models.SVGP):
     """
@@ -62,7 +62,7 @@ class SVIPenalty(gpflow.models.SVGP):
         Overwrites the gpflow.models.SVGP.maximum_likelihood_objective
         See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
-        return super().elbo(data) - getattr(Penalty(), self.penalty)
+        return super().elbo(data) - getattr(Penalty(), self.penalty)(self)
 
 class Standard_GPR(gpflow.models.GPR):
 
