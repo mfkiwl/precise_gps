@@ -65,11 +65,11 @@ def select_dataset(dataset, split):
     """
     if dataset not in _possible_datasets:
         dataset = _possible_models[0]
-        print(f"Changed to model {dataset}.")
+        print(f"Changed to dataset {dataset}.")
     else:
-        print(f"Using model {dataset}.")
+        print(f"Using dataset {dataset}.")
 
     module = importlib.import_module("src.datasets.datasets")
     dataset_instance = getattr(module, dataset)(split)
 
-    return dataset_instance     
+    return dataset_instance   

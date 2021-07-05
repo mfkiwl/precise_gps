@@ -16,7 +16,7 @@ def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counte
     Utility function running the Adam optimizer
 
     Args:
-        see function train() 
+        see function train()
     """
     # Create an Adam Optimizer action
     if minibatch_size == -1:
@@ -37,7 +37,7 @@ def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counte
             save_results(model, step, params, counter, variances, likelihood_variances, mlls, l)
 
 
-def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter, rank):
+def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, minibatch_size, batch_iter, rank, penalty, n, V) -> dict:
     """
     Training different models and kernels, commands specified by a json-file. 
 
@@ -53,9 +53,13 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
         num_Z (int)                  : number of inducing points
         minibatch_size (int)         : SVI minibatch size
         batch_iter (int)             : number of iterations for Adam
+        rank (int)                   : rank of the precision matrix
+        penalty (string)             : name of the penalty used (src.models.penalty)
+        n (int)                      : wishart degrees of freedom
+        V (list)                     : wishart process V matrix
     
     Returns:
-        Saves a dictionary into "results/<instance name>.pkl where <instance name> is specified in the
+        Saves a dictionary into "results/raw/<instance name>.pkl where <instance name> is specified in the
         json-file. The saved dictionary has the following keys
         
         dictionary (each key has structure dict[<lasso>][<num_runs>] if key is dictionary): 
@@ -102,6 +106,11 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
 
             # Initializing kernel and model
             kernel_kwargs = {"randomized": randomized, "dim": dim, "rank": rank}
+            if n is not None:
+                kernel_kwargs["n"] = n
+            if V is not None:
+                kernel_kwargs["V"] = V
+            
             _kernel = select_kernel(kernel, **kernel_kwargs)
             model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
             _model = select_model(model, **model_kwargs)
@@ -111,7 +120,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
                 if step % 5 == 0:
                     save_results(_model, step, params, num_run, variances, likelihood_variances, mlls, l)
             
-            if type(_model) == SVILasso:
+            if type(_model) == SVIPenalty:
                 train_dataset = tf.data.Dataset.from_tensor_slices((data.train_X, data.train_y)).repeat().shuffle(len(data.train_y))
                 run_adam(_model,batch_iter,train_dataset,minibatch_size,params,l,num_run,variances,likelihood_variances,mlls, len(data.train_y))
             else:
@@ -129,17 +138,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
             test_errors[l].append(rms_test)
             train_errors[l].append(rms_train)
 
-            log_lik = tf.math.reduce_sum(_model.predict_log_density(data = (data.test_X, data.test_y)))
+            log_lik = 1/len(data.test_y)*tf.math.reduce_sum(_model.predict_log_density(data = (data.test_X, data.test_y)))
             log_likelihoods[l].append(log_lik)
-
-            if show:
-                if kernel == "FullGaussianKernel":
-                    L = _model.kernel.L
-                    L = tfp.math.fill_triangular(L)
-                    show_kernel(L @ tf.transpose(L), "Optimized precision matrix P", data.cols, "", "center", 1)
-                else:
-                    P = tf.linalg.diag(_model.kernel.lengthscales**(-2))
-                    show_kernel(P, "Optimized precision matrix P", data.cols, "", "center", 1)
 
         current_mean = np.mean(test_errors[l])
         train_mean = np.mean(train_errors[l])
@@ -163,6 +163,5 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, show, num
     df["log_likelihoods"] = log_likelihoods
     df["rank"] = rank
     df["cols"] = data.cols 
-    return df 
-
+    return df  
 

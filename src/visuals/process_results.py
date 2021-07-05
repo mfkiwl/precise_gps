@@ -4,11 +4,6 @@ import tensorflow_probability as tfp
 from sklearn.decomposition import PCA
 from src.select import select_model, select_kernel
 
-# TODO : this need cleaning up
-# TODO :
-# TODO :
-
-
 def sub_kernel(kernel, dim1, dim2):
     """
     Constructs a sub-kernel of a kernel.
@@ -82,7 +77,7 @@ def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_var
             
             _model.kernel.variance = center_var
             _model.likelihood.variance = center_logvar
-            if model == "SVILasso":
+            if model == "SVIPenalty":
                 loss = -_model.maximum_log_likelihood_objective(data)
             else:
                 loss = -_model.maximum_log_likelihood_objective()
@@ -120,7 +115,7 @@ def average_frobenius(kernels, num_runs):
     
     return np.mean(norms)
 
-def params_to_precision(params, kernel):
+def params_to_precision(kernel):
     """
     Transform parameters (L or lengthscales) to precision matrix
 
@@ -132,15 +127,4 @@ def params_to_precision(params, kernel):
         precision matrix
     """
 
-    if kernel == "ARD":
-        P = tf.linalg.diag(params**(2))
-        return P 
-    
-    if kernel == "ARD_gpflow":
-        P = tf.linalg.diag(params**(-2))
-        return P 
-    
-    if kernel == "FullGaussianKernel":
-        L = tfp.math.fill_triangular(params)
-        P = L@tf.transpose(L)
-        return P
+    return kernel.precision()

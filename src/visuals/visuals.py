@@ -6,12 +6,10 @@ import math
 from src.visuals.process_results import average_frobenius, pca_to_params, transform_M, loss_landscape
 
 # TODO : this needs cleaning up
-# TODO :
-# TODO :
-
 COLORS = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:olive", "tab:cyan", "tab:pink", "tab:brown", "tab:gray"]
 
 class MidpointNormalize(colors.Normalize):
+    
     """
     Normalise the colorbar so that diverging bars work there way either side from a prescribed midpoint value)
     e.g. im=ax1.imshow(array, norm=MidpointNormalize(midpoint=0.,vmin=-100, vmax=100))
@@ -37,6 +35,7 @@ def show_kernel(kernel, title, cols, aspect = "minmax", show_nums = -1, savefig 
         show_nums (int)      : -1 -> dont show numeric values of the kernel
                                 > -1 -> show values of the kernel
         save_fig (string)    : path in which the figure is saved
+        show (bool)          : wheter figure is shown or just closed
     
     Returns:
         Shows the figure and saves it to the specified path if <savefig not None>.
@@ -83,6 +82,7 @@ def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig 
         show_nums (int)                : -1 -> dont show numeric values of the kernel
                                          > -1 -> show values of the kernel
         savefig (string)               : path in which the figure is saved
+        show (bool)                    : wheter figure is shown or just closed
     
     Returns:
         Shows the figure and saves it to the specified path if <save_fig == True>.
@@ -130,6 +130,7 @@ def visualize_mlls(mlls, names, savefig = None, show = 0):
         mlls (list)      : dictionary of different runs for specific model and lasso
         names (list)     : list of strings
         savefig (string) : path in which figure is saved, if None -> not saving anywhere
+        show (bool)      : wheter figure is shown or just closed
     """
 
     minimum = np.inf
@@ -169,7 +170,6 @@ def visualize_mlls(mlls, names, savefig = None, show = 0):
     else:
         plt.close()    
 
-
 def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, savefig = None, show = 0):
     """
     Visualizes log-likelihoods for different models for all lasso-coefficients used in optimization.
@@ -181,6 +181,7 @@ def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, sa
         num_runs (int)   : number of random initializations
         fro (bool)       : whether log-likelihood is plotted against Frobenius norm
         savefig (string) : path in which figure is saved, if None -> not saving anywhere
+        show (bool)      : wheter figure is shown or just closed
     """
 
     plt.figure(figsize = (10,6))
@@ -229,12 +230,64 @@ def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, sa
     else:
         plt.close()
 
+def visualize_log_likelihood_mean(log_liks, names, kernels, num_runs, fro = False, savefig = None, show = 0):
+    """
+    Visualizes log-likelihoods for different models for all lasso-coefficients used in optimization.
+
+    Args:
+        log_liks (list)  : dictionary of log_likelihoods (all lasso-coefficients included)
+        names (list)     : list of strings
+        kernels (list)   : dictionary of parameters (all lasso-coefficients included)
+        num_runs (int)   : number of random initializations
+        fro (bool)       : whether log-likelihood is plotted against Frobenius norm
+        savefig (string) : path in which figure is saved, if None -> not saving anywhere
+        show (bool)      : wheter figure is shown or just closed
+    """
+
+    plt.figure(figsize = (10,6))
+    for idx, log_lik in enumerate(log_liks):
+        lassos = log_lik.keys()
+        log_liks_as_list = np.array([ll for ll in log_lik.values()])
+        mean_ll = np.mean(log_liks_as_list, axis = 1)
+        max_ll_model = np.argmax(mean_ll)
+        for lasso_idx, l in enumerate(lassos):
+            frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs)
+            x_value = frobenius
+            if lasso_idx == max_ll_model:
+                plt.plot(x_value, mean_ll[lasso_idx], '.', color = COLORS[idx], markersize = 15, label = names[idx])
+                plt.text(x_value+0.15, mean_ll[lasso_idx], round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
+            else:
+                plt.plot(x_value, mean_ll[lasso_idx], '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
+
+
+    plt.grid(True)
+    if fro:
+        plt.xlabel("Frobenius norm")
+        leg = plt.legend(prop = {'size': 14})
+        for lh in leg.legendHandles: 
+            lh.set_alpha(1)
+    else:
+        plt.xlabel("Lasso coefficient")
+        plt.legend(prop = {'size': 14})
+    plt.ylabel("log-likelihood (test)")
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight')
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
 def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, savefig = None, show = 0):
 
     """
-    kernels (list)   : dictionary of parameters (all lasso-coefficients included)
-    num_runs (int)   : number of random initializations
-    fro (bool)       : whether log-likelihood is plotted against Frobenius norm
+    errors (list)       : dictionary of errors (all lasso-coefficients included)
+    names (list)        : list of strings
+    error_type (string) : train/test 
+    kernels (list)      : dictionary of parameters (all lasso-coefficients included)
+    num_runs (int)      : number of random initializations
+    fro (bool)          : whether log-likelihood is plotted against Frobenius norm
+    savefig (string)    : path in which figure is saved, if None -> not saving anywhere
+    show (bool)      : wheter figure is shown or just closed
     """
 
     plt.figure(figsize = (10,6))
@@ -280,13 +333,63 @@ def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, 
     else:
         plt.close()
 
+def visualize_errors_mean(errors, names, error_type, kernels, num_runs, fro = False, savefig = None, show = 0):
+
+    """
+    errors (list)       : dictionary of errors (all lasso-coefficients included)
+    names (list)        : list of strings
+    error_type (string) : train/test 
+    kernels (list)      : dictionary of parameters (all lasso-coefficients included)
+    num_runs (int)      : number of random initializations
+    fro (bool)          : whether log-likelihood is plotted against Frobenius norm
+    savefig (string)    : path in which figure is saved, if None -> not saving anywhere
+    show (bool)         : wheter figure is shown or just closed
+    """
+
+    plt.figure(figsize = (10,6))
+    for idx, model_errors in enumerate(errors):
+        model_lassos = model_errors.keys()
+        counter = 0
+        errors_as_list = np.array([er for er in model_errors.values()])
+        mean_errors = np.mean(errors_as_list, axis = 1)
+        min_e_model = np.argmin(mean_errors)
+        for lasso_idx, l in enumerate(model_lassos):
+            frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs)
+            x_value = frobenius
+            if lasso_idx == min_e_model:
+                plt.plot(x_value, mean_errors[lasso_idx], '.', color = COLORS[idx], markersize = 15, label = names[idx])
+                plt.text(x_value+0.15, mean_errors[lasso_idx], round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
+            else:
+                plt.plot(x_value, mean_errors[lasso_idx], '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
+
+    plt.grid(True)
+    if fro:
+        plt.xlabel("Frobenius norm")
+    else:
+        plt.xlabel("Lasso coefficient")
+    plt.ylabel(f"{error_type} error")
+    plt.legend(prop = {'size': 14})
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight')
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
 def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_runs, savefig = None, show = 0):
     """
     Visualize the loss landscape of the parameters using pca.
 
     Args:
-        params (list)   : parameters through iteration steps
-        gradient (bool) : wheter pca is calculated for gradient of parameters or just parameters
+        results (dict)   : whole dictionary after optimization (df)
+        model (string)   : possible models in src.models.models
+        kernel (string)  : possible kernels in src.models.kernels
+        data (tuple)     : training data used during optimization
+        lasso (float)    : lasso coefficient
+        gradient (bool)  : wheter pca is calculated for gradient of parameters or just parameters
+        num_runs (int)   : number of random initializations
+        savefig (string) : path in which figure is saved, if None -> not saving anywhere
+        show (bool)      : wheter figure is shown or just closed
     """
     _, comp1, explained_variance, pca1 = pca_to_params(np.array(results["params"][lasso][0]), gradient)
     
@@ -322,4 +425,3 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_
         plt.show()
     else:
         plt.close()
-

@@ -13,7 +13,7 @@ def save_results(model, step, params, counter, variances, likelihood_variances, 
     else:
         value = model.maximum_log_likelihood_objective()
         
-    if type(model.kernel).__name__ == "FullGaussianKernel" or type(model.kernel).__name__ == "LowRankFullGaussianKernel":
+    if type(model.kernel).__name__ in ["FullGaussianKernel", "LowRankFullGaussianKernel"]: 
         L = model.kernel.L.numpy()
         params[l][counter].append(list(L))
     else:

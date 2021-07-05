@@ -10,11 +10,7 @@ from src.tex.create_tables import *
 
 plt.rcParams.update({'font.size': 14}) # Global fontsize
 
-# TODO: this needs cleaning up
-# TODO:
-# TODO:
-
-def create_results(dataset, directory, num_lassos, step = 1, show = 0):
+def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_landscape = 0):
     """
     Create visualizations form the raw .pkl files. This function also forms some
     dataframes. 
@@ -24,6 +20,7 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0):
         directory (string) : dataset directory for analysis
         num_lassos (int)   : number of lasso coefficients (used for some visualizations)
         step (int)         : step between the lasso coefficients
+        show (bool)        : wheter figures are shown during running the program 
     
     Returns:
         Saves visualizations and dataframes to results/processed
@@ -57,21 +54,17 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0):
 
     
     #MLLS, log-likelihoods, and errors
-    names = []
-    mll_names_gpr = []
-    mll_names_svi = []
-    mlls_gpr = []
-    mlls_svi = []
-    log_liks = []
-    train_errors = []
-    test_errors = []
-    all_lassos = []
-    precisions = []
-    all_precisions = []
+    names, mll_names_gpr, mll_names_svi = [], [], []
+    mlls_gpr, mlls_svi = [], []
+    log_liks, train_errors, test_errors = [], [], []
+    all_lassos, precisions, all_precisions = [], [], []
+
     for key in df.keys():
         data = df[key]
         model = data["model"]
         kernel = data["kernel"]
+
+        #  Simplify model and kernel names 
         if "ARD" in kernel:
             kernel = "ARD"
         else:
@@ -109,8 +102,11 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0):
     visualize_mlls(mlls_svi, mll_names_svi, plot_path + "/mlls_svi.pdf", show)
     visualize_mlls(mlls_gpr, mll_names_gpr, plot_path + "/mlls_gpr.pdf", show)
     visualize_log_likelihood(log_liks, names, all_precisions, 10, True, plot_path + "/log_liks_fro.pdf", show)
+    visualize_log_likelihood_mean(log_liks, names, all_precisions, 10, True, plot_path + "/log_liks_fro_mean.pdf", show)
     visualize_errors(train_errors,names,"train", all_precisions, 10, True, plot_path + "/train_errors_fro.pdf", show)
     visualize_errors(test_errors,names,"test", all_precisions, 10, True, plot_path + "/test_errors_fro.pdf", show)
+    visualize_errors_mean(train_errors,names,"train", all_precisions, 10, True, plot_path + "/train_errors_fro_mean.pdf", show)
+    visualize_errors_mean(test_errors,names,"test", all_precisions, 10, True, plot_path + "/test_errors_fro_mean.pdf", show)
 
     visualize_log_likelihood(log_liks, names, all_precisions, 10, False, plot_path + "/log_liks.pdf", show)
     visualize_errors(train_errors,names,"train", all_precisions, 10, False, plot_path + "/train_errors.pdf", show)
@@ -151,14 +147,22 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0):
         else:
             model = "SVI"
 
-        lassos = data["lassos"][0::step]
-        lassos = lassos[0:min(len(lassos), num_lassos)]
+        lassos = data["lassos"]
+        best_test_error_mean = np.inf
         for l in lassos:
-            new_names.append(model + kernel + str(round(l,1)))
-            new_log_liks.append(data["log_likelihoods"][l])
-            new_train_errors.append(data["train_errors"][l])
-            new_test_errors.append(data["test_errors"][l])
-    
+            current_test_error_mean = np.mean(data["test_errors"][l])
+            if current_test_error_mean < best_test_error_mean:
+                best_test_error_mean = current_test_error_mean
+                best_new_name = model + kernel + str(round(l,1))
+                best_log_lik = data["log_likelihoods"][l]
+                best_train_error = data["train_errors"][l]
+                best_test_error = data["test_errors"][l]
+
+        new_names.append(best_new_name)
+        new_log_liks.append(best_log_lik)
+        new_train_errors.append(best_train_error)
+        new_test_errors.append(best_test_error)
+
     table_path = result_path + "/tables"
     if not os.path.exists(table_path):
         os.makedirs(table_path)
@@ -181,30 +185,30 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0):
 
         for l in data["lassos"]:
             ret = []
-            for i in range(10):
+            for i in range(data["num_runs"]):
                 P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
                 eigen_vals, _ = eigen(P)
                 ret.append(list(eigen_vals))
             
             save_eigen_table(ret, data["model"] + data["kernel"] + str(round(l,1)), len(eigen_vals), table_path + f"/eigen/{kernel_path}/")
 
-
-    # Loss landscape
-    loss_param_path = plot_path + "/loss_landscape/param"
-    if not os.path.exists(loss_param_path):
-        os.makedirs(loss_param_path)
-    for key in df.keys():
-        data = df[key]
-        if data["kernel"] == "FullGaussianKernel":
-            for l in data["lassos"]:
-                visualize_loss_landscape(data, data["model"], data["kernel"], data["data_train"], l, False,10, loss_param_path + "/{}_{}_{}.pdf".format(data["model"], data["kernel"], str(round(l,1))), show)
-    
-    loss_param_diff_path = plot_path + "/loss_landscape/param_diff"
-    if not os.path.exists(loss_param_diff_path):
-        os.makedirs(loss_param_diff_path)
-    for key in df.keys():
-        data = df[key]
-        if data["kernel"] == "FullGaussianKernel":
-            for l in data["lassos"]:
-                visualize_loss_landscape(data, data["model"], data["kernel"], data["data_train"], l, True,10, loss_param_diff_path + "/{}_{}_{}.pdf".format(data["model"], data["kernel"], str(round(l,1))), show)
+    if loss_landscape:
+        # Loss landscape
+        loss_param_path = plot_path + "/loss_landscape/param"
+        if not os.path.exists(loss_param_path):
+            os.makedirs(loss_param_path)
+        for key in df.keys():
+            data = df[key]
+            if data["kernel"] == "FullGaussianKernel":
+                for l in data["lassos"]:
+                    visualize_loss_landscape(data, data["model"], data["kernel"], data["data_train"], l, False,10, loss_param_path + "/{}_{}_{}.pdf".format(data["model"], data["kernel"], str(round(l,1))), show)
+        
+        loss_param_diff_path = plot_path + "/loss_landscape/param_diff"
+        if not os.path.exists(loss_param_diff_path):
+            os.makedirs(loss_param_diff_path)
+        for key in df.keys():
+            data = df[key]
+            if data["kernel"] == "FullGaussianKernel":
+                for l in data["lassos"]:
+                    visualize_loss_landscape(data, data["model"], data["kernel"], data["data_train"], l, True,10, loss_param_diff_path + "/{}_{}_{}.pdf".format(data["model"], data["kernel"], str(round(l,1))), show)
 

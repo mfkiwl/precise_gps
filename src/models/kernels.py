@@ -3,9 +3,10 @@ import tensorflow as tf
 import gpflow
 import tensorflow_probability as tfp 
 from src.models.initialization import *
+from src.models.base_kernel import BaseKernel
     
 
-class ARD(gpflow.kernels.Kernel):
+class ARD(BaseKernel, gpflow.kernels.Kernel):
     """
     Own implementation of the squared exponential kernel with ard property. Should work
     the same way as gpflow.kernels.SquaredExponential(ARD = True). Lengthscales and variance 
@@ -31,13 +32,13 @@ class ARD(gpflow.kernels.Kernel):
         self.lengthscales = gpflow.Parameter(lengthscales, transform = gpflow.utilities.positive())
         
     
-    def K_diag(self, X):
+    def K_diag(self, X) -> tf.Tensor:
         """
         Returns the diagonal vector when X1 == X2 (used in the background of gpflow)
         """
         return self.variance * tf.ones_like(X[:,0])
     
-    def K(self, X1, X2=None):
+    def K(self, X1, X2=None) -> tf.Tensor:
         """
         Returns the squared exponential ard kernel.
 
@@ -58,8 +59,11 @@ class ARD(gpflow.kernels.Kernel):
         K = self.variance * tf.exp(-0.5 * (X11 - 2*X12 + X22))
 
         return K
+    
+    def precision(self) -> tf.Tensor:
+        return tf.linalg.diag(self.lengthscales**(2))    
 
-class ARD_gpflow(gpflow.kernels.SquaredExponential):
+class ARD_gpflow(BaseKernel, gpflow.kernels.SquaredExponential):
     def __init__(self, **kwargs):
         randomized = kwargs["randomized"]
         dim = kwargs["dim"]
@@ -70,8 +74,11 @@ class ARD_gpflow(gpflow.kernels.SquaredExponential):
             lengthscales = np.random.uniform(0.5,3,dim)
             variance = 1.0       
         super().__init__(variance, lengthscales)
+    
+    def precision(self) -> tf.Tensor:
+        return tf.linalg.diag(self.lengthscales**(-2))   
 
-class FullGaussianKernel(gpflow.kernels.Kernel):
+class FullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
     """
     Implementation of the full Gaussian kernel which introduces also the off-diagonal
     covariates of the precision matrix. Randomizing the initialization should be handled outside
@@ -96,13 +103,13 @@ class FullGaussianKernel(gpflow.kernels.Kernel):
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
         self.L = gpflow.Parameter(L)
 
-    def K_diag(self, X):
+    def K_diag(self, X) -> tf.Tensor:
         """
         Returns the diagonal vector when X1 == X2 (used in the background of gpflow)
         """
         return self.variance * tf.ones_like(X[:,0])
     
-    def K(self, X1, X2=None):
+    def K(self, X1, X2=None) -> tf.Tensor:
         """
         Returns the full Gaussian kernel.
 
@@ -126,8 +133,12 @@ class FullGaussianKernel(gpflow.kernels.Kernel):
         K = self.variance*tf.exp(-0.5 * (X11 - 2*X12 + X22))
 
         return K
+    
+    def precision(self) -> tf.Tensor:
+        L = tfp.math.fill_triangular(self.L)
+        return L@tf.transpose(L)
 
-class LowRankFullGaussianKernel(gpflow.kernels.Kernel):
+class LowRankFullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
     """
     Implementation of the full Gaussian kernel which introduces also the off-diagonal
     covariates of the precision matrix. Randomizing the initialization should be handled outside
@@ -153,13 +164,13 @@ class LowRankFullGaussianKernel(gpflow.kernels.Kernel):
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
         self.L = gpflow.Parameter(L)
 
-    def K_diag(self, X):
+    def K_diag(self, X) -> tf.Tensor:
         """
         Returns the diagonal vector when X1 == X2 (used in the background of gpflow)
         """
         return self.variance * tf.ones_like(X[:,0])
     
-    def K(self, X1, X2=None):
+    def K(self, X1, X2=None) -> tf.Tensor:
         """
         Returns the full Gaussian kernel.
 
@@ -183,3 +194,7 @@ class LowRankFullGaussianKernel(gpflow.kernels.Kernel):
         K = self.variance*tf.exp(-0.5 * (X11 - 2*X12 + X22))
 
         return K
+    
+    def precision(self) -> tf.Tensor:
+        L = fill_lowrank_triangular(self.L)
+        return L@tf.transpose(L)

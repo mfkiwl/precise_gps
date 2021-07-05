@@ -1,9 +1,10 @@
 import numpy as np
 from scipy.cluster.vq import kmeans2
 import tensorflow_probability as tfp 
+import tensorflow as tf
 
 
-def init_precision(dim):
+def init_precision(dim) -> tf.Tensor:
     """
     Initializes full gaussian kernel with random precision
 
@@ -19,7 +20,7 @@ def init_precision(dim):
     lower_L = np.linalg.cholesky(P)
     return tfp.math.fill_triangular_inverse(lower_L)
 
-def select_inducing_points(X, k):
+def select_inducing_points(X, k) -> np.array:
     """
     Select inducing points for SVI using k-means clustering.
 
@@ -36,7 +37,7 @@ def select_inducing_points(X, k):
         return select_inducing_points(X, k)
     return _k
 
-def init_lowrank_precision(dim, rank):
+def init_lowrank_precision(dim, rank) -> tf.Tensor:
     """
     Initializes full gaussian kernel with random precision
 
@@ -52,7 +53,7 @@ def init_lowrank_precision(dim, rank):
     lowrank_L = tfp.math.pivoted_cholesky(P, rank)
     return fill_lowrank_triangular_inverse(lowrank_L)
 
-def fill_lowrank_triangular(vect, dim):
+def fill_lowrank_triangular(vect, dim) -> tf.Tensor:
     """
     Create lowrank matrix from vector 
 
@@ -70,7 +71,7 @@ def fill_lowrank_triangular(vect, dim):
     lowrank_matrix = vect.reshape(dim, int(len(vect) / dim))
     return lowrank_matrix
 
-def fill_lowrank_triangular_inverse(L):
+def fill_lowrank_triangular_inverse(L) -> tf.Tensor:
     """
     Transform lowrank matrix into vector format
 
