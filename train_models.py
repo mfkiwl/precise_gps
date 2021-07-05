@@ -26,22 +26,25 @@ Running isntructions are given in a json file with the following syntax.
 
 }
     Args:
-        name (string)     : name of the instance
-        model (string)    : name of the model (src.models.models)
-        kernel (string)   : name of the kernel (src.models.kernels)
-        data (string)     : name of the dataset (src.datasets.datasets)
-        lassos (list)     : [start, step, end] e.g. [0,0.1,10]
-        max_iter (int)    : maximum number of iterations for Scipy
-        num_runs (int)    : number of runs per a lasso coefficient
-        randomized (bool) : initialization is randomized if True
-        show (bool)       : show optimized precisions if True (these are saved anyway)
-        num_Z (int)       : number of indusing points
-        minibatch (int)   : number of points in minibatch
-        batch_iter (int)  : number of iterations for Adam
-        split (float)     : test/train split (tells the size of the testset, between 0-1)
-        rank (int)        : specifies the rank of the precision matrix
+        name (string) (required)     : name of the instance
+        model (string) (required)    : name of the model (src.models.models)
+        kernel (string) (required)   : name of the kernel (src.models.kernels)
+        data (string) (required)     : name of the dataset (src.datasets.datasets)
+        penalty (string) (optional)  : name of the penalty used (src.models.penalty)
+        lassos (list) (optional)     : [start, step, end] e.g. [0,0.1,10]
+        max_iter (int) (optional)    : maximum number of iterations for Scipy
+        num_runs (int) (optional)    : number of runs per a lasso coefficient
+        randomized (bool) (optional) : initialization is randomized if True
+        show (bool) (optional)       : show optimized precisions if True (these are saved anyway)
+        num_Z (int) (optional)       : number of indusing points
+        minibatch (int) (optional)   : number of points in minibatch
+        batch_iter (int) (optional)  : number of iterations for Adam
+        split (float) (optional)     : test/train split (tells the size of the testset, between 0-1)
+        rank (int) (optional)        : specifies the rank of the precision matrix
+        n (int) (optional)           : wishart degrees of freedom
+        V (list) (optional)          : wishart process V matrix
 
-See example json-files in "run_files". Results are automatically saved in "results/raw/<name>.pkl".
+Required arguments are name, model, kernel, and data. See example json-files in "run_files". Results are automatically saved in "results/raw/<name>.pkl".
 Usage : python app.py -f <path to json>
 '''
 ap = argparse.ArgumentParser()
@@ -49,6 +52,17 @@ ap.add_argument("-f", "--file", required=True, help="Path to the json file that 
 args = vars(ap.parse_args())
 
 path = args["file"] # json-file containing the commands
+
+# Default values if not given
+PENALTY = "lasso"
+LASSOS = [0]
+MAX_ITER = 1000
+NUM_RUNS = 10
+RANDOMIZED = 1
+NUM_Z = 100
+MINIBATCH_SIZE = 100
+BATCH_ITER = 40_000
+RANK = 1
 
 def main(path):
     # Read data from file
@@ -66,24 +80,26 @@ def main(path):
         data_instance = select_dataset(dataset, current_run["split"])
 
         # Select lasso coefs
-        lasso_input = current_run["lassos"]
+        lasso_input = LASSOS if "lassos" not in current_run else current_run["lassos"]
         if len(lasso_input) == 3:
             lassos = np.arange(lasso_input[0], lasso_input[2], lasso_input[1])
         else:
             lassos = np.array([0])
         
-        max_iter = current_run["max_iter"]
-        num_runs = current_run["num_runs"]
-        randomized  = current_run["randomized"]
-        show = current_run["show"]
-
-        num_Z = current_run["num_Z"]
-        minibatch_size = current_run["minibatch"]
-        batch_iter = current_run["batch_iter"]
-        rank = current_run["rank"] 
+        # Select other parameters
+        penalty = PENALTY if "penalty" not in current_run else current_run["penalty"]
+        max_iter = MAX_ITER if "max_iter" not in current_run else current_run["max_iter"]
+        num_runs = NUM_RUNS if "num_runs" not in current_run else current_run["num_runs"]
+        randomized  = RANDOMIZED if "randomized" not in current_run else current_run["randomized"]
+        num_Z = NUM_Z if "num_Z" not in current_run else current_run["num_Z"]
+        minibatch_size = MINIBATCH_SIZE if "minibatch" else current_run["minibatch"]
+        batch_iter = BATCH_ITER if "batch_iter" not in current_run else current_run["batch_iter"]
+        rank = RANK if "rank" not in current_run else current_run["rank"] 
+        n = None if "n" not in current_run else current_run["n"]
+        V = None if "V" not in current_run else current_run["V"]
 
         # Train model
-        result = train(model, kernel, data_instance, lassos, max_iter, num_runs, randomized, show, num_Z, minibatch_size, batch_iter, rank)
+        result = train(model, kernel, data_instance, lassos, max_iter, num_runs, randomized, num_Z, minibatch_size, batch_iter, rank, penalty, n, V)
 
         # Save results
         save_path = f"results/raw/{dataset.lower()}/{os.path.basename(path).split('.')[0]}"

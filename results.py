@@ -16,6 +16,7 @@ ap.add_argument("-d", "--directory", nargs = '+', required=True, help="Directory
 ap.add_argument("-l", "--lassos", type=int, required=True, help="Number of lassos.")
 ap.add_argument("-s", "--step", type=int, required=False, default=1, help="Step between lassos.")
 ap.add_argument("-v", "--visualize", type=bool, required=False, default=0, help="Wheter plots are shown during running the program.")
+ap.add_argument("-loss", "--loss_landscape", type=bool, required=False, default=0, help="Whether loss landscape plots are formed.")
 args = vars(ap.parse_args())
 
 dataset = args["name"] # dataset name 
@@ -23,9 +24,10 @@ directory = args["directory"] # directory name
 lassos = args["lassos"] # number of lassos
 step = args["step"] # step number
 show = args["visualize"] # whether plots are shown during running the program
+loss_landscape_arg = args["loss_landscape"] # whether loss landscape plots are formed
 
 def main(dataset, directory, lassos, step):
-    create_results(dataset, directory, lassos, step, show)
+    create_results(dataset, directory, lassos, step, show, loss_landscape_arg)
       
 if __name__ == "__main__":
     main(dataset, directory, lassos, step)
