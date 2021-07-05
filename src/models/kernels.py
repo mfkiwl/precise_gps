@@ -181,18 +181,17 @@ class LowRankFullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
         """
         if X2 is None:
             X2 = X1
-        
-        L = fill_lowrank_triangular(self.L, self.rank) # matrix representation of L
+            
+        P = self.precision()
 
-        A = X1 @ L
-        B = X2 @ L 
-
-        X11 = tf.squeeze(tf.expand_dims(A, axis = 1) @ tf.expand_dims(A, axis = -1), axis = -1) # (N, 1)
-        X22 = tf.transpose(tf.squeeze(tf.expand_dims(B, axis = 1) @ tf.expand_dims(B, axis = -1), axis = -1))  # (1,M)
-        X12 = A @ tf.transpose(B) # (N,M)
+        X11 = tf.squeeze(tf.expand_dims(X1,axis = 1) @ P @ tf.expand_dims(X1,axis = -1),-1)  # (N,1)
+        X22 = tf.transpose(tf.squeeze(tf.expand_dims(X2,axis = 1) @ P @ tf.expand_dims(X2,axis = -1),-1))  # (1,M)
+        X12 = X1 @ P @ tf.transpose(X2) # (N,M)
 
         # kernel  (N,1) - (N,M) + (1,M)
-        K = self.variance*tf.exp(-0.5 * (X11 - 2*X12 + X22))
+        K = self.variance * tf.exp(-0.5 * (X11 - 2*X12 + X22))
+
+        return K
 
         return K
     
