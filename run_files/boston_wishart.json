@@ -12,7 +12,8 @@
         "minibatch": -1,
         "batch_iter": 0,
         "split": 0.2,
-        "rank":0
+        "rank":0,
+        "penalty":"wishart"
     },
 
     "boston_gpr_ard" : {
@@ -28,7 +29,8 @@
         "minibatch": -1,
         "batch_iter": 0,
         "split": 0.2,
-        "rank":0
+        "rank":0,
+        "penalty":"wishart"
     },
 
     "boston_svi_full" : {
@@ -44,7 +46,8 @@
         "minibatch": -1,
         "batch_iter": 40000,
         "split": 0.2,
-        "rank":0
+        "rank":0,
+        "penalty":"wishart"
     },
 
     "boston_svi_ard" : {
@@ -60,6 +63,7 @@
         "minibatch": -1,
         "batch_iter": 40000,
         "split": 0.2,
-        "rank":0
+        "rank":0,
+        "penalty":"wishart"
     }
 }
