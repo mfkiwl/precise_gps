@@ -1,6 +1,6 @@
 {
     "redwine_gpr_full" : {
-        "model" : "GPRLasso",
+        "model" : "GPRPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Redwine",
         "lassos": [0,0.2,14],
@@ -16,7 +16,7 @@
     },
 
     "redwine_gpr_ard" : {
-        "model" : "GPRLasso",
+        "model" : "GPRPenalty",
         "kernel": "ARD",
         "data": "Redwine",
         "lassos": [0],
@@ -32,7 +32,7 @@
     },
 
     "redwine_svi_full" : {
-        "model" : "SVILasso",
+        "model" : "SVIPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Redwine",
         "lassos": [0,0.2,2.2],
@@ -48,7 +48,7 @@
     },
 
     "redwine_svi_ard" : {
-        "model" : "SVILasso",
+        "model" : "SVIPenalty",
         "kernel": "ARD",
         "data": "Redwine",
         "lassos": [0],

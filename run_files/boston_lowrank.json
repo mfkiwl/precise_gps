@@ -12,7 +12,7 @@
         "minibatch": -1,
         "batch_iter": 0,
         "split": 0.2,
-        "rank":10
+        "rank":2
     },
 
     "boston_gpr_lowrank5" : {
@@ -28,7 +28,7 @@
         "minibatch": -1,
         "batch_iter": 0,
         "split": 0.2,
-        "rank":2
+        "rank":5
     },
 
     "boston_svi_lowrank2" : {

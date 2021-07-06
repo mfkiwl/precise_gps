@@ -10,7 +10,7 @@ class Penalty():
     def lasso(self, model) -> tf.Tensor:
         """
         L1 penalty
-        
+
         Args:
             model (model instance) : src.models.models
         
@@ -30,7 +30,7 @@ class Penalty():
             tensor
         """
         P = model.kernel.precision()
-        return (model.n - model.p - 1) / 2 * tf.linal.det(P) - tf.linalg.trace(model.V@P) / 2
+        return (model.n - model.p - 1) / 2 * tf.math.log(tf.linalg.det(P)) - tf.linalg.trace(model.V@P) / 2
     
     def horseshow(self, model) -> tf.Tensor:
         """

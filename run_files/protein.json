@@ -1,6 +1,6 @@
 {
     "protein_svi_full" : {
-        "model" : "SVILasso",
+        "model" : "SVIPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Protein",
         "lassos": [0,0.2,2.2],
@@ -16,7 +16,7 @@
     },
 
     "protein_svi_ard" : {
-        "model" : "SVILasso",
+        "model" : "SVIPenalty",
         "kernel": "ARD",
         "data": "Protein",
         "lassos": [0],

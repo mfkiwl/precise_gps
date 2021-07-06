@@ -1,6 +1,6 @@
 {
     "whitewine_svi_full" : {
-        "model" : "SVILasso",
+        "model" : "SVIPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Whitewine",
         "lassos": [0,0.2,2.2],
@@ -16,7 +16,7 @@
     },
 
     "whitewine_svi_ard" : {
-        "model" : "SVILasso",
+        "model" : "SVIPenalty",
         "kernel": "ARD",
         "data": "Whitewine",
         "lassos": [0],

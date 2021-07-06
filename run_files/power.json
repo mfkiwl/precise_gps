@@ -1,6 +1,6 @@
 {
     "power_gpr_full" : {
-        "model" : "GPRLasso",
+        "model" : "GPRPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Power",
         "lassos": [0,0.2,14],
@@ -16,7 +16,7 @@
     },
 
     "power_gpr_ard" : {
-        "model" : "GPRLasso",
+        "model" : "GPRPenalty",
         "kernel": "ARD",
         "data": "Power",
         "lassos": [0],
@@ -32,7 +32,7 @@
     },
 
     "power_svi_full" : {
-        "model" : "SVILasso",
+        "model" : "SVIPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Power",
         "lassos": [0,0.2,2.2],
@@ -48,7 +48,7 @@
     },
 
     "power_svi_ard" : {
-        "model" : "SVILasso",
+        "model" : "SVIPenalty",
         "kernel": "ARD",
         "data": "Power",
         "lassos": [0],
