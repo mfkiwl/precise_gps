@@ -160,7 +160,7 @@ class LowRankFullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
         else:
             L = init_lowrank_precision(dim, rank) 
             variance = 1.0 
-
+        self.length = L.shape[0]
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
         self.L = gpflow.Parameter(L)
         self.rank = rank
@@ -194,5 +194,5 @@ class LowRankFullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
         return K
     
     def precision(self) -> tf.Tensor:
-        L = fill_lowrank_triangular(self.L, self.rank)
+        L = fill_lowrank_triangular(self.L, self.rank, self.length)
         return tf.transpose(L)@L

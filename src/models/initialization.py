@@ -53,7 +53,7 @@ def init_lowrank_precision(dim, rank) -> tf.Tensor:
     lowrank_L = tfp.math.pivoted_cholesky(P, rank)
     return fill_lowrank_triangular_inverse(lowrank_L)
 
-def fill_lowrank_triangular(vect, dim) -> tf.Tensor:
+def fill_lowrank_triangular(vect, dim, length) -> tf.Tensor:
     """
     Create lowrank matrix from vector 
 
@@ -64,11 +64,10 @@ def fill_lowrank_triangular(vect, dim) -> tf.Tensor:
     Returns:
         matrix M that is shaped dim x len(vect) / dim
     """
-    length = len(vect)
     if length % dim != 0:
         raise ValueError("Dimension mismatch!")
     
-    lowrank_matrix = tf.reshape(vect,[dim, int(len(vect.numpy()) / dim)])
+    lowrank_matrix = tf.reshape(vect,[dim, int(length / dim)])
     return lowrank_matrix
 
 def fill_lowrank_triangular_inverse(L) -> tf.Tensor:
