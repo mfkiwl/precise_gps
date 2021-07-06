@@ -3,7 +3,7 @@
         "model" : "SVIPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Protein",
-        "lassos": [0,0.2,2.2],
+        "lassos": [0,1,4],
         "max_iter": 700,
         "num_runs": 10,
         "randomized": 1,
