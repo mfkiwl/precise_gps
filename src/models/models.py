@@ -50,7 +50,7 @@ class SVIPenalty(gpflow.models.SVGP):
 
         self.lasso = 0 if "lasso" not in kwargs else kwargs["lasso"]
 
-        size = self.data[0].shape[1]
+        size = data[0].shape[1]
         self.p = size if "p" not in kwargs else kwargs["p"]
         self.n = self.p if "n" not in kwargs else kwargs["n"]
         self.V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else kwargs["V"]
