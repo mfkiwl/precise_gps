@@ -128,3 +128,28 @@ def params_to_precision(kernel):
     """
 
     return kernel.precision()
+
+def params_to_precision_vis(params, kernel):
+    """
+    Transform parameters (L or lengthscales) to precision matrix
+
+    Args:
+        params (tensor) : either L or lengthscales
+        kernl (string)  : name of the kernel
+
+    Returns:
+        precision matrix
+    """
+
+    if kernel == "ARD":
+        P = tf.linalg.diag(params**(2))
+        return P
+
+    if kernel == "ARD_gpflow":
+        P = tf.linalg.diag(params**(-2))
+        return P
+
+    if kernel == "FullGaussianKernel":
+        L = tfp.math.fill_triangular(params)
+        P = L@tf.transpose(L)
+        return P

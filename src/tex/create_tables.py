@@ -42,7 +42,7 @@ def save_results_table(log_liks, train_errors, test_errors, names, path):
     """
     table = ltx.Texttable()
     table.set_cols_align(["c"]*7)
-    rows = [["Model", "ll (mean)", "Best ll", "mrmse (train)", "best rmse (train)", "mrmse (test)", "best rmse (test)"]]
+    rows = [["Model", "ll (mean)", "best ll", "mrmse (train)", "best rmse (train)", "mrmse (test)", "best rmse (test)"]]
     for idx in range(len(names)):
         model = names[idx]
         mean_ll, var_ll = np.round(np.mean(log_liks[idx]),3), np.round(np.std(log_liks[idx]),3)

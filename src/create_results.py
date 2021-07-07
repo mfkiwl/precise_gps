@@ -90,7 +90,7 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
         for l in data["lassos"]:
             new_params = {}
             for i in range(10):
-                new_params[i] = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
+                new_params[i] = params_to_precision_vis(np.array(data["params"][l][i][-1]), data["kernel"])
             precisions.append(new_params) 
         
         all_precisions.append(precisions)
@@ -100,7 +100,8 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
         all_lassos.append(data["lassos"])
     
     visualize_mlls(mlls_svi, mll_names_svi, plot_path + "/mlls_svi.pdf", show)
-    visualize_mlls(mlls_gpr, mll_names_gpr, plot_path + "/mlls_gpr.pdf", show)
+    if mlls_gpr:
+        visualize_mlls(mlls_gpr, mll_names_gpr, plot_path + "/mlls_gpr.pdf", show)
     visualize_log_likelihood(log_liks, names, all_precisions, 10, True, plot_path + "/log_liks_fro.pdf", show)
     visualize_log_likelihood_mean(log_liks, names, all_precisions, 10, True, plot_path + "/log_liks_fro_mean.pdf", show)
     visualize_errors(train_errors,names,"train", all_precisions, 10, True, plot_path + "/train_errors_fro.pdf", show)
@@ -119,7 +120,7 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
             precisions = []
             p_names = []
             for i in range(9):
-                P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
+                P = params_to_precision_vis(np.array(data["params"][l][i][-1]), data["kernel"])
                 precisions.append(P)
                 p_names.append("LL: " + str(round(data["log_likelihoods"][l][i].numpy(),2)) +", TE: " + str(round(data["test_errors"][l][i],2)) + ", Var: " + str(np.round(data["variances"][l][i][-1],2)))
             data_instance = globals()[dataset](0.2)
@@ -185,8 +186,8 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
 
         for l in data["lassos"]:
             ret = []
-            for i in range(data["num_runs"]):
-                P = params_to_precision(np.array(data["params"][l][i][-1]), data["kernel"])
+            for i in range(10): #data["num_runs"]
+                P = params_to_precision_vis(np.array(data["params"][l][i][-1]), data["kernel"])
                 eigen_vals, _ = eigen(P)
                 ret.append(list(eigen_vals))
             

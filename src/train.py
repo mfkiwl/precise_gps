@@ -25,7 +25,7 @@ def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counte
         train_iter = iter(train_dataset.batch(minibatch_size))
 
     training_loss = model.training_loss_closure(train_iter, compile=True)
-    optimizer = tf.optimizers.Adam()
+    optimizer = tf.optimizers.Adam(learning_rate = 0.01) # using default learning rate 
 
     @tf.function()
     def optimization_step():
@@ -106,13 +106,12 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
 
             # Initializing kernel and model
             kernel_kwargs = {"randomized": randomized, "dim": dim, "rank": rank}
-            if n is not None:
-                kernel_kwargs["n"] = n
-            if V is not None:
-                kernel_kwargs["V"] = V
-            
             _kernel = select_kernel(kernel, **kernel_kwargs)
             model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
+            if n is not None:
+                model_kwargs["n"] = n
+            if V is not None:
+                model_kwargs["V"] = V
             _model = select_model(model, **model_kwargs)
 
             # Optimizing either using Scipy or Adam
@@ -163,5 +162,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
     df["log_likelihoods"] = log_likelihoods
     df["rank"] = rank
     df["cols"] = data.cols 
+    df["n"] = _model.n
+    df["V"] = _model.V 
     return df  
 
