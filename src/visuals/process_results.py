@@ -153,3 +153,12 @@ def params_to_precision_vis(params, kernel):
         L = tfp.math.fill_triangular(params)
         P = L@tf.transpose(L)
         return P
+
+def eigen_count_mean(values, treshhold = 0.001):
+    """
+    Calculates number of eigenvalues above a certain threshold
+
+    Args:
+        values (list) : list of the eigenvalues
+        threshhold ()
+    """

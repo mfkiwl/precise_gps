@@ -23,7 +23,7 @@ def save_eigen_table(data, name, dim, path):
     table.add_rows(rows)
         
     
-    with open(f"{path}{name}.tex", "a") as file:
+    with open(f"{path}{name}.txt", "a") as file:
         file.write(ltx.draw_latex(table, caption=f"{name}"))
 
 def save_results_table(log_liks, train_errors, test_errors, names, path):
@@ -57,5 +57,5 @@ def save_results_table(log_liks, train_errors, test_errors, names, path):
         rows.append(ar)
     table.add_rows(rows)
         
-    with open(f"{path}results.tex", "a") as file:
+    with open(f"{path}results.txt", "a") as file:
         file.write(ltx.draw_latex(table, caption=""))

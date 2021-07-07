@@ -93,7 +93,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
     test_errors, train_errors, mlls, params = {}, {}, {}, {}
     likelihood_variances, variances, log_likelihoods = {}, {}, {}
 
-    for l in lassos:
+    # Iterating through lassos or n:s
+    for l in lassos if penalty == "lasso" else n:
         test_errors[l], train_errors[l], mlls[l], params[l] = [], [], {}, {}
         likelihood_variances[l], variances[l], log_likelihoods[l] = {}, {}, []
 
@@ -107,9 +108,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
             # Initializing kernel and model
             kernel_kwargs = {"randomized": randomized, "dim": dim, "rank": rank}
             _kernel = select_kernel(kernel, **kernel_kwargs)
-            model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l}
-            if n is not None:
-                model_kwargs["n"] = n
+            model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l, "n": l, "V": V}
             if V is not None:
                 model_kwargs["V"] = V
             _model = select_model(model, **model_kwargs)
@@ -164,5 +163,6 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
     df["cols"] = data.cols 
     df["n"] = _model.n
     df["V"] = _model.V 
+    df["penalty"] = penalty
     return df  
 

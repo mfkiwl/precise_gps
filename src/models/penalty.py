@@ -29,8 +29,9 @@ class Penalty():
         Returns:
             tensor
         """
+        L = tfp.math.fill_triangular(model.kernel.L) # TODO: Checks (not all matrices have L)
         P = model.kernel.precision()
-        return (model.n - model.p - 1) / 2 * tf.math.log(tf.linalg.det(P)) - tf.linalg.trace(model.V@P) / 2
+        return (model.n - model.p - 1) * tf.math.log(tf.math.reduce_prod(tf.linalg.tensor_diag_part(L))) - tf.linalg.trace(model.V@P) / 2
     
     def horseshow(self, model) -> tf.Tensor:
         """

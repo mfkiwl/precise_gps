@@ -4,9 +4,9 @@ import src.models.models
 import src.datasets.datasets
 
 # Private lists for kernels and models defined in src.models 
-_possible_kernels = list(map (lambda x : x[0], inspect.getmembers(src.models.kernels, inspect.isclass)))
-_possible_models = list(map (lambda x : x[0], inspect.getmembers(src.models.models, inspect.isclass)))
-_possible_datasets = list(map (lambda x : x[0], inspect.getmembers(src.datasets.datasets, inspect.isclass)))
+_possible_kernels = [x[0] for x in inspect.getmembers(src.models.kernels, inspect.isclass) if x[1].__module__ == 'src.models.kernels']
+_possible_models = [x[0] for x in inspect.getmembers(src.models.models, inspect.isclass) if x[1].__module__ == 'src.models.models']
+_possible_datasets = [x[0] for x in inspect.getmembers(src.datasets.datasets, inspect.isclass) if x[1].__module__ == 'src.datasets.datasets']
 
 def select_kernel(kernel, **kwargs):
     """

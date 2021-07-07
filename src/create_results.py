@@ -186,7 +186,7 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
 
         for l in data["lassos"]:
             ret = []
-            for i in range(10): #data["num_runs"]
+            for i in range(data["num_runs"]):
                 P = params_to_precision_vis(np.array(data["params"][l][i][-1]), data["kernel"])
                 eigen_vals, _ = eigen(P)
                 ret.append(list(eigen_vals))
