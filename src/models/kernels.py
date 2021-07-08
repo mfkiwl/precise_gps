@@ -30,6 +30,7 @@ class ARD(BaseKernel, gpflow.kernels.Kernel):
 
         self.variance = gpflow.Parameter(variance, transform = gpflow.utilities.positive())
         self.lengthscales = gpflow.Parameter(lengthscales, transform = gpflow.utilities.positive())
+        self.dim = dim
         
     
     def K_diag(self, X) -> tf.Tensor:
