@@ -1,38 +1,4 @@
 {
-    "boston_gpr_full" : {
-        "model" : "GPRPenalty",
-        "kernel": "FullGaussianKernel",
-        "data": "Boston",
-        "lassos": [0],
-        "max_iter": 2000,
-        "num_runs": 10,
-        "randomized": 1,    
-        "show": 0,
-        "num_Z": 0,
-        "minibatch": -1,
-        "batch_iter": 0,
-        "split": 0.2,
-        "rank":0,
-        "penalty":"wishart"
-    },
-
-    "boston_gpr_ard" : {
-        "model" : "GPRPenalty",
-        "kernel": "ARD",
-        "data": "Boston",
-        "lassos": [0],
-        "max_iter": 2000,
-        "num_runs": 25,
-        "randomized": 1,
-        "show": 0,
-        "num_Z": 0,
-        "minibatch": -1,
-        "batch_iter": 0,
-        "split": 0.2,
-        "rank":0,
-        "penalty":"wishart"
-    },
-
     "boston_svi_full" : {
         "model" : "SVIPenalty",
         "kernel": "FullGaussianKernel",
@@ -47,6 +13,7 @@
         "batch_iter": 40000,
         "split": 0.2,
         "rank":0,
+        "n":[13,0.5,20],
         "penalty":"wishart"
     },
 
@@ -64,6 +31,7 @@
         "batch_iter": 40000,
         "split": 0.2,
         "rank":0,
+        "n":[13,0.5,20],
         "penalty":"wishart"
     }
 }

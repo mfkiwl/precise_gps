@@ -85,6 +85,11 @@ def main(path):
             lassos = np.arange(lasso_input[0], lasso_input[2], lasso_input[1])
         else:
             lassos = np.array([0])
+
+        # Select n for Wishart
+        n_input = [data_instance.train_X.shape[1]] if "n" not in current_run else current_run["n"]
+        if len(n_input) == 3:
+            n = np.arange(n_input[0], n_input[2], n_input[1])
         
         # Select other parameters
         penalty = PENALTY if "penalty" not in current_run else current_run["penalty"]
@@ -95,7 +100,6 @@ def main(path):
         minibatch_size = MINIBATCH_SIZE if "minibatch" else current_run["minibatch"]
         batch_iter = BATCH_ITER if "batch_iter" not in current_run else current_run["batch_iter"]
         rank = RANK if "rank" not in current_run else current_run["rank"] 
-        n = None if "n" not in current_run else current_run["n"]
         V = None if "V" not in current_run else current_run["V"]
 
         # Train model

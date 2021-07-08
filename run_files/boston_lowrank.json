@@ -1,37 +1,5 @@
 {
-    "boston_gpr_lowrank2" : {
-        "model" : "GPRPenalty",
-        "kernel": "LowRankFullGaussianKernel",
-        "data": "Boston",
-        "lassos": [0,0.2,12],
-        "max_iter": 2000,
-        "num_runs": 10,
-        "randomized": 1,
-        "show": 0,
-        "num_Z": 0,
-        "minibatch": -1,
-        "batch_iter": 0,
-        "split": 0.2,
-        "rank":2
-    },
-
-    "boston_gpr_lowrank5" : {
-        "model" : "GPRPenalty",
-        "kernel": "LowRankFullGaussianKernel",
-        "data": "Boston",
-        "lassos": [0,0.2,12],
-        "max_iter": 2000,
-        "num_runs": 10,
-        "randomized": 1,
-        "show": 0,
-        "num_Z": 0,
-        "minibatch": -1,
-        "batch_iter": 0,
-        "split": 0.2,
-        "rank":5
-    },
-
-    "boston_svi_lowrank2" : {
+    "boston_svi_lowrank6" : {
         "model" : "SVIPenalty",
         "kernel": "LowRankFullGaussianKernel",
         "data": "Boston",
@@ -44,7 +12,7 @@
         "minibatch": -1,
         "batch_iter": 40000,
         "split": 0.2,
-        "rank":2
+        "rank":6
     },
     "boston_svi_lowrank5" : {
         "model" : "SVIPenalty",
@@ -60,5 +28,35 @@
         "batch_iter": 40000,
         "split": 0.2,
         "rank":5
+    },
+    "boston_svi_lowrank7" : {
+        "model" : "SVIPenalty",
+        "kernel": "LowRankFullGaussianKernel",
+        "data": "Boston",
+        "lassos": [0,0.2,2.2],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 40000,
+        "split": 0.2,
+        "rank":7
+    },
+    "boston_svi_lowrank8" : {
+        "model" : "SVIPenalty",
+        "kernel": "LowRankFullGaussianKernel",
+        "data": "Boston",
+        "lassos": [0,0.2,2.2],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 40000,
+        "split": 0.2,
+        "rank":7
     }
 }
