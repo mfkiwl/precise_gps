@@ -10,6 +10,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp 
 from src.select import select_kernel, select_model
 from src.save_intermediate import save_results
+from scipy.stats import norm 
 
 def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counter, variances, likelihood_variances, mlls, N):
     """
@@ -127,7 +128,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
                     _model.training_loss, _model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
 
             # Calculating error and log-likelihood
-            pred_mean, _ = _model.predict_f(data.test_X)
+            pred_mean, pred_var = _model.predict_f(data.test_X)
             pred_train,_ = _model.predict_f(data.train_X)
 
             rms_test = mean_squared_error(data.test_y, pred_mean.numpy(), squared=False)
@@ -136,7 +137,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
             test_errors[l].append(rms_test)
             train_errors[l].append(rms_train)
 
-            log_lik = 1/len(data.test_y)*tf.math.reduce_sum(_model.predict_log_density(data = (data.test_X, data.test_y)))
+            log_lik = norm.logpdf(data.test_y, loc=pred_mean, scale=pred_var**0.5)
             log_likelihoods[l].append(log_lik)
 
         current_mean = np.mean(test_errors[l])
@@ -161,7 +162,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
     df["log_likelihoods"] = log_likelihoods
     df["rank"] = rank
     df["cols"] = data.cols 
-    df["n"] = _model.n
+    df["n"] = n
     df["V"] = _model.V 
     df["penalty"] = penalty
     return df  
