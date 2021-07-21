@@ -90,6 +90,8 @@ def main(path):
         n_input = [data_instance.train_X.shape[1]] if "n" not in current_run else current_run["n"]
         if len(n_input) == 3:
             n = np.arange(n_input[0], n_input[2], n_input[1])
+        else:
+            n = n_input
         
         # Select other parameters
         penalty = PENALTY if "penalty" not in current_run else current_run["penalty"]
