@@ -100,7 +100,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
         test_errors[l], train_errors[l], mlls[l], params[l] = [], [], {}, {}
         likelihood_variances[l], variances[l], log_likelihoods[l] = {}, {}, []
 
-        kf = KFold(n_splits=5, shuffle=True)
+        #kf = KFold(n_splits=5, shuffle=True)
         for num_run in range(num_runs):
             print(f"Starting run: {num_run+1} / {num_runs}")
             mlls[l][num_run] = []
@@ -108,14 +108,14 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
             likelihood_variances[l][num_run] = []
             variances[l][num_run] = []
             # Cross validation
-            train_index, valid_index = next(kf.split(data.train_y))
-            train_X, train_y = data.train_X[train_index], data.train_y[train_index]
-            valid_X, valid_y = data.train_X[valid_index], data.train_y[valid_index]
+            #train_index, valid_index = next(kf.split(data.train_y))
+            #train_X, train_y = data.train_X[train_index], data.train_y[train_index]
+            #valid_X, valid_y = data.train_X[valid_index], data.train_y[valid_index]
             
             # Initializing kernel and model
             kernel_kwargs = {"randomized": randomized, "dim": dim, "rank": rank}
             _kernel = select_kernel(kernel, **kernel_kwargs)
-            model_kwargs = {"data": (train_X, train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l, "n": l, "V": V}
+            model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l, "n": l, "V": V}
             if V is not None:
                 model_kwargs["V"] = V
             _model = select_model(model, **model_kwargs)
@@ -134,18 +134,18 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
                     _model.training_loss, _model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
 
             # Calculating error and log-likelihood
-            pred_mean, pred_var = _model.predict_y(valid_X)
-            pred_train,_ = _model.predict_f(train_X)
+            pred_mean, pred_var = _model.predict_y(data.test_X)
+            pred_train,_ = _model.predict_f(data.train_X)
 
-            rms_test = mean_squared_error(valid_y, pred_mean.numpy(), squared=False)
-            rms_train = mean_squared_error(train_y, pred_train.numpy(), squared=False)
+            rms_test = mean_squared_error(data.test_y, pred_mean.numpy(), squared=False)
+            rms_train = mean_squared_error(data.train_y, pred_train.numpy(), squared=False)
 
             test_errors[l].append(rms_test)
             train_errors[l].append(rms_train)
 
             #print(np.mean(pred_var), np.std(pred_var))
             #print(valid_y[:10], pred_mean[:10])
-            log_lik = np.average(norm.logpdf(valid_y, loc=pred_mean, scale=pred_var**0.5))
+            log_lik = np.average(norm.logpdf(data.test_y, loc=pred_mean, scale=pred_var**0.5))
             #print("LL",log_lik)
             log_likelihoods[l].append(log_lik)
             
