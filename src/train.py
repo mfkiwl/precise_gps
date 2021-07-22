@@ -152,7 +152,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
 
         current_mean = np.mean(test_errors[l])
         train_mean = np.mean(train_errors[l])
-        print("Lasso:", l, "Train error:", train_mean, "Test error", current_mean)
+        current_ll = np.mean(log_likelihoods[l])
+        print("Lasso:", l, "LL:", current_ll, "Test error", current_mean)
         
     # Save results after running the experiments
     df["data_train"] = (data.train_X, data.train_y)
