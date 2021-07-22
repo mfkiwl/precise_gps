@@ -52,6 +52,7 @@ ap.add_argument("-f", "--file", required=True, help="Path to the json file that 
 args = vars(ap.parse_args())
 
 path = args["file"] # json-file containing the commands
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Default values if not given
 PENALTY = "lasso"
