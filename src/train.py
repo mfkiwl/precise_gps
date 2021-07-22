@@ -134,7 +134,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
                     _model.training_loss, _model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
 
             # Calculating error and log-likelihood
-            pred_mean, pred_var = _model.predict_f(valid_X)
+            pred_mean, pred_var = _model.predict_y(valid_X)
             pred_train,_ = _model.predict_f(train_X)
 
             rms_test = mean_squared_error(valid_y, pred_mean.numpy(), squared=False)
@@ -143,7 +143,10 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
             test_errors[l].append(rms_test)
             train_errors[l].append(rms_train)
 
+            #print(np.mean(pred_var), np.std(pred_var))
+            #print(valid_y[:10], pred_mean[:10])
             log_lik = np.average(norm.logpdf(valid_y, loc=pred_mean, scale=pred_var**0.5))
+            #print("LL",log_lik)
             log_likelihoods[l].append(log_lik)
             
 
