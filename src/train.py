@@ -145,7 +145,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
 
             #print(np.mean(pred_var), np.std(pred_var))
             #print(valid_y[:10], pred_mean[:10])
-            log_lik = np.average(norm.logpdf(data.test_y, loc=pred_mean, scale=pred_var**0.5))
+            log_lik = np.average(norm.logpdf(data.test_y*data.y_std, loc=pred_mean*data.y_std, scale=pred_var**0.5*data.y_std))
             #print("LL",log_lik)
             log_likelihoods[l].append(log_lik)
             
