@@ -1,53 +1,21 @@
 {
-    "redwine_gpr_full" : {
-        "model" : "GPRPenalty",
-        "kernel": "FullGaussianKernel",
-        "data": "Redwine",
-        "lassos": [0,0.2,14],
-        "max_iter": 2000,
-        "num_runs": 10,
-        "randomized": 1,
-        "show": 0,
-        "num_Z": 0,
-        "minibatch": -1,
-        "batch_iter": 0,
-        "split": 0.2,
-        "rank":0
-    },
-
-    "redwine_gpr_ard" : {
-        "model" : "GPRPenalty",
-        "kernel": "ARD",
-        "data": "Redwine",
-        "lassos": [0],
-        "max_iter": 2000,
-        "num_runs": 10,
-        "randomized": 1,
-        "show": 0,
-        "num_Z": 0,
-        "minibatch": -1,
-        "batch_iter": 0,
-        "split": 0.2,
-        "rank":0
-    },
-
-    "redwine_svi_full" : {
+    "svi_full" : {
         "model" : "SVIPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Redwine",
-        "lassos": [0,0.2,2.2],
+        "lassos": [0,0.1,2.1],
         "max_iter": 700,
         "num_runs": 10,
         "randomized": 1,
         "show": 0,
         "num_Z": 100,
         "minibatch": -1,
-        "batch_iter": 40000,
+        "batch_iter": 30000,
         "split": 0.2,
         "rank":0
     },
 
-    "redwine_svi_ard" : {
+    "svi_ard" : {
         "model" : "SVIPenalty",
         "kernel": "ARD",
         "data": "Redwine",
@@ -58,8 +26,40 @@
         "show": 0,
         "num_Z": 100,
         "minibatch": -1,
-        "batch_iter": 40000,
+        "batch_iter": 30000,
         "split": 0.2,
         "rank":0
+    },
+    "svi_wishart" : {
+        "model" : "SVIPenalty",
+        "kernel": "FullGaussianKernel",
+        "data": "Redwine",
+        "lassos": [0],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 30000,
+        "split": 0.2,
+        "rank":0,
+        "n":[12.1,1,24],
+        "penalty":"wishart"
+    },
+    "svi_lowrank5" : {
+        "model" : "SVIPenalty",
+        "kernel": "LowRankFullGaussianKernel",
+        "data": "Redwine",
+        "lassos": [0,0.1,2.1],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 30000,
+        "split": 0.2,
+        "rank":5
     }
 }
