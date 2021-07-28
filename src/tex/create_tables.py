@@ -59,3 +59,32 @@ def save_results_table(log_liks, train_errors, test_errors, names, path):
         
     with open(f"{path}results.txt", "a") as file:
         file.write(ltx.draw_latex(table, caption=""))
+        
+
+def save_overview(log_liks, test_errors, names, path, best_indices):
+    """
+    Save results of different models to a tex-file as a table.
+
+    Args:
+        log_liks (list)     : log likelihoods for different models (each index is a list)
+        test_errors (list)  : test errors for different models (each index is a list)
+        names (list)        : names of different models 
+        path (string)       : results saved
+    
+    Returns:
+        tex-file that is saved into path
+    """
+    table = ltx.Texttable()
+    table.set_cols_align(["c"]*3)
+    rows = [[chr(92)+"textbf{Model}", chr(92)+"textbf{MLL}", chr(92)+"textbf{MRMSE}"]]
+    for idx in range(len(names)):
+        model = names[idx]
+        mean_ll, var_ll = np.round(np.mean(log_liks[idx][best_indices[idx]]),2), np.round(np.std(log_liks[idx][best_indices[idx]]),3)
+
+        mean_test, var_test = np.round(np.mean(test_errors[idx][best_indices[idx]]),3), np.round(np.std(test_errors[idx][best_indices[idx]]),3)
+        ar = [f"{model}", f"{mean_ll}({var_ll})", f"{mean_test}({var_test})"]
+        rows.append(ar)
+    table.add_rows(rows)
+        
+    with open(f"{path}overview.txt", "a") as file:
+        file.write(ltx.draw_latex(table, caption=""))

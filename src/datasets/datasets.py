@@ -155,3 +155,15 @@ class Kin8nm(Dataset):
     def read_data(self):
         data = pd.read_csv(self.path + "/kin8nm.csv", header=None).values
         return data[:, :-1], data[:, -1:].reshape(-1,1), self.get_cols(self.path)
+
+class Year(Dataset):
+    def __init__(self, split):
+        super(Year, self).__init__(path = "data/year", split=split)
+    
+    def get_cols(self, path):
+        return np.arange(90)
+        
+    def read_data(self):
+        data = pd.read_csv(self.path + "/YearPredictionMSD.txt", header=None).values
+        return data[:,1:], data[:,0].reshape(-1,1), self.get_cols(self.path)
+    
