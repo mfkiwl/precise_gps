@@ -5,10 +5,12 @@ import numpy as np
 from scipy.stats import norm
 from src.sampling.likelihoods import Gaussian
 from src.select import select_kernel
+from src.sampling.kernels import SquaredExponential
+import scipy
 
 
 class RegressionModel(object):
-    def __init__(self):
+    def __init__(self, coef, dataset,mdl,ds_name):
         class ARGS:
             num_inducing = 100
             iterations = 10000
@@ -18,6 +20,10 @@ class RegressionModel(object):
             posterior_sample_spacing = 50
         self.ARGS = ARGS
         self.model = None
+        self.coef = coef
+        self.dataset = dataset
+        self.ds_name = ds_name.lower()
+        self.mdl = mdl
 
     def fit(self, X, Y):
         lik = Gaussian(np.var(Y, 0))
@@ -31,14 +37,18 @@ class RegressionModel(object):
         if not self.model:
             for _ in range(1):
                 kernel_kwargs = {"dim": X.shape[1], "randomized": True}
-                _kernel = select_kernel("ARD", **kernel_kwargs)
+                if self.mdl == "ARD":
+                    _kernel = select_kernel("Test_ARD", **kernel_kwargs)
+                else:
+                    _kernel = select_kernel("Test", **kernel_kwargs)
+                #_kernel = SquaredExponential(X.shape[1], ARD=True, lengthscales=float(X.shape[1])**0.5)
                 kerns.append(_kernel)
 
             mb_size = self.ARGS.minibatch_size if X.shape[0] > self.ARGS.minibatch_size else X.shape[0]
 
             self.model = DGP(X, Y, 100, kerns, lik,
                              minibatch_size=mb_size,
-                             window_size=self.ARGS.window_size,
+                             window_size=self.ARGS.window_size, coef = self.coef, ds_name = self.ds_name,
                              **kwargs)
 
         self.model.reset(X, Y)
@@ -72,9 +82,12 @@ class RegressionModel(object):
         return m, v
 
     def calculate_density(self, Xs, Ys):
+        Y_std = self.dataset.y_std[0][0]
         ms, vs = self._predict(Xs, self.ARGS.num_posterior_samples)
-        logps = norm.logpdf(np.repeat(Ys[None, :, :], self.ARGS.num_posterior_samples, axis=0), ms, np.sqrt(vs))
-        return np.log(np.sum(np.exp(logps), axis = 0)) - np.log(self.ARGS.num_posterior_samples)
+        logps = norm.logpdf(np.repeat(Ys[None, :, :], self.ARGS.num_posterior_samples, axis=0)*Y_std, ms*Y_std, np.sqrt(vs)*Y_std)
+        #return np.log(np.sum(np.exp(logps), axis = 0)) - np.log(self.ARGS.num_posterior_samples)
+        return scipy.special.logsumexp(logps, axis = 0) - np.log(self.ARGS.num_posterior_samples)
+
 
     def sample(self, Xs, S):
         ms, vs = self._predict(Xs, S)

@@ -3,7 +3,7 @@ import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import math 
-from src.visuals.process_results import average_frobenius, pca_to_params, transform_M, loss_landscape
+from src.visuals.process_results import average_frobenius, pca_to_params, transform_M, loss_landscape, best_coef
 
 # TODO : this needs cleaning up
 COLORS = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:olive", "tab:cyan", "tab:pink", "tab:brown", "tab:gray"]
@@ -105,7 +105,7 @@ def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig 
             pcm = ax.imshow(kernel,cmap='bwr', norm = MidpointNormalize(midpoint = 0, vmin = -global_maximum, vmax = global_maximum))
         if i == 0:
           ax.set_yticks(np.arange(len(cols)))
-          ax.set_yticklabels(cols)
+          ax.set_yticklabels(cols, fontsize = 16)
         num_rows = kernel.shape[0]
         # Loop over data dimensions and create text annotations.
         if show_nums > -1:
@@ -113,7 +113,7 @@ def show_kernels(kernels, titles, cols, aspect = "own", show_nums = -1, savefig 
                 for j in range(num_rows):
                     text = ax.text(j, i, np.around(kernel[i, j],show_nums),
                                 ha="center", va="center", color="black")
-        ax.set_title(titles[j*3+i], fontsize =12)
+        ax.set_title(titles[j*3+i], fontsize =16)
         fig.colorbar(pcm, cax=cax)
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
@@ -195,11 +195,14 @@ def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, sa
             if fro:
                 frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs)
             for jdx, ll in enumerate(log_lik[l]):
+                #if '5' in names[idx] or '6' in names[idx]:
+                #    print(names[idx], ll)
+                #    ll = ll*102
                 if fro:
                     x_value = frobenius
                     if (lasso_idx, jdx) == max_ll_model:
                         plt.plot(x_value, ll, '.', color = COLORS[idx], markersize = 15, label = names[idx])
-                        plt.text(x_value+0.15, ll, round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
+                        #plt.text(x_value+0.15, ll, round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
                     else:
                         plt.plot(x_value, ll, '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
                 else:
@@ -253,11 +256,14 @@ def visualize_log_likelihood_mean(log_liks, names, kernels, num_runs, fro = Fals
         for lasso_idx, l in enumerate(lassos):
             frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs)
             x_value = frobenius
+            mult = 1
+            #if '5' in names[idx] or '6' in names[idx]:
+            #    mult = 102
             if lasso_idx == max_ll_model:
-                plt.plot(x_value, mean_ll[lasso_idx], '.', color = COLORS[idx], markersize = 15, label = names[idx])
-                plt.text(x_value+0.15, mean_ll[lasso_idx], round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
+                plt.plot(x_value, mult*mean_ll[lasso_idx], '.', color = COLORS[idx], markersize = 15, label = names[idx])
+                #plt.text(x_value+0.15, mult*mean_ll[lasso_idx], round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
             else:
-                plt.plot(x_value, mean_ll[lasso_idx], '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
+                plt.plot(x_value, mult*mean_ll[lasso_idx], '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
 
 
     plt.grid(True)
@@ -270,6 +276,68 @@ def visualize_log_likelihood_mean(log_liks, names, kernels, num_runs, fro = Fals
         plt.xlabel("Lasso coefficient")
         plt.legend(prop = {'size': 14})
     plt.ylabel("log-likelihood (test)")
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight')
+    if show:
+        plt.show()
+    else:
+        plt.close()
+        
+def visualize_mll(log_liks, names, savefig = None, show = 0):
+    """
+    Visualizes log-likelihoods for different models for all lasso-coefficients used in optimization.
+
+    Args:
+        log_liks (list)  : dictionary of log_likelihoods (all lasso-coefficients included)
+        names (list)     : list of strings
+        savefig (string) : path in which figure is saved, if None -> not saving anywhere
+        show (bool)      : wheter figure is shown or just closed
+    """
+    best_log_liks = best_coef(log_liks)
+
+    plt.figure(figsize = (10,6))
+    for i, log_lik in enumerate(log_liks):
+        log_liks_as_list = log_lik[best_log_liks[i]]
+        mean_ll = np.mean(log_liks_as_list)
+        std_ll = np.std(log_liks_as_list)
+        plt.plot(mean_ll, i, '.', markersize = 12, color = COLORS[i % 10])
+        plt.errorbar(mean_ll, i, xerr=std_ll, fmt='-', color = COLORS[i % 10])
+    
+        plt.yticks(np.arange(len(names)), names)  # Set text labels and properties.
+
+
+    plt.grid(False)
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight')
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
+def visualize_rmse(log_liks, rmses, names, savefig = None, show = 0):
+    """
+    Visualizes log-likelihoods for different models for all lasso-coefficients used in optimization.
+
+    Args:
+        log_liks (list)  : dictionary of log_likelihoods (all lasso-coefficients included)
+        names (list)     : list of strings
+        savefig (string) : path in which figure is saved, if None -> not saving anywhere
+        show (bool)      : wheter figure is shown or just closed
+    """
+    best_log_liks = best_coef(log_liks)
+
+    plt.figure(figsize = (10,6))
+    for i, rmse in enumerate(rmses):
+        rmse_as_list = rmse[best_log_liks[i]]
+        mean = np.mean(rmse_as_list)
+        std = np.std(rmse_as_list)
+        plt.plot(mean, i, '.', markersize = 12, color = COLORS[i % 10])
+        plt.errorbar(mean, i, xerr=std, fmt='-', color = COLORS[i % 10])
+    
+        plt.yticks(np.arange(len(names)), names)  # Set text labels and properties.
+
+
+    plt.grid(False)
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
     if show:
@@ -305,7 +373,7 @@ def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, 
                     x_value = frobenius
                     if (lasso_idx, jdx) == min_e_model:
                         plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 15, label = names[idx])
-                        plt.text(x_value+0.15, e, round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
+                        #plt.text(x_value+0.15, e, round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
                     else:
                         plt.plot(x_value, e, '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
                 else:
@@ -358,7 +426,7 @@ def visualize_errors_mean(errors, names, error_type, kernels, num_runs, fro = Fa
             x_value = frobenius
             if lasso_idx == min_e_model:
                 plt.plot(x_value, mean_errors[lasso_idx], '.', color = COLORS[idx], markersize = 15, label = names[idx])
-                plt.text(x_value+0.15, mean_errors[lasso_idx], round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
+                #plt.text(x_value+0.15, mean_errors[lasso_idx], round(l,1),ha="center", va="center", color="black", alpha = 0.5, fontsize = 10)
             else:
                 plt.plot(x_value, mean_errors[lasso_idx], '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
 
@@ -425,3 +493,37 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_
         plt.show()
     else:
         plt.close()
+
+def visualize_eigen_threshhold(eigen_values, names, threshhold = 0.001, savefig = None, show = 0):
+    """
+    Visualize the eigen_values with a threshhold
+
+    Args:
+        eigen_values (list) : dictionary of eigen_values of different models
+        names (list)        : list of strings
+        threshhold (float)  : threshold for eigen values to be treated as zeros
+        savefig (string)    : path in which figure is saved, if None -> not saving anywhere
+        show (bool)         : wheter figure is shown or just closed
+    """
+    plt.figure(figsize = (10,6))
+    for idx, values in enumerate(eigen_values.values()):
+        counter = 0
+        for key,val in values.items():
+            mean_val =  1/len(val)*len(np.where(np.array(val) > threshhold)[0])
+            if counter == 0:
+                counter += 1
+                plt.plot(key, mean_val, '.', color = COLORS[idx], markersize = 15, label = names[idx])
+            else:
+                plt.plot(key, mean_val, '.', color = COLORS[idx], markersize = 15)
+    
+    plt.grid(True)
+    plt.xlabel("Coefficient")
+    plt.ylabel("pcs")
+    plt.legend(prop = {'size': 14})
+    if savefig:
+        plt.savefig(savefig, bbox_inches='tight')
+    if show:
+        plt.show()
+    else:
+        plt.close()
+        

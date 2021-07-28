@@ -77,7 +77,7 @@
         "batch_iter": 20000,
         "split": 0.2,
         "rank":0,
-        "n":[12.1,1,24],
+        "n":[8],
         "penalty":"wishart"
     },
 
@@ -95,7 +95,7 @@
         "batch_iter": 15000,
         "split": 0.2,
         "rank":0,
-        "n":[12.1,1,24],
+        "n":[8],
         "penalty":"wishart"
     },
     "svi_lowrank5" : {

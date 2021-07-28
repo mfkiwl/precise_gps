@@ -44,7 +44,7 @@
         "batch_iter": 30000,
         "split": 0.2,
         "rank":0,
-        "n":[12.1,1,24],
+        "n":[11],
         "penalty":"wishart"
     },
     "svi_lowrank5" : {

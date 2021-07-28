@@ -3,6 +3,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 from sklearn.decomposition import PCA
 from src.select import select_model, select_kernel
+from src.models.initialization import fill_lowrank_triangular
 
 def sub_kernel(kernel, dim1, dim2):
     """
@@ -129,7 +130,7 @@ def params_to_precision(kernel):
 
     return kernel.precision()
 
-def params_to_precision_vis(params, kernel):
+def params_to_precision_vis(params, kernel, dim, length):
     """
     Transform parameters (L or lengthscales) to precision matrix
 
@@ -154,6 +155,10 @@ def params_to_precision_vis(params, kernel):
         P = L@tf.transpose(L)
         return P
 
+    if kernel == "LowRankFullGaussianKernel":
+        L = fill_lowrank_triangular(params, dim, length)
+        return tf.transpose(L)@L
+
 def eigen_count_mean(values, treshhold = 0.001):
     """
     Calculates number of eigenvalues above a certain threshold
@@ -162,3 +167,17 @@ def eigen_count_mean(values, treshhold = 0.001):
         values (list) : list of the eigenvalues
         threshhold ()
     """
+    pass
+
+def best_coef(log_liks):
+    best_keys = []
+    for log_lik in log_liks:
+        max_ll = -np.inf
+        for key in log_lik.keys():
+            current_ll = np.mean(log_lik[key])
+            if max_ll < current_ll:
+                max_ll = current_ll
+                best_key = key
+        best_keys.append(best_key)
+    return best_keys
+    

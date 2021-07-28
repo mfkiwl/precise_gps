@@ -13,7 +13,7 @@ from src.select import select_kernel, select_model
 from src.save_intermediate import save_results
 from scipy.stats import norm 
 
-def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counter, variances, likelihood_variances, mlls, N):
+def run_adam_and_natgrad(model, iterations, train_dataset, minibatch_size, params, l, counter, variances, likelihood_variances, mlls, N):
     """
     Utility function running the Adam optimizer
 
@@ -28,11 +28,13 @@ def run_adam(model, iterations, train_dataset, minibatch_size, params, l, counte
 
     training_loss = model.training_loss_closure(train_iter, compile=True)
     optimizer = tf.optimizers.Adam(learning_rate = 0.01) # using default learning rate 
+    natgrad_optimizer = gpflow.optimizers.NaturalGradient(gamma=0.1)
 
     @tf.function()
     def optimization_step():
         optimizer.minimize(training_loss, model.trainable_variables)
-
+        natgrad_optimizer.minimize(training_loss, model.variational_params)
+        
     for step in range(iterations):
         optimization_step()
         if step % 50 == 0:
@@ -127,7 +129,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
             
             if type(_model) == SVIPenalty:
                 train_dataset = tf.data.Dataset.from_tensor_slices((data.train_X, data.train_y)).repeat().shuffle(len(data.train_y))
-                run_adam(_model,batch_iter,train_dataset,minibatch_size,params,l,num_run,variances,likelihood_variances,mlls, len(data.train_y))
+                run_adam_and_natgrad(_model,batch_iter,train_dataset,minibatch_size,params,l,num_run,variances,likelihood_variances,mlls, len(data.train_y))
             else:
                 optimizer = gpflow.optimizers.Scipy()
                 optimizer.minimize(

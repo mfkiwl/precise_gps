@@ -147,3 +147,11 @@ class Yacht(Dataset):
     def read_data(self):
         data = pd.read_fwf(self.path + "/yacht_hydrodynamics.data", header=None).values[:-1, :]
         return data[:, :-1], data[:, -1].reshape(-1,1), self.get_cols(self.path)
+
+class Kin8nm(Dataset):
+    def __init__(self, split):
+        super(Kin8nm, self).__init__(path = "data/kin8nm", split=split)
+        
+    def read_data(self):
+        data = pd.read_csv(self.path + "/kin8nm.csv", header=None).values
+        return data[:, :-1], data[:, -1:].reshape(-1,1), self.get_cols(self.path)

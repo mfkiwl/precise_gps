@@ -17,7 +17,7 @@ class Penalty():
         Returns:
             tensor
         """
-        return model.lasso*tf.math.reduce_sum(tf.abs(model.kernel.precision()))
+        return -model.lasso*tf.math.reduce_sum(tf.abs(model.kernel.precision()))
 
     def wishart(self, model) -> tf.Tensor:
         """
@@ -31,7 +31,7 @@ class Penalty():
         """
         L = tfp.math.fill_triangular(model.kernel.L) # TODO: Checks (not all matrices have L)
         P = model.kernel.precision()
-        return (model.n - model.p - 1) * tf.math.reduce_sum(tf.math.log(tf.linalg.tensor_diag_part(tf.math.maximum(0.01,L)))) - tf.linalg.trace(model.V@P) / 2
+        return (model.n - model.p - 1) * tf.math.reduce_sum(tf.math.log(tf.linalg.tensor_diag_part(tf.math.maximum(1e-8,tf.math.abs(L))))) - tf.linalg.trace(1/model.n*model.V@P) / 2
         #return (model.n - model.p - 1)/2 * tf.math.log(tf.linalg.det(P)) - tf.linalg.trace(model.V@P) / 2
     
     def horseshow(self, model) -> tf.Tensor:

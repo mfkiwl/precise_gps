@@ -1,33 +1,52 @@
 {
-    "naval_svi_full" : {
+
+    "svi_full" : {
         "model" : "SVIPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Naval",
-        "lassos": [0,0.2,2.2],
+        "lassos": [0,1,8],
         "max_iter": 2000,
         "num_runs": 10,
         "randomized": 1,
         "show": 0,
         "num_Z": 100,
         "minibatch": -1,
-        "batch_iter": 40000,
+        "batch_iter": 20000,
         "split": 0.2,
         "rank":0
     },
 
-    "naval_svi_ard" : {
+    "svi_ard" : {
         "model" : "SVIPenalty",
         "kernel": "ARD",
         "data": "Naval",
         "lassos": [0],
         "max_iter": 700,
-        "num_runs": 25,
+        "num_runs": 10,
         "randomized": 1,
         "show": 0,
         "num_Z": 100,
         "minibatch": -1,
-        "batch_iter": 40000,
+        "batch_iter": 20000,
         "split": 0.2,
         "rank":0
+    },
+
+    "svi_wishart" : {
+        "model" : "SVIPenalty",
+        "kernel": "FullGaussianKernel",
+        "data": "Naval",
+        "lassos": [0],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 20000,
+        "split": 0.2,
+        "rank":0,
+        "n":[14],
+        "penalty":"wishart"
     }
 }

@@ -1,10 +1,10 @@
 {
-    "yacht_gpr_full" : {
+    "gpr_full" : {
         "model" : "GPRPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Yacht",
-        "lassos": [0,0.2,14],
-        "max_iter": 2000,
+        "lassos": [0,0.1,5],
+        "max_iter": 1000,
         "num_runs": 10,
         "randomized": 1,
         "show": 0,
@@ -15,13 +15,13 @@
         "rank":0
     },
 
-    "yacht_gpr_ard" : {
+    "gpr_ard" : {
         "model" : "GPRPenalty",
         "kernel": "ARD",
         "data": "Yacht",
         "lassos": [0],
-        "max_iter": 2000,
-        "num_runs": 25,
+        "max_iter": 1000,
+        "num_runs": 10,
         "randomized": 1,
         "show": 0,
         "num_Z": 0,
@@ -31,7 +31,7 @@
         "rank":0
     },
 
-    "yacht_svi_full" : {
+    "svi_full" : {
         "model" : "SVIPenalty",
         "kernel": "FullGaussianKernel",
         "data": "Yacht",
@@ -42,24 +42,90 @@
         "show": 0,
         "num_Z": 100,
         "minibatch": -1,
-        "batch_iter": 40000,
+        "batch_iter": 20000,
         "split": 0.2,
         "rank":0
     },
 
-    "yacht_svi_ard" : {
+    "svi_ard" : {
         "model" : "SVIPenalty",
         "kernel": "ARD",
         "data": "Yacht",
         "lassos": [0],
         "max_iter": 700,
-        "num_runs": 25,
+        "num_runs": 10,
         "randomized": 1,
         "show": 0,
         "num_Z": 100,
         "minibatch": -1,
-        "batch_iter": 40000,
+        "batch_iter": 20000,
         "split": 0.2,
         "rank":0
+    },
+
+    "svi_wishart" : {
+        "model" : "SVIPenalty",
+        "kernel": "FullGaussianKernel",
+        "data": "Yacht",
+        "lassos": [0],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 20000,
+        "split": 0.2,
+        "rank":0,
+        "n":[6],
+        "penalty":"wishart"
+    },
+
+    "gpr_wishart" : {
+        "model" : "GPRPenalty",
+        "kernel": "FullGaussianKernel",
+        "data": "Yacht",
+        "lassos": [0],
+        "max_iter": 1000,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 20000,
+        "split": 0.2,
+        "rank":0,
+        "n":[6],
+        "penalty":"wishart"
+    },
+    "svi_lowrank3" : {
+        "model" : "SVIPenalty",
+        "kernel": "LowRankFullGaussianKernel",
+        "data": "Yacht",
+        "lassos": [0,0.1,2.1],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 20000,
+        "split": 0.2,
+        "rank":3
+    },
+    "gpr_lowrank4" : {
+        "model" : "GPRPenalty",
+        "kernel": "LowRankFullGaussianKernel",
+        "data": "Yacht",
+        "lassos": [0,0.1,5],
+        "max_iter": 1000,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 15000,
+        "split": 0.2,
+        "rank":4
     }
 }

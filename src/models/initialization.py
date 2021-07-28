@@ -4,19 +4,24 @@ import tensorflow_probability as tfp
 import tensorflow as tf
 
 
-def init_precision(dim) -> tf.Tensor:
+def init_precision(dim, distribution = "uniform") -> tf.Tensor:
     """
     Initializes full gaussian kernel with random precision
 
     Args:
-        dim (int) : dimension of the precision matrix (dim x dim)
+        dim (int)           : dimension of the precision matrix (dim x dim)
+        distribution (str)  : distribution used for sampling full L
 
     Returns:
         Cholesky decomposition of the precision in vector format
     """
-    full_L = np.random.uniform(-1,1,(dim,dim))
-    P = full_L@np.transpose(full_L)
+    if distribution == "uniform":
+        full_L = np.random.uniform(-1,1,(dim,dim))
 
+    else: 
+        full_L = np.random.randn((dim, dim)) / np.sqrt(dim)  
+    
+    P = full_L@np.transpose(full_L)
     lower_L = np.linalg.cholesky(P)
     return tfp.math.fill_triangular_inverse(lower_L)
 

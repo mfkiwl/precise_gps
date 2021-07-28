@@ -1,16 +1,12 @@
 from src.models.initialization import select_inducing_points
 import tensorflow as tf
-import tensorflow_probability as tfp
 import numpy as np
-from src.visuals.visuals import *
-from src.models.initialization import fill_lowrank_triangular
 
 from src.sampling.sghmc_base import BaseModel
 import src.sampling.conditionals as conditionals
 from src.models.initialization import select_inducing_points
-from src.models.penalty import Penalty
 
-def lasso(kernel, coef) -> tf.Tensor:
+def lasso(kernel) -> tf.Tensor:
     """
     L1 penalty
 
@@ -20,22 +16,7 @@ def lasso(kernel, coef) -> tf.Tensor:
     Returns:
         tensor
     """
-    return -coef*tf.math.reduce_sum(tf.abs(kernel.precision()))
-
-def wishart(self, model) -> tf.Tensor:
-    """
-    Wishart process penalty
-
-    Args:
-        model (model instance) : src.models.models
-    
-    Returns:
-        tensor
-    """
-    L = tfp.math.fill_triangular(model.kernel.L) # TODO: Checks (not all matrices have L)
-    P = model.kernel.precision()
-    return (model.n - model.p - 1) * tf.math.reduce_sum(tf.math.log(tf.linalg.tensor_diag_part(tf.math.maximum(1e-8,tf.math.abs(L))))) - tf.linalg.trace(1/model.n*model.V@P) / 2
-    #return (model.n - model.p - 1)/2 * tf.math.log(tf.linalg.det(P)) - tf.linalg.trace(model.V@P) / 2
+    return 1.0*tf.math.reduce_sum(tf.abs(kernel.precision()))
 
 
 class Layer(object):
@@ -81,15 +62,13 @@ class DGP(BaseModel):
 
         return Fs[1:], Fmeans, Fvars
 
-    def __init__(self, X, Y, n_inducing, kernels, likelihood, minibatch_size, window_size, coef,ds_name,
+    def __init__(self, X, Y, n_inducing, kernels, likelihood, minibatch_size, window_size,
                  adam_lr=0.001, epsilon=0.01, mdecay=0.05):
         self.n_inducing = n_inducing
         self.kernels = kernels
         self.likelihood = likelihood
         self.minibatch_size = minibatch_size
         self.window_size = window_size
-        self.coef = coef
-        self.ds_name = ds_name
 
         n_layers = len(kernels)
         N = X.shape[0]
@@ -97,21 +76,20 @@ class DGP(BaseModel):
         self.layers = []
         X_running = X.copy()
         for l in range(n_layers):
-            outputs = self.kernels[l+1].dim if l+1 < n_layers else Y.shape[1]
+            outputs = self.kernels[l+1].input_dim if l+1 < n_layers else Y.shape[1]
             self.layers.append(Layer(self.kernels[l], outputs, n_inducing, fixed_mean=(l+1 < n_layers), X=X_running))
             X_running = np.matmul(X_running, self.layers[-1].mean)
-        new_vars = [l.U for l in self.layers] + [self.kernels[0].L] + [self.kernels[0].variance]
-        super().__init__(X, Y, new_vars, minibatch_size, window_size)
+
+        super().__init__(X, Y, [l.U for l in self.layers], minibatch_size, window_size)
         self.f, self.fmeans, self.fvars = self.propagate(self.X_placeholder)
         self.y_mean, self.y_var = self.likelihood.predict_mean_and_var(self.fmeans[-1], self.fvars[-1])
 
         self.prior = tf.add_n([l.prior() for l in self.layers])
         self.log_likelihood = self.likelihood.predict_density(self.fmeans[-1], self.fvars[-1], self.Y_placeholder)
 
-        self.nll = - tf.reduce_sum(self.log_likelihood) / tf.cast(tf.shape(self.X_placeholder)[0], tf.float64)*N \
-                   - self.prior - lasso(self.kernels[0], self.coef) # TODO use penalty here
-        self.nll /= N
-        
+        self.nll = - tf.reduce_sum(self.log_likelihood) / tf.cast(tf.shape(self.X_placeholder)[0], tf.float64) \
+                   - (self.prior / N) #+ lasso(self.kernels[0])
+        print("Prior", self.prior)
 
         self.generate_update_step(self.nll, epsilon, mdecay)
         self.adam = tf.compat.v1.train.AdamOptimizer(adam_lr)
@@ -126,19 +104,10 @@ class DGP(BaseModel):
     def predict_y(self, X, S):
         assert S <= len(self.posterior_samples)
         ms, vs = [], []
-        precisions = []
-        variances = []
         for i in range(S):
             feed_dict = {self.X_placeholder: X}
             feed_dict.update(self.posterior_samples[i])
-            L = list(self.posterior_samples[i].values())[-2].tolist()
-            precisions.append(L)
-            variances.append(list(self.posterior_samples[i].values())[-1])
-            #show_kernel()
             m, v = self.session.run((self.y_mean, self.y_var), feed_dict=feed_dict)
             ms.append(m)
             vs.append(v)
-        #print(ms)
-        np.save(f"results/raw/{self.ds_name}/precisions{self.coef}", precisions)
-        np.save(f"results/raw/{self.ds_name}/variances{self.coef}", variances)
         return np.stack(ms, 0), np.stack(vs, 0)

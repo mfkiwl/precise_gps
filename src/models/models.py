@@ -3,8 +3,8 @@ import tensorflow as tf
 import tensorflow_probability as tfp 
 from src.models.kernels import *
 from src.models.initialization import select_inducing_points
-from functools import wraps
 from src.models.penalty import Penalty
+from gpflow import set_trainable
 
 class GPRPenalty(gpflow.models.GPR):
     """
@@ -31,7 +31,7 @@ class GPRPenalty(gpflow.models.GPR):
         Overwrites the gpflow.models.GPR.maximum_likelihood_objective
         See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
-        return super().log_marginal_likelihood() - getattr(Penalty(), self.penalty)(self)
+        return super().log_marginal_likelihood() + getattr(Penalty(), self.penalty)(self)
 
 class SVIPenalty(gpflow.models.SVGP):
     """
@@ -56,13 +56,18 @@ class SVIPenalty(gpflow.models.SVGP):
         self.V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else kwargs["V"]
         self.penalty = "lasso" if "penalty" not in kwargs else kwargs["penalty"]
         self.train_data = data 
+        
+        set_trainable(self.q_mu, False)
+        set_trainable(self.q_sqrt, False)
+        
+        self.variational_params = [(self.q_mu, self.q_sqrt)]
 
     def maximum_log_likelihood_objective(self, data) -> tf.Tensor:
         """
         Overwrites the gpflow.models.SVGP.maximum_likelihood_objective
         See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
-        return super().elbo(data) - getattr(Penalty(), self.penalty)(self)
+        return super().elbo(data) + getattr(Penalty(), self.penalty)(self)
 
 class Standard_GPR(gpflow.models.GPR):
 
