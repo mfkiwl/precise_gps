@@ -4,6 +4,7 @@ import tensorflow_probability as tfp
 from src.models.kernels import *
 from src.models.initialization import select_inducing_points
 from src.models.penalty import Penalty
+from src.sampling.sghmc_models import RegressionModel
 from gpflow import set_trainable
 
 class GPRPenalty(gpflow.models.GPR):
@@ -75,3 +76,18 @@ class Standard_GPR(gpflow.models.GPR):
         data = kwargs["data"]
         kernel = kwargs["kernel"]
         super(Standard_GPR, self).__init__(data, kernel)
+
+class SGHMC(RegressionModel):
+    def __init__(self, **kwargs):
+        data = kwargs["data"]
+        kernel = kwargs["kernel"]
+        
+        lasso = 0 if "lasso" not in kwargs else kwargs["lasso"]
+        size = data.train_X.shape[1]
+        self.p = size if "p" not in kwargs else kwargs["p"]
+        penalty = "lasso" if "penalty" not in kwargs else kwargs["penalty"]
+        n = self.p if "n" not in kwargs else kwargs["n"]
+        V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else kwargs["V"]
+        
+        super(SGHMC, self).__init__(data, kernel, lasso, n, V, penalty)
+        

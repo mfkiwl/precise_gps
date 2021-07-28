@@ -2,41 +2,10 @@ from src.models.initialization import select_inducing_points
 import tensorflow as tf
 import tensorflow_probability as tfp
 import numpy as np
-from src.visuals.visuals import *
-from src.models.initialization import fill_lowrank_triangular
 
 from src.sampling.sghmc_base import BaseModel
-import src.sampling.conditionals as conditionals
-from src.models.initialization import select_inducing_points
 from src.models.penalty import Penalty
-
-def lasso(kernel, coef) -> tf.Tensor:
-    """
-    L1 penalty
-
-    Args:
-        model (model instance) : src.models.models
-    
-    Returns:
-        tensor
-    """
-    return -coef*tf.math.reduce_sum(tf.abs(kernel.precision()))
-
-def wishart(self, model) -> tf.Tensor:
-    """
-    Wishart process penalty
-
-    Args:
-        model (model instance) : src.models.models
-    
-    Returns:
-        tensor
-    """
-    L = tfp.math.fill_triangular(model.kernel.L) # TODO: Checks (not all matrices have L)
-    P = model.kernel.precision()
-    return (model.n - model.p - 1) * tf.math.reduce_sum(tf.math.log(tf.linalg.tensor_diag_part(tf.math.maximum(1e-8,tf.math.abs(L))))) - tf.linalg.trace(1/model.n*model.V@P) / 2
-    #return (model.n - model.p - 1)/2 * tf.math.log(tf.linalg.det(P)) - tf.linalg.trace(model.V@P) / 2
-
+import src.sampling.conditionals as conditionals
 
 class Layer(object):
     def __init__(self, kern, outputs, n_inducing, fixed_mean, X):
@@ -81,15 +50,18 @@ class DGP(BaseModel):
 
         return Fs[1:], Fmeans, Fvars
 
-    def __init__(self, X, Y, n_inducing, kernels, likelihood, minibatch_size, window_size, coef,ds_name,
+    def __init__(self, X, Y, n_inducing, kernels, likelihood, minibatch_size, window_size, lasso, n, V,penalty,
                  adam_lr=0.001, epsilon=0.01, mdecay=0.05):
         self.n_inducing = n_inducing
         self.kernels = kernels
+        self.kernel = kernels[0]
         self.likelihood = likelihood
         self.minibatch_size = minibatch_size
         self.window_size = window_size
-        self.coef = coef
-        self.ds_name = ds_name
+        self.lasso = lasso
+        self.n = n
+        self.V = V
+        self.penalty = penalty
 
         n_layers = len(kernels)
         N = X.shape[0]
@@ -109,7 +81,7 @@ class DGP(BaseModel):
         self.log_likelihood = self.likelihood.predict_density(self.fmeans[-1], self.fvars[-1], self.Y_placeholder)
 
         self.nll = - tf.reduce_sum(self.log_likelihood) / tf.cast(tf.shape(self.X_placeholder)[0], tf.float64)*N \
-                   - self.prior - lasso(self.kernels[0], self.coef) # TODO use penalty here
+                   - self.prior - getattr(Penalty(), self.penalty)(self)
         self.nll /= N
         
 
@@ -139,6 +111,6 @@ class DGP(BaseModel):
             ms.append(m)
             vs.append(v)
         #print(ms)
-        np.save(f"results/raw/{self.ds_name}/precisions{self.coef}", precisions)
-        np.save(f"results/raw/{self.ds_name}/variances{self.coef}", variances)
-        return np.stack(ms, 0), np.stack(vs, 0)
+        #np.save(f"results/raw/{self.ds_name}/precisions{self.coef}", precisions)
+        #np.save(f"results/raw/{self.ds_name}/variances{self.coef}", variances)
+        return np.stack(ms, 0), np.stack(vs, 0), precisions, variances

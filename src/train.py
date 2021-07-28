@@ -89,18 +89,24 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
     # There is no lasso penalty in standard GPR
     if type(model).__name__ == "Standard_GPR":
         lassos = [0]
+    
+    if model == "SGHMC":
+        tf.compat.v1.disable_eager_execution()
 
     dim = len(data.cols) # number of features for inputs
     
     #Initialize dataframe and dataframe structure
     df = {}
-    test_errors, train_errors, mlls, params = {}, {}, {}, {}
+    test_errors, train_errors, mlls, params, sghmc_params = {}, {}, {}, {}, {}
     likelihood_variances, variances, log_likelihoods = {}, {}, {}
+    sghmc_vars = {}
 
     # Iterating through lassos or n:s
     for l in lassos if penalty == "lasso" else n:
-        test_errors[l], train_errors[l], mlls[l], params[l] = [], [], {}, {}
+        test_errors[l], train_errors[l], mlls[l], params[l], sghmc_params[l] = [], [], {}, {}, []
         likelihood_variances[l], variances[l], log_likelihoods[l] = {}, {}, []
+        sghmc_vars[l] = []
+        
 
         #kf = KFold(n_splits=5, shuffle=True)
         for num_run in range(num_runs):
@@ -117,11 +123,13 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
             # Initializing kernel and model
             kernel_kwargs = {"randomized": randomized, "dim": dim, "rank": rank}
             _kernel = select_kernel(kernel, **kernel_kwargs)
-            model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l, "n": l, "V": V}
+            if model != "SGHMC":
+                model_kwargs = {"data": (data.train_X, data.train_y), "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l, "n": l, "V": V}
+            else:
+                model_kwargs = {"data": data, "kernel": _kernel, "lasso": l, "M": num_Z, "horseshoe": l, "n": l, "V": V}
             if V is not None:
                 model_kwargs["V"] = V
             _model = select_model(model, **model_kwargs)
-
             # Optimizing either using Scipy or Adam
             def step_callback(step, variables, values):
                 if step % 5 == 0:
@@ -130,30 +138,36 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
             if type(_model) == SVIPenalty:
                 train_dataset = tf.data.Dataset.from_tensor_slices((data.train_X, data.train_y)).repeat().shuffle(len(data.train_y))
                 run_adam_and_natgrad(_model,batch_iter,train_dataset,minibatch_size,params,l,num_run,variances,likelihood_variances,mlls, len(data.train_y))
-            else:
+            elif type(_model) == GPRPenalty:
                 optimizer = gpflow.optimizers.Scipy()
                 optimizer.minimize(
                     _model.training_loss, _model.trainable_variables, options={'maxiter': max_iter,'disp': False}, step_callback = step_callback)
+            else:
+                _model.fit(data.train_X, data.train_y)
 
             # Calculating error and log-likelihood
-            pred_mean, pred_var = _model.predict_y(data.test_X)
-            pred_train,_ = _model.predict_f(data.train_X)
-
-            rms_test = mean_squared_error(data.test_y, pred_mean.numpy(), squared=False)
-            rms_train = mean_squared_error(data.train_y, pred_train.numpy(), squared=False)
+            if type(_model).__name__ == "SGHMC":
+                pred_mean, pred_var, opt_params, opt_variances = _model.predict(data.test_X)
+                sghmc_params[l].append(opt_params)
+                sghmc_vars[l].append(opt_variances)
+                pred_train,_,_,_ = _model.predict(data.train_X)
+                rms_test = mean_squared_error(data.test_y, pred_mean, squared=False)
+                rms_train = mean_squared_error(data.train_y, pred_train, squared=False)
+                log_lik = np.average(_model.calculate_density(data.test_X, data.test_y))
+            else:
+                pred_mean, pred_var = _model.predict_y(data.test_X)
+                pred_train,_ = _model.predict_y(data.train_X)
+                rms_test = mean_squared_error(data.test_y, pred_mean.numpy(), squared=False)
+                rms_train = mean_squared_error(data.train_y, pred_train.numpy(), squared=False)
+                log_lik = np.average(norm.logpdf(data.test_y*data.y_std, loc=pred_mean*data.y_std, scale=pred_var**0.5*data.y_std))
 
             test_errors[l].append(rms_test)
             train_errors[l].append(rms_train)
-
-            #print(np.mean(pred_var), np.std(pred_var))
-            #print(valid_y[:10], pred_mean[:10])
-            log_lik = np.average(norm.logpdf(data.test_y*data.y_std, loc=pred_mean*data.y_std, scale=pred_var**0.5*data.y_std))
-            #print("LL",log_lik)
             log_likelihoods[l].append(log_lik)
             
 
         current_mean = np.mean(test_errors[l])
-        train_mean = np.mean(train_errors[l])
+        #train_mean = np.mean(train_errors[l])
         current_ll = np.mean(log_likelihoods[l])
         print("Lasso:", l, "LL:", current_ll, "Test error", current_mean)
         
@@ -178,5 +192,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
     df["n"] = n
     df["V"] = _model.V 
     df["penalty"] = penalty
+    df["sghmc_vars"] = sghmc_vars
+    df["sghmc_params"] = sghmc_params
     return df  
 

@@ -199,7 +199,7 @@ class LowRankFullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
         L = fill_lowrank_triangular(self.L, self.rank, self.length)
         return tf.transpose(L)@L
 
-class Test(BaseKernel, gpflow.kernels.Kernel):
+class SGHMC_Full(BaseKernel, gpflow.kernels.Kernel):
     """
     Implementation of the full Gaussian kernel which introduces also the off-diagonal
     covariates of the precision matrix. Randomizing the initialization should be handled outside
@@ -262,7 +262,7 @@ class Test(BaseKernel, gpflow.kernels.Kernel):
         L = tfp.math.fill_triangular(self.L)
         return L@tf.transpose(L)
 
-class Test_ARD(BaseKernel, gpflow.kernels.Kernel):
+class SGHMC_ARD(BaseKernel, gpflow.kernels.Kernel):
     """
     Own implementation of the squared exponential kernel with ard property. Should work
     the same way as gpflow.kernels.SquaredExponential(ARD = True). Lengthscales and variance 

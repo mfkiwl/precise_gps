@@ -19,7 +19,7 @@ def init_precision(dim, distribution = "uniform") -> tf.Tensor:
         full_L = np.random.uniform(-1,1,(dim,dim))
 
     else: 
-        full_L = np.random.randn((dim, dim)) / np.sqrt(dim)  
+        full_L = np.random.randn(*(dim, dim)) / np.sqrt(dim)  
     
     P = full_L@np.transpose(full_L)
     lower_L = np.linalg.cholesky(P)
