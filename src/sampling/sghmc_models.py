@@ -10,7 +10,7 @@ class RegressionModel(object):
     def __init__(self, data, kernel, lasso, n, V, penalty):
         class ARGS:
             num_inducing = 100
-            iterations = 10
+            iterations = 10000
             minibatch_size = 10000
             window_size = 100
             num_posterior_samples = 100
