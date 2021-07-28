@@ -53,6 +53,10 @@ coverage.xml
 .pytest_cache/
 *.out
 *.pkl
+*.tex
+*.pdf
+*.txt
+*.npy
 
 # Translations
 *.mo
