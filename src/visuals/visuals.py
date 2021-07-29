@@ -472,7 +472,7 @@ def visualize_loss_landscape(results, model, kernel, data, lasso, gradient, num_
     
 
     _range = np.linspace(minimum-1, maximum+1, 25)
-    ll = loss_landscape(model, kernel, lasso, results['num_Z'], data, results['params'][lasso][0], results['variances'][lasso][0], results['likelihood_variances'][lasso][0], comp1, _range,_range, results['q_mu'], results['q_sqrt'], results['Zs'], results['n'])
+    ll = loss_landscape(model, kernel, lasso, results['num_Z'], data, results['params'][lasso][0], results['variances'][lasso][0], results['likelihood_variances'][lasso][0], comp1, _range,_range, results['q_mu'], results['q_sqrt'], results['Z'], results['n'], results["rank"])
     im = plt.contourf(ll, extent=[minimum-1,maximum+1,minimum-1,maximum+1], levels=15, origin='lower')
     for i in range(num_runs):
         res, _, _, _ = pca_to_params(np.array(results['params'][lasso][i]), gradient)

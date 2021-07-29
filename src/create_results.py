@@ -231,8 +231,15 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
             os.makedirs(loss_param_path)
         for key in df.keys():
             data = df[key]
+            if 'Z' not in data:
+                data['Z'] = []
+            if 'q_mu' not in data:
+                data['q_mu'] = []
+            if 'q_sqrt' not in data:
+                data['q_sqrt'] = []
             the_best_coef = best_coef([data['log_likelihoods']])[0]
-            visualize_loss_landscape(data, data['model'], data['kernel'], data['data_train'], the_best_coef, False,10, loss_param_path + '/{}_{}_{}_{}.pdf'.format(data['model'], data['kernel'], data['penalty'], str(round(the_best_coef,1))), show)
+            if 'GPR' in data['model']:
+                visualize_loss_landscape(data, data['model'], data['kernel'], data['data_train'], the_best_coef, False,10, loss_param_path + '/{}_{}_{}_{}.pdf'.format(data['model'], data['kernel'], data['penalty'], str(round(the_best_coef,1))), show)
         
         
 

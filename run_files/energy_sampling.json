@@ -2,7 +2,7 @@
     "sghmc_full_wishart" : {
         "model" : "SGHMC",
         "kernel": "SGHMC_Full",
-        "data": "Kin8nm",
+        "data": "Energy",
         "lassos": [0],
         "max_iter": 700,
         "num_runs": 10,
@@ -13,13 +13,13 @@
         "batch_iter": 40000,
         "split": 0.2,
         "rank":6,
-        "n":[9],
+        "n":[8],
         "penalty" : "wishart"
     },
     "sghmc_ard" : {
         "model" : "SGHMC",
         "kernel": "SGHMC_ARD",
-        "data": "Kin8nm",
+        "data": "Energy",
         "lassos": [0],
         "max_iter": 700,
         "num_runs": 10,
@@ -30,14 +30,14 @@
         "batch_iter": 40000,
         "split": 0.2,
         "rank":6,
-        "n":[9],
+        "n":[8],
         "penalty" : "lasso"
     },
     "sghmc_full_lasso" : {
         "model" : "SGHMC",
         "kernel": "SGHMC_Full",
-        "data": "Kin8nm",
-        "lassos": [0, 10, 100],
+        "data": "Energy",
+        "lassos": [0,0.2,2.2],
         "max_iter": 700,
         "num_runs": 10,
         "randomized": 1,
@@ -47,7 +47,16 @@
         "batch_iter": 40000,
         "split": 0.2,
         "rank":6,
-        "n":[9],
+        "n":[13],
         "penalty" : "lasso"
     }
 }
+
+
+
+
+
+
+
+
+

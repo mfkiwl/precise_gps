@@ -56,8 +56,8 @@ def transform_M(pca, M):
     """
     return pca.transform(M)
 
-def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_variances, directions, alphas, betas, q_mus, q_sqrts, Zs, n):
-    kernel_kwargs = {"randomized": True, "dim": data[0].shape[1]}
+def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_variances, directions, alphas, betas, q_mus, q_sqrts, Zs, n, rank):
+    kernel_kwargs = {"randomized": True, "dim": data[0].shape[1], "rank": rank}
     _kernel = select_kernel(kernel, **kernel_kwargs)
     
     model_kwargs = {"data": data, "kernel": _kernel, "lasso": lasso, "M": num_Z, "n": n}

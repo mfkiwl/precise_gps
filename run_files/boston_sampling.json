@@ -32,5 +32,22 @@
         "rank":6,
         "n":[13],
         "penalty" : "lasso"
+    },
+    "sghmc_full_lasso" : {
+        "model" : "SGHMC",
+        "kernel": "SGHMC_Full",
+        "data": "Boston",
+        "lassos": [0, 0.1, 3.1],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 40000,
+        "split": 0.2,
+        "rank":6,
+        "n":[13],
+        "penalty" : "lasso"
     }
 }
