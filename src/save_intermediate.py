@@ -1,7 +1,7 @@
 from src.models.models import *
 from src.models.kernels import *
 
-def save_results(model, step, params, counter, variances, likelihood_variances, mlls, l):
+def save_results(model, step, params, counter, variances, likelihood_variances, mlls, l, q_mus, q_sqrts, Zs):
     """
     Save intermediate results of the optimization.
 
@@ -10,6 +10,9 @@ def save_results(model, step, params, counter, variances, likelihood_variances, 
     """
     if type(model).__name__ == 'SVIPenalty':
         value = model.maximum_log_likelihood_objective(model.train_data)
+        q_mus[l].append(model.q_mu)
+        q_sqrts[l].append(model.q_sqrt)
+        Zs[l].append(model.inducing_variable.Z)
     else:
         value = model.maximum_log_likelihood_objective()
         

@@ -56,11 +56,11 @@ def transform_M(pca, M):
     """
     return pca.transform(M)
 
-def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_variances, directions, alphas, betas):
+def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_variances, directions, alphas, betas, q_mus, q_sqrts, Zs, n):
     kernel_kwargs = {"randomized": True, "dim": data[0].shape[1]}
     _kernel = select_kernel(kernel, **kernel_kwargs)
     
-    model_kwargs = {"data": data, "kernel": _kernel, "lasso": lasso, "M": num_Z}
+    model_kwargs = {"data": data, "kernel": _kernel, "lasso": lasso, "M": num_Z, "n": n}
     _model = select_model(model, **model_kwargs)
     
     center_params = params[-1]
@@ -71,19 +71,24 @@ def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_var
     
     for idx_alpha, alpha in enumerate(alphas):
         for idx_beta, beta in enumerate(betas):
-            if kernel == "ARD" or kernel == "ARD_gpflow":
+            if 'ARD' in kernel:
                 _model.kernel.lengthscales = center_params + alpha*directions[0] + beta*directions[1]
             else:
                 _model.kernel.L = center_params + alpha*directions[0] + beta*directions[1]
             
             _model.kernel.variance = center_var
             _model.likelihood.variance = center_logvar
-            if model == "SVIPenalty":
+            if 'SVI' in model:
+                q_mu = q_mus[-1]
+                q_sqrt = q_sqrts[-1]
+                Z = Zs[-1]
+                _model.q_mu = q_mu
+                _model.q_sqrt = q_sqrt
+                _model.inducing_variable.Z = Z
                 loss = -_model.maximum_log_likelihood_objective(data)
             else:
                 loss = -_model.maximum_log_likelihood_objective()
             losses[idx_alpha, idx_beta] = loss
-            
     return losses
 
 def eigen(M):
@@ -111,7 +116,7 @@ def average_frobenius(kernels, num_runs):
         mean of the norm (float)
     """
     norms = []
-    for i in range(num_runs): 
+    for i in range(len(kernels)): 
         norms.append(tf.norm(kernels[i], 'euclidean'))
     
     return np.mean(norms)
@@ -169,15 +174,19 @@ def eigen_count_mean(values, treshhold = 0.001):
     """
     pass
 
+# def best_coef(log_liks):
+#     best_keys = []
+#     for log_lik in log_liks:
+#         max_ll = -np.inf
+#         for key in log_lik.keys():
+#             current_ll = np.mean(log_lik[key])
+#             if max_ll < current_ll:
+#                 max_ll = current_ll
+#                 best_key = key
+#         best_keys.append(best_key)
+#     return best_keys
+
 def best_coef(log_liks):
-    best_keys = []
-    for log_lik in log_liks:
-        max_ll = -np.inf
-        for key in log_lik.keys():
-            current_ll = np.mean(log_lik[key])
-            if max_ll < current_ll:
-                max_ll = current_ll
-                best_key = key
-        best_keys.append(best_key)
-    return best_keys
+    values = [dict(map(lambda x : (x[0], np.mean(x[1])), ll.items())) for ll in log_liks]
+    return [max(val, key = val.get) for val in values]
     

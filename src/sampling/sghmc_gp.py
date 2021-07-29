@@ -106,11 +106,7 @@ class DGP(BaseModel):
             L = list(self.posterior_samples[i].values())[-2].tolist()
             precisions.append(L)
             variances.append(list(self.posterior_samples[i].values())[-1])
-            #show_kernel()
             m, v = self.session.run((self.y_mean, self.y_var), feed_dict=feed_dict)
             ms.append(m)
             vs.append(v)
-        #print(ms)
-        #np.save(f"results/raw/{self.ds_name}/precisions{self.coef}", precisions)
-        #np.save(f"results/raw/{self.ds_name}/variances{self.coef}", variances)
         return np.stack(ms, 0), np.stack(vs, 0), precisions, variances

@@ -13,7 +13,7 @@ from src.select import select_kernel, select_model
 from src.save_intermediate import save_results
 from scipy.stats import norm 
 
-def run_adam_and_natgrad(model, iterations, train_dataset, minibatch_size, params, l, counter, variances, likelihood_variances, mlls, N):
+def run_adam_and_natgrad(model, iterations, train_dataset, minibatch_size, params, l, counter, variances, likelihood_variances, mlls, N, q_mus, q_sqrts, Zs):
     """
     Utility function running the Adam optimizer
 
@@ -38,7 +38,7 @@ def run_adam_and_natgrad(model, iterations, train_dataset, minibatch_size, param
     for step in range(iterations):
         optimization_step()
         if step % 50 == 0:
-            save_results(model, step, params, counter, variances, likelihood_variances, mlls, l)
+            save_results(model, step, params, counter, variances, likelihood_variances, mlls, l, q_mus, q_sqrts, Zs)
 
 
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, minibatch_size, batch_iter, rank, penalty, n, V) -> dict:
@@ -100,12 +100,19 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
     test_errors, train_errors, mlls, params, sghmc_params = {}, {}, {}, {}, {}
     likelihood_variances, variances, log_likelihoods = {}, {}, {}
     sghmc_vars = {}
+    
+    q_mus = {}
+    q_sqrts = {}
+    Zs = {}
 
     # Iterating through lassos or n:s
     for l in lassos if penalty == "lasso" else n:
         test_errors[l], train_errors[l], mlls[l], params[l], sghmc_params[l] = [], [], {}, {}, []
         likelihood_variances[l], variances[l], log_likelihoods[l] = {}, {}, []
         sghmc_vars[l] = []
+        q_mus[l] = []
+        q_sqrts[l] = [] 
+        Zs[l] = [] 
         
 
         #kf = KFold(n_splits=5, shuffle=True)
@@ -133,11 +140,11 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
             # Optimizing either using Scipy or Adam
             def step_callback(step, variables, values):
                 if step % 5 == 0:
-                    save_results(_model, step, params, num_run, variances, likelihood_variances, mlls, l)
+                    save_results(_model, step, params, num_run, variances, likelihood_variances, mlls, l, q_mus, q_sqrts, Zs)
             
             if type(_model) == SVIPenalty:
                 train_dataset = tf.data.Dataset.from_tensor_slices((data.train_X, data.train_y)).repeat().shuffle(len(data.train_y))
-                run_adam_and_natgrad(_model,batch_iter,train_dataset,minibatch_size,params,l,num_run,variances,likelihood_variances,mlls, len(data.train_y))
+                run_adam_and_natgrad(_model,batch_iter,train_dataset,minibatch_size,params,l,num_run,variances,likelihood_variances,mlls, len(data.train_y), q_mus, q_sqrts, Zs)
             elif type(_model) == GPRPenalty:
                 optimizer = gpflow.optimizers.Scipy()
                 optimizer.minimize(
@@ -194,5 +201,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized, num_Z, mi
     df["penalty"] = penalty
     df["sghmc_vars"] = sghmc_vars
     df["sghmc_params"] = sghmc_params
+    df["q_mu"] = q_mus
+    df["q_sqrt"] = q_sqrts
+    df["Z"] = Zs
     return df  
 
