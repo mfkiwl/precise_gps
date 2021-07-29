@@ -1,0 +1,36 @@
+{
+    "sghmc_full_wishart" : {
+        "model" : "SGHMC",
+        "kernel": "SGHMC_Full",
+        "data": "Redwine",
+        "lassos": [0],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 40000,
+        "split": 0.2,
+        "rank":6,
+        "n":[11],
+        "penalty" : "wishart"
+    },
+    "sghmc_ard" : {
+        "model" : "SGHMC",
+        "kernel": "SGHMC_ARD",
+        "data": "Redwine",
+        "lassos": [0],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 40000,
+        "split": 0.2,
+        "rank":6,
+        "n":[11],
+        "penalty" : "lasso"
+    }
+}

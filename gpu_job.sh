@@ -1,5 +1,4 @@
 #!/bin/bash
-
 file_name=$1
 > ${file_name}.sh 
 echo "#!/bin/bash" >> ${file_name}.sh

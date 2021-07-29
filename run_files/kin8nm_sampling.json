@@ -1,8 +1,8 @@
 {
-    "boston_svi_full" : {
-        "model" : "SVIPenalty",
-        "kernel": "FullGaussianKernel",
-        "data": "Boston",
+    "sghmc_full_wishart" : {
+        "model" : "SGHMC",
+        "kernel": "SGHMC_Full",
+        "data": "Kin8nm",
         "lassos": [0],
         "max_iter": 700,
         "num_runs": 10,
@@ -12,26 +12,25 @@
         "minibatch": -1,
         "batch_iter": 40000,
         "split": 0.2,
-        "rank":0,
-        "n":[13,0.5,20],
-        "penalty":"wishart"
+        "rank":6,
+        "n":[9],
+        "penalty" : "wishart"
     },
-
-    "boston_svi_ard" : {
-        "model" : "SVIPenalty",
-        "kernel": "ARD",
-        "data": "Boston",
+    "sghmc_ard" : {
+        "model" : "SGHMC",
+        "kernel": "SGHMC_ARD",
+        "data": "Kin8nm",
         "lassos": [0],
         "max_iter": 700,
-        "num_runs": 25,
+        "num_runs": 10,
         "randomized": 1,
         "show": 0,
         "num_Z": 100,
         "minibatch": -1,
         "batch_iter": 40000,
         "split": 0.2,
-        "rank":0,
-        "n":[13,0.5,20],
-        "penalty":"wishart"
+        "rank":6,
+        "n":[9],
+        "penalty" : "lasso"
     }
 }
