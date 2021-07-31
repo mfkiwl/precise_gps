@@ -10,17 +10,20 @@ from src.tex.create_tables import *
 
 plt.rcParams.update({'font.size': 14}) # Global fontsize
 
-def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_landscape = 0):
+def create_results(dataset, directory, num_lassos, step = 1, show = 0, 
+                   loss_landscape = 0):
     '''
-    Create visualizations form the raw .pkl files. This function also forms some
-    dataframes. 
+    Create visualizations form the raw .pkl files. This function also 
+    forms some dataframes. 
 
     Args:
         dataset (string)   : path to the dataset folder
         directory (string) : dataset directory for analysis
-        num_lassos (int)   : number of lasso coefficients (used for some visualizations)
+        num_lassos (int)   : number of lasso coefficients (used for some 
+                             visualizations)
         step (int)         : step between the lasso coefficients
-        show (bool)        : wheter figures are shown during running the program 
+        show (bool)        : wheter figures are shown during running the 
+                             program 
     
     Returns:
         Saves visualizations and dataframes to results/processed
@@ -61,10 +64,11 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
     names, mll_names_gpr, mll_names_svi = [], [], []
     mlls_gpr, mlls_svi = [], []
     log_liks, train_errors, test_errors = [], [], []
-    all_lassos, precisions, all_precisions = [], [], []
+    all_lassos, all_precisions = [], []
     num_runs = []
 
     for key in df.keys():
+        precisions = []
         data = df[key]
         model = data['model']
         kernel = data['kernel']
@@ -77,7 +81,12 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
         # Simplify model and kernel names 
         kernel = 'ARD' if 'ARD' in kernel else 'FULL'
         kernel = kernel if 'Low' not in data['kernel'] else f'{kernel} {rank}'
-        model = 'GPR' if 'GPR' in model else 'SVI'
+        if 'GPR' in model:
+            model = 'GPR'
+        elif 'SVI' in model:
+            model = 'SVI'
+        else:
+            model = 'SGHMC'
         penalty = 'W' if penalty == 'wishart' else 'L1'
 
         if kernel == 'ARD':
@@ -91,15 +100,18 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
         for l in lassos:
             if model == 'SVI':
                 mlls_svi.append(data['mll'][l])
-                mll_names_svi.append(f'{model} {kernel} {str(l)}')
-            else:
+                mll_names_svi.append(f'{model} {kernel} {str(np.round(l,2))}')
+            if model == 'GPR':
                 mlls_gpr.append(data['mll'][l])
-                mll_names_gpr.append(f'{model} {kernel} {str(l)}')
+                mll_names_gpr.append(f'{model} {kernel} {str(np.round(l,2))}')
 
         for l in data['lassos'] if data['penalty'] == 'lasso' else data['n']:
             new_params = {}
             for i in range(data['num_runs']):
-                new_params[i] = params_to_precision_vis(np.array(data['params'][l][i][-1]), data['kernel'], data['rank'], len(data['params'][l][i][-1]))
+                if model == 'SGHMC':
+                    new_params[i] = params_to_precision_vis(np.array(data['sghmc_params'][l][i][-1][90]), data['kernel'], data['rank'], len(data['sghmc_params'][l][i][-1][90]))
+                else:  
+                    new_params[i] = params_to_precision_vis(np.array(data['params'][l][i][-1]), data['kernel'], data['rank'], len(data['params'][l][i][-1]))
             precisions.append(new_params) 
         
         all_precisions.append(precisions)
@@ -109,7 +121,7 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
         all_lassos.append(data['lassos'])
     best_coefs = best_coef(log_liks)
     
-    comparison_plot_names = list(map(lambda x: f'{x[0]} {str(x[1])}', zip(names,best_coefs)))
+    comparison_plot_names = list(map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', zip(names,best_coefs)))
     
     visualize_best_lls(log_liks, comparison_plot_names, savefig=plot_path + '/lls.pdf')
     visualize_best_rmse(log_liks, test_errors, comparison_plot_names, savefig=plot_path + '/rmses.pdf')
@@ -122,10 +134,8 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
     visualize_errors_mean(test_errors,names,'test', all_precisions, num_runs, True, plot_path + '/test_errors_fro_mean.pdf', show)
 
     # Kernels
-    for key in df.keys():
+    for idx, key in enumerate(df.keys()):
         data = df[key]
-        if 'penalty' not in data:
-            data['penalty'] = 'lasso'
         for l in data['lassos'] if data['penalty'] == 'lasso' else data['n']:
             precisions = []
             p_names = []
@@ -136,60 +146,24 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
                     lll = data['log_likelihoods'][l][i]
                     p_names.append('LL: ' + str(round(lll,3)) +', TE: ' + str(round(data['test_errors'][l][i],2)) + ', Var: ' + str(np.round(data['variances'][l][i][-1],2)))
             else:
-                indices = np.random.choice(np.range(100), 9)
+                indices = np.random.choice(np.arange(100), 9)
                 for i in indices:
-                    P = params_to_precision_vis(np.array(data['sghmc_params'][l][i]), data['kernel'], data['rank'], len(data['sghmc_params'][l][i]))
+                    P = params_to_precision_vis(np.array(data['sghmc_params'][l][-1][-1][i]), data['kernel'], data['rank'], len(data['sghmc_params'][l][-1][-1][i]))
                     precisions.append(P)
-                    lll = data['log_likelihoods'][l][i]
-                    p_names.append('LL: ' + str(round(lll,3)) +', TE: ' + str(round(data['test_errors'][l][i],2)) + ', Var: ' + str(np.round(data['sghmc_vars'][l][i],2)))
+                    lll = data['log_likelihoods'][l][-1]
+                    p_names.append('LL: ' + str(round(lll,3)) +', TE: ' + str(round(data['test_errors'][l][-1],2)) + ', Var: ' + str(np.round(np.exp(data['sghmc_vars'][l][-1][-1][i]),2)))
             data_instance = globals()[dataset](0.2)
             cols = data_instance.cols
             if not os.path.exists(plot_path + '/kernels'):
                 os.makedirs(plot_path + '/kernels')
-
-            show_kernels(precisions,p_names,cols,'global',-1,plot_path + '/kernels' + '/' + data['model'] + data['kernel'] + str(round(l,1)) + str(data['rank']) + '.pdf', show)
-
-    # new_names = []
-    # new_log_liks = []
-    # new_train_errors = []
-    # new_test_errors = []
-    # for key in df.keys():
-    #     data = df[key]
-    #     model = data['model']
-    #     kernel = data['kernel']
-    #     if 'ARD' in kernel:
-    #         kernel = 'ARD'
-    #     else:
-    #         kernel = 'FULL'
-        
-    #     if 'GPR' in model:
-    #         model = 'GPR'
-    #     else:
-    #         model = 'SVI'
-    #     if 'penalty' not in data:
-    #         data['penalty'] = 'lasso'
-    #     lassos = data['lassos'] if data['penalty'] == 'lasso' else data['n']
-    #     best_test_error_mean = np.inf
-    #     for l in lassos:
-    #         current_test_error_mean = np.mean(data['test_errors'][l])
-    #         if current_test_error_mean < best_test_error_mean:
-    #             best_test_error_mean = current_test_error_mean
-    #             best_new_name = model + kernel + str(round(l,1))
-    #             best_log_lik = data['log_likelihoods'][l]
-    #             best_train_error = data['train_errors'][l]
-    #             best_test_error = data['test_errors'][l]
-
-    #     new_names.append(best_new_name)
-    #     new_log_liks.append(best_log_lik)
-    #     new_train_errors.append(best_train_error)
-    #     new_test_errors.append(best_test_error)
+            show_kernels(precisions,p_names,cols,'global',-1,f'{plot_path}/kernels/{names[idx]}{str(np.round(l,2))}.pdf', show)
 
     table_path = result_path + '/tables'
     if not os.path.exists(table_path):
         os.makedirs(table_path)
 
     # save_results_table(new_log_liks, new_train_errors, new_test_errors, new_names, f'{table_path}/')
-    save_overview(log_liks, test_errors, list(map(lambda x: f'{x[0]} {str(x[1])}', zip(names,best_coefs))), f'{table_path}/', best_coefs)
+    save_overview(log_liks, test_errors, list(map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', zip(names,best_coefs))), f'{table_path}/', best_coefs)
 
     # Eigenvalues
     if not os.path.exists(table_path + '/eigen'):
@@ -199,29 +173,29 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0, loss_land
     eigen_names = []
     for key in df.keys():
         data = df[key]
-        model_name = 'SVI' if 'SVI' in data['model'] else 'GPR'
-        kernel_name = 'ARD' if 'ARD' in data['kernel'] else 'FULL'
-        eigen_names.append(f'{model_name} {kernel_name}')
-        if 'ARD' in data['kernel']:
-            kernel_path = 'ARD'
-        else:
-            kernel_path = 'FULL'
-        if not os.path.exists(table_path + f'/eigen/{kernel_path}'):
-            os.makedirs(table_path + f'/eigen/{kernel_path}')
+        if 'SGHMC' not in data['kernel']:
+            model_name = 'SVI' if 'SVI' in data['model'] else 'GPR'
+            kernel_name = 'ARD' if 'ARD' in data['kernel'] else 'FULL'
+            eigen_names.append(f'{model_name} {kernel_name}')
+            if 'ARD' in data['kernel']:
+                kernel_path = 'ARD'
+            else:
+                kernel_path = 'FULL'
+            if not os.path.exists(table_path + f'/eigen/{kernel_path}'):
+                os.makedirs(table_path + f'/eigen/{kernel_path}')
 
-        model_eigen_values = {}
-        if 'penalty' not in data:
-            data['penalty'] = 'lasso'
-        for l in data['lassos'] if data['penalty'] == 'lasso' else data['n']:
-            ret = []
-            for i in range(data['num_runs']):
-                P = params_to_precision_vis(np.array(data['params'][l][i][-1]), data['kernel'], data['rank'], len(data['params'][l][i][-1]))
-                eigen_vals, _ = eigen(P)
-                ret.append(list(eigen_vals))
-            model_eigen_values[l] = ret
+            model_eigen_values = {}
+            if 'penalty' not in data:
+                data['penalty'] = 'lasso'
+            for l in data['lassos'] if data['penalty'] == 'lasso' else data['n']:
+                ret = []
+                for i in range(data['num_runs']):
+                    P = params_to_precision_vis(np.array(data['params'][l][i][-1]), data['kernel'], data['rank'], len(data['params'][l][i][-1]))
+                    eigen_vals, _ = eigen(P)
+                    ret.append(list(eigen_vals))
+                model_eigen_values[l] = ret
             
-            #save_eigen_table(ret, data['model'] + data['kernel'] + str(round(l,1)), len(eigen_vals), table_path + f'/eigen/{kernel_path}/')
-        eigen_value_dict[eigen_names[-1]] = model_eigen_values
+            eigen_value_dict[eigen_names[-1]] = model_eigen_values
     visualize_eigen_threshhold(eigen_value_dict,eigen_names,0.001,plot_path + '/eigen_th.pdf',show)
 
     if loss_landscape:

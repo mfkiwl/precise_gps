@@ -158,12 +158,21 @@ class Kin8nm(Dataset):
 
 class Year(Dataset):
     def __init__(self, split):
-        super(Year, self).__init__(path = "data/year", split=split)
+        self.path = "data/year"
+        X, y, cols = self.read_data()
+        Xnp, ynp = self.preprocess(X,y)
+
+        self.train_X = Xnp[:463_715]
+        self.train_y = ynp[:463_715]
+        self.test_X = Xnp[463_715:]
+        self.test_y = ynp[463_715:]
+        self.cols = cols 
+        
     
     def get_cols(self, path):
         return np.arange(90)
         
     def read_data(self):
-        data = pd.read_csv(self.path + "/YearPredictionMSD.txt", header=None).values
+        data = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/00203/YearPredictionMSD.txt.zip',compression='zip', header = None).values
         return data[:,1:], data[:,0].reshape(-1,1), self.get_cols(self.path)
     

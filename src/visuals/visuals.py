@@ -7,7 +7,7 @@ from src.visuals.process_results import average_frobenius, pca_to_params, transf
 
 # TODO : this needs cleaning up
 COLORS = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:olive', 'tab:cyan', 'tab:pink', 'tab:brown', 'tab:gray']
-
+NAME_COLORS = {'GPR': 'tab:blue', 'SVI':'tab:orange', 'SGHMC':'tab:red'}
 class MidpointNormalize(colors.Normalize):
     
     '''
@@ -193,14 +193,15 @@ def visualize_log_likelihood(log_liks, names, kernels, num_runs, fro = False, sa
         for lasso_idx, l in enumerate(lassos):
             max_ll = np.argmax(log_lik[l])
             if fro:
+                #print(names[idx], kernels[idx][lasso_idx], lasso_idx)
                 frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs[idx])
             for jdx, ll in enumerate(log_lik[l]):
                 if fro:
                     x_value = frobenius
                     if (lasso_idx, jdx) == max_ll_model:
-                        plt.plot(x_value, ll, '.', color = COLORS[idx], markersize = 15, label = names[idx])
+                        plt.plot(x_value, ll, '.', color = COLORS[idx % 10], markersize = 15, label = names[idx])
                     else:
-                        plt.plot(x_value, ll, '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
+                        plt.plot(x_value, ll, '.', color = COLORS[idx % 10], alpha = 0.25, markersize = 5)
                 else:
                     x_value = l
                     if jdx == max_ll:
@@ -254,10 +255,10 @@ def visualize_log_likelihood_mean(log_liks, names, kernels, num_runs, fro = Fals
             frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs[idx])
             x_value = frobenius
             if lasso_idx == max_ll_model:
-                plt.plot(x_value, mean_ll[lasso_idx], '.', color = COLORS[idx], markersize = 15, label = names[idx])
-                plt.errorbar(x_value, mean_ll[lasso_idx], yerr=std_ll[lasso_idx], fmt='-', color = COLORS[idx])
+                plt.plot(x_value, mean_ll[lasso_idx], '.', color = COLORS[idx % 10], markersize = 15, label = names[idx])
+                plt.errorbar(x_value, mean_ll[lasso_idx], yerr=std_ll[lasso_idx], fmt='-', color = COLORS[idx % 10], alpha = 0.5)
             else:
-                plt.plot(x_value, mean_ll[lasso_idx], '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
+                plt.plot(x_value, mean_ll[lasso_idx], '.', color = COLORS[idx % 10], alpha = 0.25, markersize = 5)
 
 
     plt.grid(True)
@@ -287,15 +288,22 @@ def visualize_best_lls(log_liks, names, savefig = None, show = 0):
         savefig (string) : path in which figure is saved, if None -> not saving anywhere
         show (bool)      : wheter figure is shown or just closed
     '''
+    zipped = dict(sorted(zip(names, log_liks)))
+    names, log_liks = list(zipped.keys()), list(zipped.values())
     best_log_liks = best_coef(log_liks)
-
     plt.figure(figsize = (10,6))
     for i, log_lik in enumerate(log_liks):
         log_liks_as_list = log_lik[best_log_liks[i]]
         mean_ll = np.mean(log_liks_as_list)
         std_ll = np.std(log_liks_as_list)
-        plt.plot(mean_ll, i, '.', markersize = 12, color = COLORS[i % 10])
-        plt.errorbar(mean_ll, i, xerr=std_ll, fmt='-', color = COLORS[i % 10])
+        if 'SVI' in names[i]:
+            color = NAME_COLORS['SVI']
+        elif 'GPR' in names[i]:
+            color = NAME_COLORS['GPR']
+        else:
+            color = NAME_COLORS['SGHMC']
+        plt.plot(mean_ll, i, '.', markersize = 18, color = color)
+        plt.errorbar(mean_ll, i, xerr=std_ll, fmt='-', color = color, elinewidth = 3)
     
         plt.yticks(np.arange(len(names)), names)  # Set text labels and properties.
 
@@ -318,15 +326,24 @@ def visualize_best_rmse(log_liks, rmses, names, savefig = None, show = 0):
         savefig (string) : path in which figure is saved, if None -> not saving anywhere
         show (bool)      : wheter figure is shown or just closed
     '''
+    
+    zipped = sorted(zip(names, log_liks, rmses))
+    zipped2 = zip(*zipped)
+    names, log_liks, rmses = [list(elem) for elem in zipped2]
     best_log_liks = best_coef(log_liks)
-
     plt.figure(figsize = (10,6))
     for i, rmse in enumerate(rmses):
         rmse_as_list = rmse[best_log_liks[i]]
         mean = np.mean(rmse_as_list)
         std = np.std(rmse_as_list)
-        plt.plot(mean, i, '.', markersize = 12, color = COLORS[i % 10])
-        plt.errorbar(mean, i, xerr=std, fmt='-', color = COLORS[i % 10])
+        if 'SVI' in names[i]:
+            color = NAME_COLORS['SVI']
+        elif 'GPR' in names[i]:
+            color = NAME_COLORS['GPR']
+        else:
+            color = NAME_COLORS['SGHMC']
+        plt.plot(mean, i, '.', markersize = 18, color = color)
+        plt.errorbar(mean, i, xerr=std, fmt='-', color = color, elinewidth = 3)
     
         plt.yticks(np.arange(len(names)), names)  # Set text labels and properties.
 
@@ -366,19 +383,19 @@ def visualize_errors(errors, names, error_type, kernels, num_runs, fro = False, 
                 if fro:
                     x_value = frobenius
                     if (lasso_idx, jdx) == min_e_model:
-                        plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 15, label = names[idx])
+                        plt.plot(x_value, e, '.', color = COLORS[idx % 10], markersize = 15, label = names[idx])
                     else:
-                        plt.plot(x_value, e, '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
+                        plt.plot(x_value, e, '.', color = COLORS[idx % 10], alpha = 0.25, markersize = 5)
                 else:
                     x_value = l
                     if jdx == min_e:
                         if counter == 0:
                             counter += 1
-                            plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 10, label = names[idx])
+                            plt.plot(x_value, e, '.', color = COLORS[idx % 10], markersize = 10, label = names[idx])
                         else:
-                            plt.plot(x_value, e, '.', color = COLORS[idx], markersize = 10)
+                            plt.plot(x_value, e, '.', color = COLORS[idx % 10], markersize = 10)
                     else:
-                        plt.plot(x_value, e, '.', color = COLORS[idx], alpha = 0.2)
+                        plt.plot(x_value, e, '.', color = COLORS[idx % 10], alpha = 0.2)
 
     plt.grid(True)
     if fro:
@@ -419,10 +436,10 @@ def visualize_errors_mean(errors, names, error_type, kernels, num_runs, fro = Fa
             frobenius = average_frobenius(kernels[idx][lasso_idx], num_runs[idx])
             x_value = frobenius
             if lasso_idx == min_e_model:
-                plt.plot(x_value, mean_errors[lasso_idx], '.', color = COLORS[idx], markersize = 15, label = names[idx])
-                plt.errorbar(x_value, mean_errors[lasso_idx], yerr=std_errors[lasso_idx], fmt='-', color = COLORS[idx])
+                plt.plot(x_value, mean_errors[lasso_idx], '.', color = COLORS[idx % 10], markersize = 15, label = names[idx])
+                plt.errorbar(x_value, mean_errors[lasso_idx], yerr=std_errors[lasso_idx], fmt='-', color = COLORS[idx % 10], alpha = 0.5)
             else:
-                plt.plot(x_value, mean_errors[lasso_idx], '.', color = COLORS[idx], alpha = 0.25, markersize = 5)
+                plt.plot(x_value, mean_errors[lasso_idx], '.', color = COLORS[idx % 10], alpha = 0.25, markersize = 5)
 
     plt.grid(True)
     if fro:

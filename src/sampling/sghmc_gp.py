@@ -21,7 +21,8 @@ class Layer(object):
             _, _, V = np.linalg.svd(X, full_matrices=False)
             self.mean = V[:self.outputs, :].T
 
-        self.U = tf.Variable(np.zeros((self.M, self.outputs)), dtype=tf.float64, trainable=False, name='U')
+        self.U = tf.Variable(np.random.randn(*(self.M, self.outputs)), dtype=tf.float64, trainable=False, name='U')
+        #self.U = tf.Variable(np.zeros((self.M, self.outputs)), dtype=tf.float64, trainable=False, name='U')
 
     def conditional(self, X):
         # Caching the covariance matrix from the sghmc steps gives a significant speedup. This is not being done here.

@@ -147,7 +147,7 @@ def params_to_precision_vis(params, kernel, dim, length):
         precision matrix
     """
 
-    if kernel == "ARD":
+    if kernel == "ARD" or kernel == 'SGHMC_ARD':
         P = tf.linalg.diag(params**(2))
         return P
 
@@ -155,7 +155,7 @@ def params_to_precision_vis(params, kernel, dim, length):
         P = tf.linalg.diag(params**(-2))
         return P
 
-    if kernel == "FullGaussianKernel":
+    if kernel == "FullGaussianKernel" or kernel == 'SGHMC_Full':
         L = tfp.math.fill_triangular(params)
         P = L@tf.transpose(L)
         return P

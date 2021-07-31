@@ -10,7 +10,7 @@ class RegressionModel(object):
     def __init__(self, data, kernel, lasso, n, V, penalty):
         class ARGS:
             num_inducing = 100
-            iterations = 10000
+            iterations = 40000
             minibatch_size = 10000
             window_size = 100
             num_posterior_samples = 100
@@ -23,6 +23,7 @@ class RegressionModel(object):
         self.data = data
         self.kernel = kernel
         self.penalty = penalty
+        self.nlls = []
 
     def fit(self, X, Y):
         lik = Gaussian(np.var(Y, 0))
@@ -52,7 +53,8 @@ class RegressionModel(object):
                 self.model.train_hypers()
                 if _ % 100 == 1:
                     print('Iteration {}'.format(_))
-                    self.model.print_sample_performance()
+                    self.nlls.append(self.model.nll)
+                    #self.model.print_sample_performance()
             self.model.collect_samples(self.ARGS.num_posterior_samples, self.ARGS.posterior_sample_spacing)
 
         except KeyboardInterrupt:  # pragma: no cover

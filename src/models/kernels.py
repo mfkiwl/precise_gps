@@ -216,10 +216,10 @@ class SGHMC_Full(BaseKernel, gpflow.kernels.Kernel):
         dim = kwargs["dim"]
         if not randomized:
             L = np.ones((dim*(dim+1))//2)
-            variance = 1.0
+            variance = 0.0
         else:
             L = init_precision(dim, "wishart")
-            variance = 1.0 
+            variance = np.random.randn()
 
         self.variance = tf.Variable(variance, dtype = tf.float64, trainable = False)
         #self.variance = tfp.util.TransformedVariable(variance, dtype = tf.float64, trainable = False, bijector = gpflow.utilities.positive())
@@ -279,10 +279,10 @@ class SGHMC_ARD(BaseKernel, gpflow.kernels.Kernel):
         dim = kwargs["dim"]
         if not randomized:
             L = np.ones(dim)
-            variance = 1.0
+            variance = 0.0
         else:
-            L = np.random.uniform(0.5,3,dim)
-            variance = 1.0
+            L = np.random.randn(*dim)
+            variance = np.random.randn()
 
         self.variance = tf.Variable(variance, dtype = tf.float64, trainable = False)
         #self.variance = tfp.util.TransformedVariable(variance, dtype = tf.float64, trainable = False, bijector = gpflow.utilities.positive())
