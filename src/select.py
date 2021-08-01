@@ -4,7 +4,7 @@ import src.models.models
 import src.datasets.datasets
 
 _defined_kernels = inspect.getmembers(src.models.kernels, inspect.isclass)
-_defined_models = inspect.getmembers(src.models.kernels, inspect.isclass)
+_defined_models = inspect.getmembers(src.models.models, inspect.isclass)
 _defined_datasets = inspect.getmembers(src.datasets.datasets, inspect.isclass)
 
 _possible_kernels = [x[0] for x in _defined_kernels 
