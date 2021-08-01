@@ -3,7 +3,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp 
 from src.models.kernels import *
 from src.models.initialization import select_inducing_points
-from src.models.penalty import Penalty
+from src.models.prior import Prior
 from src.sampling.sghmc_models import RegressionModel
 from gpflow import set_trainable
 
@@ -34,7 +34,7 @@ class GPRPenalty(gpflow.models.GPR):
         Overwrites the gpflow.models.GPR.maximum_likelihood_objective
         """
         return super().log_marginal_likelihood() + \
-            getattr(Penalty(), self.penalty)(self)
+            getattr(Prior(), self.penalty)(self)
 
 class SVIPenalty(gpflow.models.SVGP):
     """
@@ -72,7 +72,7 @@ class SVIPenalty(gpflow.models.SVGP):
         """
         Overwrites the gpflow.models.SVGP.maximum_likelihood_objective
         """
-        return super().elbo(data) + getattr(Penalty(), self.penalty)(self)
+        return super().elbo(data) + getattr(Prior(), self.penalty)(self)
 
 class Standard_GPR(gpflow.models.GPR):
 

@@ -2,7 +2,7 @@ import tensorflow as tf
 from src.models.models import *
 from src.models.initialization import *
 
-class Penalty():
+class Prior():
     """
     Add penalty to the marginal log likelihood when optimizing.
     """

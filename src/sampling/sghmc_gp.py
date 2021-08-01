@@ -4,7 +4,7 @@ import tensorflow_probability as tfp
 import numpy as np
 
 from src.sampling.sghmc_base import BaseModel
-from src.models.penalty import Penalty
+from src.models.prior import Prior
 import src.sampling.conditionals as conditionals
 
 class Layer(object):
@@ -52,7 +52,7 @@ class DGP(BaseModel):
         return Fs[1:], Fmeans, Fvars
 
     def __init__(self, X, Y, n_inducing, kernels, likelihood, minibatch_size, window_size, lasso, n, V,penalty,
-                 adam_lr=0.01, epsilon=0.01, mdecay=0.05):
+                 adam_lr=0.001, epsilon=0.01, mdecay=0.05):
         self.n_inducing = n_inducing
         self.kernels = kernels
         self.kernel = kernels[0]
@@ -82,7 +82,7 @@ class DGP(BaseModel):
         self.log_likelihood = self.likelihood.predict_density(self.fmeans[-1], self.fvars[-1], self.Y_placeholder)
 
         self.nll = - tf.reduce_sum(self.log_likelihood) / tf.cast(tf.shape(self.X_placeholder)[0], tf.float64)*N \
-                   - self.prior - getattr(Penalty(), self.penalty)(self)
+                   - self.prior - getattr(Prior(), self.penalty)(self)
         self.nll /= N
         
 
