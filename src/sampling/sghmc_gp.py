@@ -52,7 +52,7 @@ class DGP(BaseModel):
         return Fs[1:], Fmeans, Fvars
 
     def __init__(self, X, Y, n_inducing, kernels, likelihood, minibatch_size, window_size, lasso, n, V,penalty,
-                 adam_lr=0.001, epsilon=0.01, mdecay=0.05):
+                 adam_lr=0.01, epsilon=0.01, mdecay=0.05):
         self.n_inducing = n_inducing
         self.kernels = kernels
         self.kernel = kernels[0]

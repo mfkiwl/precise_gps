@@ -9,7 +9,8 @@ def init_precision(dim, distribution = "uniform") -> tf.Tensor:
     Initializes full gaussian kernel with random precision
 
     Args:
-        dim (int)           : dimension of the precision matrix (dim x dim)
+        dim (int)           : dimension of the precision matrix 
+        (dim x dim)
         distribution (str)  : distribution used for sampling full L
 
     Returns:
@@ -48,6 +49,7 @@ def init_lowrank_precision(dim, rank) -> tf.Tensor:
 
     Args:
         dim (int) : dimension of the precision matrix (dim x dim)
+        rank (int) : rank of the precision matrix
 
     Returns:
         Cholesky decomposition of the precision in vector format
@@ -63,8 +65,10 @@ def fill_lowrank_triangular(vect, dim, length) -> tf.Tensor:
     Create lowrank matrix from vector 
 
     Args:
-        vect (tensor) : tensor of float (parameters of a lowrank full Gaussian kernel)
-        dim (int)     : dimension of the inputs (higher value)
+        vect (tensor) : tensor of float 
+        (parameters of a lowrank full Gaussian kernel)
+        dim (int) : dimension of the inputs (higher value)
+        length (int) : number of parameters
     
     Returns:
         matrix M that is shaped dim x len(vect) / dim
@@ -80,7 +84,7 @@ def fill_lowrank_triangular_inverse(L) -> tf.Tensor:
     Transform lowrank matrix into vector format
 
     Args:
-        M (tensor) : lowrank matrix 
+        L (tensor) : lowrank matrix 
     
     Returns:
         M in vector format 

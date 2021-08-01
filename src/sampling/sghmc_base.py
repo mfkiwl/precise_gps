@@ -112,5 +112,7 @@ class BaseModel(object):
         feed_dict = {self.X_placeholder: X_batch, self.Y_placeholder: Y_batch}
         if posterior:
             feed_dict.update(np.random.choice(self.posterior_samples))
-        mll = np.sum(self.session.run((self.log_likelihood), feed_dict=feed_dict), 0)
-        print(' Training MLL of a sample: {}'.format(mll))
+        #mll = np.sum(self.session.run((self.log_likelihood), feed_dict=feed_dict), 0)
+        nll = self.session.run((self.nll), feed_dict = feed_dict)
+        print(' Training MLL of a sample: {}'.format(nll))
+        return nll

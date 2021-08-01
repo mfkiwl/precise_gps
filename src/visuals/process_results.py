@@ -1,7 +1,9 @@
 import numpy as np
 import tensorflow as tf 
 import tensorflow_probability as tfp
+
 from sklearn.decomposition import PCA
+
 from src.select import select_model, select_kernel
 from src.models.initialization import fill_lowrank_triangular
 
@@ -11,8 +13,8 @@ def sub_kernel(kernel, dim1, dim2):
 
     Args:
         kernel (tensor) : kernel matrix
-        dim1 (tuple)    : start, end
-        dim2 (tuple)    : start, end
+        dim1 (tuple) : start, end
+        dim2 (tuple) : start, end
     """
 
     sub_kernel = kernel[dim1[0]:dim1[1],dim2[0]:dim2[1]]
@@ -20,11 +22,13 @@ def sub_kernel(kernel, dim1, dim2):
 
 def pca_to_params(list_of_params, gradient):
     """
-    Create two new features with PCA that are used to visualize the loss-landscape.
+    Create two new features with PCA that are used to visualize the 
+    loss-landscape.
 
     Args:
         list_of_params (list) : list of parameters
-        gradient (bool)       : whether PCA is calculted through difference (True) or just through parameters (False) 
+        gradient (bool) : whether PCA is calculted through difference 
+        (True) or just through parameters (False) 
     """
     num_of_params = len(list_of_params[0])
     num_of_rows = len(list_of_params)
@@ -49,18 +53,22 @@ def transform_M(pca, M):
 
     Args:
         pca (sklearn.decomposition.PCA) : fitted PCA object
-        M (numpy array)                 : parameters or parameter differences
+        M (numpy array) : parameters or parameter differences
     
     Returns:
         Transformed values
     """
     return pca.transform(M)
 
-def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_variances, directions, alphas, betas, q_mus, q_sqrts, Zs, n, rank):
+def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, 
+                   log_variances, directions, alphas, betas, q_mus, 
+                   q_sqrts, Zs, n, rank):
+    
     kernel_kwargs = {"randomized": True, "dim": data[0].shape[1], "rank": rank}
     _kernel = select_kernel(kernel, **kernel_kwargs)
     
-    model_kwargs = {"data": data, "kernel": _kernel, "lasso": lasso, "M": num_Z, "n": n}
+    model_kwargs = {"data": data, "kernel": _kernel, 
+                    "lasso": lasso, "M": num_Z, "n": n}
     _model = select_model(model, **model_kwargs)
     
     center_params = params[-1]
@@ -72,9 +80,11 @@ def loss_landscape(model, kernel, lasso, num_Z, data, params, variances, log_var
     for idx_alpha, alpha in enumerate(alphas):
         for idx_beta, beta in enumerate(betas):
             if 'ARD' in kernel:
-                _model.kernel.lengthscales = center_params + alpha*directions[0] + beta*directions[1]
+                _model.kernel.lengthscales = center_params + \
+                    alpha*directions[0] + beta*directions[1]
             else:
-                _model.kernel.L = center_params + alpha*directions[0] + beta*directions[1]
+                _model.kernel.L = center_params + \
+                    alpha*directions[0] + beta*directions[1]
             
             _model.kernel.variance = center_var
             _model.likelihood.variance = center_logvar
@@ -164,29 +174,21 @@ def params_to_precision_vis(params, kernel, dim, length):
         L = fill_lowrank_triangular(params, dim, length)
         return tf.transpose(L)@L
 
-def eigen_count_mean(values, treshhold = 0.001):
-    """
-    Calculates number of eigenvalues above a certain threshold
-
-    Args:
-        values (list) : list of the eigenvalues
-        threshhold ()
-    """
-    pass
-
-# def best_coef(log_liks):
-#     best_keys = []
-#     for log_lik in log_liks:
-#         max_ll = -np.inf
-#         for key in log_lik.keys():
-#             current_ll = np.mean(log_lik[key])
-#             if max_ll < current_ll:
-#                 max_ll = current_ll
-#                 best_key = key
-#         best_keys.append(best_key)
-#     return best_keys
 
 def best_coef(log_liks):
-    values = [dict(map(lambda x : (x[0], np.mean(x[1])), ll.items())) for ll in log_liks]
+    '''
+    Determine the best hyperparameters based on the validation 
+    log-likelihood.
+    
+    Args:
+        log_liks (list) : list of log-likelihood dictionaries of
+        different models
+    
+    Returns:
+        coefficients (list) : dictionary keys that produce the best
+        log-likelihood for each model
+    '''
+    values = [dict(
+        map(lambda x : (x[0], np.mean(x[1])), ll.items())) for ll in log_liks]
     return [max(val, key = val.get) for val in values]
     

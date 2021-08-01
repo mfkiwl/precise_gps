@@ -66,7 +66,8 @@ def run_adam_and_natgrad(model, iterations, train_dataset, minibatch_size,
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, 
           num_Z, minibatch_size, batch_iter, rank, penalty, n, V) -> dict:
     '''
-    Training different models and kernels, commands specified in a json-file. 
+    Training different models and kernels, commands specified in a 
+    json-file. 
 
     Args:
         model (src.models.models) : instance of a model to be trained

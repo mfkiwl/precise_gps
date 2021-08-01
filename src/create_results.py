@@ -41,16 +41,17 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
         
     else:
         data_path = f'results/raw/{dataset.lower()}/{directory[0]}/'
-        pkl_files = [file for file in os.listdir(data_path) if '.pkl' in file] # Extract only pickle files
+        pkl_files = [file for file in os.listdir(data_path) 
+                     if '.pkl' in file]
 
         df = {}
         for idx, current_file in enumerate(pkl_files):
             data = parse_pickle(data_path + current_file)
             df[idx] = data
     
+    # Each directory should only contain results from one dataset.
     dataset = data['dataset']
 
-    # Only works for directory for now
     result_path = 'results/processed/' + f'{dataset.lower()}/{directory[0]}'
     if not os.path.exists(result_path):
         os.makedirs(result_path)
@@ -60,7 +61,6 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
         os.makedirs(plot_path)
 
     
-    #MLLS, log-likelihoods, and errors
     names, mll_names_gpr, mll_names_svi = [], [], []
     mlls_gpr, mlls_svi = [], []
     log_liks, train_errors, test_errors = [], [], []
@@ -95,7 +95,8 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
             names.append(f'{model} {kernel} {penalty}')
              
         # Some coefficients for MLL visualization
-        lassos = data['lassos'][0::step] if data['penalty'] == 'lasso' else data['n'][0::step]
+        lassos = data['lassos'][0::step] if data['penalty'] == 'lasso'  \
+            else data['n'][0::step]
         lassos = lassos[0:min(len(lassos), num_lassos)]
         for l in lassos:
             if model == 'SVI':
@@ -109,9 +110,16 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
             new_params = {}
             for i in range(data['num_runs']):
                 if model == 'SGHMC':
-                    new_params[i] = params_to_precision_vis(np.array(data['sghmc_params'][l][i][-1][90]), data['kernel'], data['rank'], len(data['sghmc_params'][l][i][-1][90]))
+                    new_params[i] = params_to_precision_vis(
+                        np.array(data['sghmc_params'][l][i][-1][90]), 
+                        data['kernel'], data['rank'], 
+                        len(data['sghmc_params'][l][i][-1][90]))
                 else:  
-                    new_params[i] = params_to_precision_vis(np.array(data['params'][l][i][-1]), data['kernel'], data['rank'], len(data['params'][l][i][-1]))
+                    new_params[i] = params_to_precision_vis(
+                        np.array(data['params'][l][i][-1]), 
+                        data['kernel'], data['rank'], 
+                        len(data['params'][l][i][-1]))
+                    
             precisions.append(new_params) 
         
         all_precisions.append(precisions)
@@ -119,19 +127,31 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
         train_errors.append(data['train_errors'])
         test_errors.append(data['test_errors'])
         all_lassos.append(data['lassos'])
+        
     best_coefs = best_coef(log_liks)
+    comparison_plot_names = list(
+        map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', 
+            zip(names,best_coefs)))
     
-    comparison_plot_names = list(map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', zip(names,best_coefs)))
-    
-    visualize_best_lls(log_liks, comparison_plot_names, savefig=plot_path + '/lls.pdf')
-    visualize_best_rmse(log_liks, test_errors, comparison_plot_names, savefig=plot_path + '/rmses.pdf')
-    visualize_mlls(mlls_svi, mll_names_svi, plot_path + '/mlls_svi.pdf', show)
+    visualize_best_lls(log_liks, comparison_plot_names, 
+                       savefig=f'{plot_path}/lls.pdf')
+    visualize_best_rmse(log_liks, test_errors, comparison_plot_names, 
+                        savefig=f'{plot_path}/rmses.pdf')
+    visualize_mlls(mlls_svi, mll_names_svi, 
+                   f'{plot_path}/mlls_svi.pdf', show)
     if mlls_gpr:
-        visualize_mlls(mlls_gpr, mll_names_gpr, plot_path + '/mlls_gpr.pdf', show)
-    visualize_log_likelihood(log_liks, names, all_precisions, num_runs, True, plot_path + '/log_liks_fro.pdf', show)
-    visualize_log_likelihood_mean(log_liks, names, all_precisions, num_runs, True, plot_path + '/log_liks_fro_mean.pdf', show)
-    visualize_errors(test_errors,names,'test', all_precisions, num_runs, True, plot_path + '/test_errors_fro.pdf', show)
-    visualize_errors_mean(test_errors,names,'test', all_precisions, num_runs, True, plot_path + '/test_errors_fro_mean.pdf', show)
+        visualize_mlls(mlls_gpr, mll_names_gpr, 
+                       f'{plot_path}/mlls_gpr.pdf', show)
+        
+    visualize_log_likelihood(log_liks, names, all_precisions, num_runs, True, 
+                             f'{plot_path}/log_liks_fro.pdf', show)
+    visualize_log_likelihood_mean(log_liks, names, all_precisions, num_runs, 
+                                  True, f'{plot_path}/log_liks_fro_mean.pdf', 
+                                  show)
+    visualize_errors(test_errors,names,'test', all_precisions, num_runs, True, 
+                     f'{plot_path}/test_errors_fro.pdf', show)
+    visualize_errors_mean(test_errors,names,'test', all_precisions, num_runs, 
+                          True, f'{plot_path}/test_errors_fro_mean.pdf', show)
 
     # Kernels
     for idx, key in enumerate(df.keys()):

@@ -3,8 +3,8 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 
 
-# This file provides dataset object that automatically preprocess the raw data,
-# and creates train and test sets.
+# This file provides dataset object that automatically preprocess the 
+# raw data, and creates train and test sets.
 
 def normalize(X):
     """
@@ -22,18 +22,22 @@ def normalize(X):
 
 class Dataset(object):
     """
-    Automatically preprocesses data and creates train and test set for the specified dataset.
+    Automatically preprocesses data and creates train and test set for 
+    the specified dataset.
 
     Args:
-        path (sitring to directory) : contains data and the input column names
-        split (float)               : test/train split specifies testset size (between 0-1) 
+        path (str to directory) : contains data and the input 
+        column names
+        split (float) : test/train split specifies testset size 
+        (between 0-1) 
     """
 
     def __init__(self, path, split = 0.2):
         self.path = path 
         X, y, cols = self.read_data()
         Xnp, ynp = self.preprocess(X,y)
-        train_Xnp, test_Xnp, train_ynp, test_ynp = train_test_split(Xnp, ynp, test_size=split, random_state=42)
+        train_Xnp, test_Xnp, train_ynp, test_ynp = \
+            train_test_split(Xnp, ynp, test_size=split, random_state=42)
 
         self.train_X = train_Xnp
         self.train_y = train_ynp
@@ -50,7 +54,8 @@ class Dataset(object):
         raise NotImplementedError
     
     def get_cols(self, path):
-        return [d.strip("'") for d in list(pd.read_csv(path + "/features.csv", delimiter=','))]
+        return [d.strip("'") for d in list(
+            pd.read_csv(path + "/features.csv", delimiter=','))]
 
 
 class Redwine(Dataset):
@@ -145,7 +150,8 @@ class Yacht(Dataset):
         super(Yacht, self).__init__(path = "data/yacht", split=split)
     
     def read_data(self):
-        data = pd.read_fwf(self.path + "/yacht_hydrodynamics.data", header=None).values[:-1, :]
+        data = pd.read_fwf(
+            self.path + "/yacht_hydrodynamics.data", header=None).values[:-1, :]
         return data[:, :-1], data[:, -1].reshape(-1,1), self.get_cols(self.path)
 
 class Kin8nm(Dataset):
@@ -154,7 +160,7 @@ class Kin8nm(Dataset):
         
     def read_data(self):
         data = pd.read_csv(self.path + "/kin8nm.csv", header=None).values
-        return data[:, :-1], data[:, -1:].reshape(-1,1), self.get_cols(self.path)
+        return data[:,:-1], data[:,-1:].reshape(-1,1), self.get_cols(self.path)
 
 class Year(Dataset):
     def __init__(self, split):
@@ -173,6 +179,8 @@ class Year(Dataset):
         return np.arange(90)
         
     def read_data(self):
-        data = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/00203/YearPredictionMSD.txt.zip',compression='zip', header = None).values
+        path = 'https://archive.ics.uci.edu/ml/machine-learning-databases\
+        /00203/YearPredictionMSD.txt.zip'
+        data = pd.read_csv(path,compression='zip', header = None).values
         return data[:,1:], data[:,0].reshape(-1,1), self.get_cols(self.path)
     

@@ -9,8 +9,9 @@ from gpflow import set_trainable
 
 class GPRPenalty(gpflow.models.GPR):
     """
-    Basic Gaussian process regression, but L1 penalty term is added to the loss. This model
-    assumes that the underlying kernel is either full Gaussian kernel or ARD kernel.
+    Basic Gaussian process regression, but L1 penalty term is added to 
+    the loss. This model assumes that the underlying kernel is either 
+    full Gaussian kernel or ARD kernel.
     """
     
     def __init__(self, **kwargs):
@@ -24,20 +25,22 @@ class GPRPenalty(gpflow.models.GPR):
         size = self.data[0].shape[1]
         self.p = size if "p" not in kwargs else kwargs["p"]
         self.n = self.p if "n" not in kwargs else kwargs["n"]
-        self.V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else kwargs["V"]
+        self.V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else  \
+            kwargs["V"]
         self.penalty = "lasso" if "penalty" not in kwargs else kwargs["penalty"]
 
     def maximum_log_likelihood_objective(self) -> tf.Tensor:
         """
         Overwrites the gpflow.models.GPR.maximum_likelihood_objective
-        See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
-        return super().log_marginal_likelihood() + getattr(Penalty(), self.penalty)(self)
+        return super().log_marginal_likelihood() + \
+            getattr(Penalty(), self.penalty)(self)
 
 class SVIPenalty(gpflow.models.SVGP):
     """
-    Stochastic variational Gaussian processes, but L1 penalty term is added to the loss. This model
-    assumes that the underlying kernel is either full Gaussian kernel or ARD kernel.
+    Stochastic variational Gaussian processes, but L1 penalty term is 
+    added to the loss. This model assumes that the underlying kernel is 
+    either full Gaussian kernel or ARD kernel.
     """
     
     def __init__(self, **kwargs):
@@ -47,14 +50,16 @@ class SVIPenalty(gpflow.models.SVGP):
         
         N = len(data[1])
         new_X = select_inducing_points(data[0], M)        
-        super(SVIPenalty, self).__init__(kernel, gpflow.likelihoods.Gaussian(), new_X, num_data = N)
+        super(SVIPenalty, self).__init__(kernel, gpflow.likelihoods.Gaussian(), 
+                                         new_X, num_data = N)
 
         self.lasso = 0 if "lasso" not in kwargs else kwargs["lasso"]
 
         size = data[0].shape[1]
         self.p = size if "p" not in kwargs else kwargs["p"]
         self.n = self.p if "n" not in kwargs else kwargs["n"]
-        self.V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else kwargs["V"]
+        self.V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else \
+            kwargs["V"]
         self.penalty = "lasso" if "penalty" not in kwargs else kwargs["penalty"]
         self.train_data = data 
         
@@ -66,7 +71,6 @@ class SVIPenalty(gpflow.models.SVGP):
     def maximum_log_likelihood_objective(self, data) -> tf.Tensor:
         """
         Overwrites the gpflow.models.SVGP.maximum_likelihood_objective
-        See: https://gpflow.readthedocs.io/en/master/_modules/gpflow/models/gpr.html
         """
         return super().elbo(data) + getattr(Penalty(), self.penalty)(self)
 
@@ -87,7 +91,8 @@ class SGHMC(RegressionModel):
         self.p = size if "p" not in kwargs else kwargs["p"]
         penalty = "lasso" if "penalty" not in kwargs else kwargs["penalty"]
         n = self.p if "n" not in kwargs else kwargs["n"]
-        V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else kwargs["V"]
+        V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else \
+            kwargs["V"]
         
         super(SGHMC, self).__init__(data, kernel, lasso, n, V, penalty)
         
