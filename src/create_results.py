@@ -161,29 +161,48 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
             p_names = []
             if data['model'] != 'SGHMC':
                 for i in range(9):
-                    P = params_to_precision_vis(np.array(data['params'][l][i][-1]), data['kernel'], data['rank'], len(data['params'][l][i][-1]))
+                    P = params_to_precision_vis(
+                        np.array(data['params'][l][i][-1]), data['kernel'], 
+                        data['rank'], len(data['params'][l][i][-1]))
                     precisions.append(P)
                     lll = data['log_likelihoods'][l][i]
-                    p_names.append('LL: ' + str(round(lll,3)) +', TE: ' + str(round(data['test_errors'][l][i],2)) + ', Var: ' + str(np.round(data['variances'][l][i][-1],2)))
+                    p_names.append('LL: ' + str(round(lll,3)) +', TE: ' + \
+                        str(round(data['test_errors'][l][i],2)) + ', Var: ' + \
+                            str(np.round(data['variances'][l][i][-1],2)))
             else:
                 indices = np.random.choice(np.arange(100), 9)
                 for i in indices:
-                    P = params_to_precision_vis(np.array(data['sghmc_params'][l][-1][-1][i]), data['kernel'], data['rank'], len(data['sghmc_params'][l][-1][-1][i]))
+                    P = params_to_precision_vis(
+                        np.array(data['sghmc_params'][l][-1][-1][i]), 
+                        data['kernel'], data['rank'], 
+                        len(data['sghmc_params'][l][-1][-1][i]))
                     precisions.append(P)
                     lll = data['log_likelihoods'][l][-1]
-                    p_names.append('LL: ' + str(round(lll,3)) +', TE: ' + str(round(data['test_errors'][l][-1],2)) + ', Var: ' + str(np.round(np.exp(data['sghmc_vars'][l][-1][-1][i]),2)))
+                    p_names.append('LL: ' + str(round(lll,3)) +', TE: ' + \
+                        str(round(data['test_errors'][l][-1],2)) + ', Var: ' + \
+                            str(np.round(
+                                np.exp(data['sghmc_vars'][l][-1][-1][i]),2)))
             data_instance = globals()[dataset](0.2)
             cols = data_instance.cols
             if not os.path.exists(plot_path + '/kernels'):
                 os.makedirs(plot_path + '/kernels')
-            show_kernels(precisions,p_names,cols,'global',-1,f'{plot_path}/kernels/{names[idx]}{str(np.round(l,2))}.pdf', show)
+            show_kernels(
+                precisions,p_names,
+                cols,'global',-1,
+                f'{plot_path}/kernels/{names[idx]}{str(np.round(l,2))}.pdf', 
+                show)
 
     table_path = result_path + '/tables'
     if not os.path.exists(table_path):
         os.makedirs(table_path)
 
-    # save_results_table(new_log_liks, new_train_errors, new_test_errors, new_names, f'{table_path}/')
-    save_overview(log_liks, test_errors, list(map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', zip(names,best_coefs))), f'{table_path}/', best_coefs)
+    # save_results_table(new_log_liks, new_train_errors, new_test_errors, 
+    # new_names, f'{table_path}/')
+    save_overview(
+        log_liks, 
+        test_errors, 
+        list(map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', 
+                 zip(names,best_coefs))), f'{table_path}/', best_coefs)
 
     # Eigenvalues
     if not os.path.exists(table_path + '/eigen'):
@@ -210,13 +229,17 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
             for l in data['lassos'] if data['penalty'] == 'lasso' else data['n']:
                 ret = []
                 for i in range(data['num_runs']):
-                    P = params_to_precision_vis(np.array(data['params'][l][i][-1]), data['kernel'], data['rank'], len(data['params'][l][i][-1]))
+                    P = params_to_precision_vis(
+                        np.array(data['params'][l][i][-1]), 
+                        data['kernel'], data['rank'], 
+                        len(data['params'][l][i][-1]))
                     eigen_vals, _ = eigen(P)
                     ret.append(list(eigen_vals))
                 model_eigen_values[l] = ret
             
             eigen_value_dict[eigen_names[-1]] = model_eigen_values
-    visualize_eigen_threshhold(eigen_value_dict,eigen_names,0.001,plot_path + '/eigen_th.pdf',show)
+    visualize_eigen_threshhold(
+        eigen_value_dict,eigen_names,0.001,plot_path + '/eigen_th.pdf',show)
 
     if loss_landscape:
         # Loss landscape
@@ -233,7 +256,20 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
                 data['q_sqrt'] = []
             the_best_coef = best_coef([data['log_likelihoods']])[0]
             if 'GPR' in data['model']:
-                visualize_loss_landscape(data, data['model'], data['kernel'], data['data_train'], the_best_coef, False,10, loss_param_path + '/{}_{}_{}_{}.pdf'.format(data['model'], data['kernel'], data['penalty'], str(round(the_best_coef,1))), show)
+                visualize_loss_landscape(
+                    data, 
+                    data['model'], 
+                    data['kernel'], 
+                    data['data_train'], 
+                    the_best_coef, 
+                    False,
+                    10, 
+                    loss_param_path + \
+                        '/{}_{}_{}_{}.pdf'.format(data['model'], 
+                                                  data['kernel'], 
+                                                  data['penalty'], 
+                                                  str(round(the_best_coef,1))), 
+                        show)
         
         
 
