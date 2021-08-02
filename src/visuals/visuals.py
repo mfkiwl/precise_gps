@@ -315,7 +315,7 @@ def visualize_log_likelihood_mean(log_liks, names, kernels, num_runs,
                          color = COLORS[idx % 10], markersize = 15, 
                          label = names[idx])
                 plt.errorbar(x_value, mean_ll[lasso_idx], 
-                             err=std_ll[lasso_idx], fmt='-', 
+                             yerr=std_ll[lasso_idx], fmt='-', 
                              color = COLORS[idx % 10], alpha = 0.5)
             else:
                 plt.plot(x_value, mean_ll[lasso_idx], '.', 

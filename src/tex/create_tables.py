@@ -92,9 +92,8 @@ def save_overview(log_liks, test_errors, names, path, best_indices):
              chr(92)+"textbf{MRMSE}"]]
     for idx in range(len(names)):
         model = names[idx]
-        mean_ll, var_ll = np.round(
-            np.mean(log_liks[idx][best_indices[idx]]),2), 
-        np.round(np.std(log_liks[idx][best_indices[idx]]),3)
+        mean_ll = np.round(np.mean(log_liks[idx][best_indices[idx]]),2)
+        var_ll = np.round(np.std(log_liks[idx][best_indices[idx]]),3)
 
         mean_test, var_test = np.round(
             np.mean(test_errors[idx][best_indices[idx]]),3), 

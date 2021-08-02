@@ -27,5 +27,5 @@ class Gaussian(object):
         return self.logdensity(Y, Fmu, Fvar + self.variance)
 
     def variational_expectations(self, Fmu, Fvar, Y):
-        return -0.5 * np.log(2 * np.pi) - 0.5 * tf.log(self.variance) \
+        return -0.5 * np.log(2 * np.pi) - 0.5 * tf.math.log(self.variance) \
                - 0.5 * (tf.square(Y - Fmu) + Fvar) / self.variance

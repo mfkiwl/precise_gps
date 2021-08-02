@@ -1,11 +1,10 @@
 from src.models.initialization import select_inducing_points
 import tensorflow as tf
-import tensorflow_probability as tfp
 import numpy as np
+import gpflow
 
 from src.sampling.sghmc_base import BaseModel
 from src.models.prior import Prior
-import src.sampling.conditionals as conditionals
 
 class Layer(object):
     def __init__(self, kern, outputs, n_inducing, fixed_mean, X):
@@ -26,7 +25,7 @@ class Layer(object):
 
     def conditional(self, X):
         # Caching the covariance matrix from the sghmc steps gives a significant speedup. This is not being done here.
-        mean, var = conditionals.conditional(X, self.Z, self.kernel, self.U, white=True)
+        mean, var = gpflow.conditionals.conditional(X, self.Z, self.kernel, self.U, white=True)
 
         if self.fixed_mean:
             mean += tf.matmul(X, tf.cast(self.mean, tf.float64))
@@ -81,9 +80,13 @@ class DGP(BaseModel):
         self.prior = tf.add_n([l.prior() for l in self.layers])
         self.log_likelihood = self.likelihood.predict_density(self.fmeans[-1], self.fvars[-1], self.Y_placeholder)
 
-        self.nll = - tf.reduce_sum(self.log_likelihood) / tf.cast(tf.shape(self.X_placeholder)[0], tf.float64)*N \
-                   - self.prior - getattr(Prior(), self.penalty)(self)
-        self.nll /= N
+        #self.nll = - tf.reduce_sum(self.log_likelihood) / tf.cast(tf.shape(self.X_placeholder)[0], tf.float64)*N \
+        #           - self.prior - getattr(Prior(), self.penalty)(self)
+        #self.nll /= N
+        
+        self.varexps = self.likelihood.variational_expectations(self.fmeans[-1], self.fvars[-1], self.Y_placeholder)
+        self.nll = - tf.reduce_sum(self.varexps) / tf.cast(tf.shape(self.X_placeholder)[0], tf.float64) \
+                   - (self.prior / N) - getattr(Prior(), self.penalty)(self) / N
         
 
         self.generate_update_step(self.nll, epsilon, mdecay)

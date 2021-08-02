@@ -312,7 +312,7 @@ class SGHMC_ARD(BaseKernel, gpflow.kernels.Kernel):
             L = np.ones(dim)
             variance = 0.0
         else:
-            L = np.random.randn(*dim)
+            L = np.random.randn(dim)
             variance = np.random.randn()
 
         self.variance = tf.Variable(variance, dtype = tf.float64, 

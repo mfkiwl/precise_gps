@@ -1,9 +1,10 @@
 from src.sampling.sghmc_gp import DGP
 
 import numpy as np
+import scipy
+
 from scipy.stats import norm
 from src.sampling.likelihoods import Gaussian
-import scipy
 
 
 class RegressionModel(object):
