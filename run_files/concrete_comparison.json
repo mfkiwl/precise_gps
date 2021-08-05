@@ -1,0 +1,65 @@
+{
+    "gpr_full" : {
+        "model" : "GPRPenalty",
+        "kernel": "FullGaussianKernel",
+        "data": "Concrete",
+        "lassos": [0,0.1,3],
+        "max_iter": 500,
+        "num_runs": 30,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 0,
+        "minibatch": 0,
+        "batch_iter": 0,
+        "split": 0.2,
+        "rank":0
+    },
+
+    "gpr_ard" : {
+        "model" : "GPRPenalty",
+        "kernel": "ARD",
+        "data": "Concrete",
+        "lassos": [0],
+        "max_iter": 500,
+        "num_runs": 30,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 0,
+        "minibatch": -1,
+        "batch_iter": 0,
+        "split": 0.2,
+        "rank":0
+    },
+
+    "svi_full" : {
+        "model" : "SVIPenalty",
+        "kernel": "FullGaussianKernel",
+        "data": "Concrete",
+        "lassos": [0,0.1,2.1],
+        "max_iter": 700,
+        "num_runs": 30,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 30000,
+        "split": 0.2,
+        "rank":0
+    },
+
+    "svi_ard" : {
+        "model" : "SVIPenalty",
+        "kernel": "ARD",
+        "data": "Concrete",
+        "lassos": [0],
+        "max_iter": 700,
+        "num_runs": 30,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 30000,
+        "split": 0.2,
+        "rank":0
+    }
+}
