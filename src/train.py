@@ -10,6 +10,7 @@ from src.sampling.mcmc_kernel import sample_posterior_params
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold
 from scipy.stats import norm 
+from scipy.stats import multinomial
 
 import numpy as np
 import tensorflow as tf 
@@ -174,13 +175,10 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
             kernel_kwargs = {'randomized': randomized, 'dim': dim, 'rank': rank}
             _kernel = select_kernel(kernel, **kernel_kwargs)
             
-            model_kwargs = {'data': (data.train_X, data.train_y), 
+            model_kwargs = {'data': data, 
                             'kernel': _kernel, 'lasso': coefficient, 
                             'M': num_Z, 'horseshoe': coefficient, 
                             'n': coefficient, 'V': V}
-            
-            if model == 'SGHMC':
-                model_kwargs['data'] = data
                 
             _model = select_model(model, **model_kwargs)
             
@@ -226,13 +224,33 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
             else:
                 mean, var = _model.predict_y(data.test_X)
                 pred_train,_ = _model.predict_y(data.train_X)
-                rms_test = mean_squared_error(data.test_y, mean.numpy(), 
-                                              squared=False)
-                rms_train = mean_squared_error(data.train_y, pred_train.numpy(), 
-                                               squared=False)
-                log_lik = np.average(norm.logpdf(data.test_y*data.y_std, 
-                                                 loc=mean*data.y_std, 
-                                                 scale=var**0.5*data.y_std))
+                
+                if data.task == 'Regression':
+                    rms_test = mean_squared_error(data.test_y, mean.numpy(), 
+                                                squared=False)
+                    rms_train = mean_squared_error(data.train_y, 
+                                                   pred_train.numpy(), 
+                                                   squared=False)
+                    log_lik = np.average(norm.logpdf(data.test_y*data.y_std, 
+                                                    loc=mean*data.y_std, 
+                                                    scale=var**0.5*data.y_std))
+                else:
+                    def onehot(Y, K):
+                        return np.eye(K)[Y.flatten().astype(int)].reshape(Y.shape[:-1]+(K,))
+                    
+                    Y_oh = onehot(data.test_y, 2)[None, :, :]  # 1, N_test, K
+                    one_hot_mean =  np.concatenate([1 - mean, mean], 1)
+
+                    # clip very large and small probs
+                    eps = 1e-12
+                    p = np.clip(one_hot_mean, eps, 1 - eps)
+                    p = p / np.expand_dims(np.sum(p, -1), -1)
+
+                    log_lik = multinomial.logpmf(Y_oh, n=1, p=p)
+                    pred = np.argmax(p, axis=-1)
+
+                    rms_test = np.average(np.array(pred == data.test_y.flatten()).astype(float))
+                    rms_train = 0
                 
             print('Intermediate,', 'Coef:', coefficient, 'LL:', log_lik,
               'Test error', rms_test)

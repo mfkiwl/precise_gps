@@ -9,8 +9,8 @@ from gpflow import set_trainable
 from sklearn.metrics import mean_squared_error
 from scipy.stats import norm 
 
-NUM_BURN_IN = ci_niter(500)
-NUM_SAMPLES = ci_niter(100)
+NUM_BURN_IN = ci_niter(300)
+NUM_SAMPLES = ci_niter(50)
 
 @tf.function
 def run_chain_fn(hmc_helper, adaptive_hmc):

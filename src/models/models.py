@@ -18,7 +18,7 @@ class GPRPenalty(gpflow.models.GPR):
 
         data = kwargs["data"]
         kernel = kwargs["kernel"]
-        super(GPRPenalty, self).__init__(data, kernel)
+        super(GPRPenalty, self).__init__((data.train_X, data.train_y), kernel)
 
         self.lasso = 0 if "lasso" not in kwargs else kwargs["lasso"]
 
@@ -48,20 +48,27 @@ class SVIPenalty(gpflow.models.SVGP):
         kernel = kwargs["kernel"]
         M = kwargs["M"]
         
-        N = len(data[1])
-        new_X = select_inducing_points(data[0], M)        
-        super(SVIPenalty, self).__init__(kernel, gpflow.likelihoods.Gaussian(), 
-                                         new_X, num_data = N)
+        N = len(data.train_y)
+        new_X = select_inducing_points(data.train_X, M)
+        if data.task == 'Classification':    
+            super(SVIPenalty, self).__init__(kernel, 
+                                             gpflow.likelihoods.Bernoulli(), 
+                                             new_X, num_data = N)
+        else:
+            super(SVIPenalty, self).__init__(kernel, 
+                                             gpflow.likelihoods.Gaussian(), 
+                                             new_X, num_data = N)
+            
 
         self.lasso = 0 if "lasso" not in kwargs else kwargs["lasso"]
 
-        size = data[0].shape[1]
+        size = data.train_X.shape[1]
         self.p = size if "p" not in kwargs else kwargs["p"]
         self.n = self.p if "n" not in kwargs else kwargs["n"]
         self.V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else \
             kwargs["V"]
         self.penalty = "lasso" if "penalty" not in kwargs else kwargs["penalty"]
-        self.train_data = data 
+        self.train_data = (data.train_X, data.train_y)
         
         set_trainable(self.q_mu, False)
         set_trainable(self.q_sqrt, False)

@@ -38,11 +38,13 @@ def save_results(model, step, params, counter, variances, likelihood_variances,
         lengthscales = model.kernel.lengthscales.numpy()
         params[coefficient][counter].append(list(lengthscales))
     
-    lik_var = model.likelihood.variance.numpy()
     var = model.kernel.variance.numpy()
     variances[coefficient][counter].append(var)
-    likelihood_variances[coefficient][counter].append(lik_var)
     mlls[coefficient][counter].append(value)
+    
+    if type(model.likelihood).__name__ == 'Gaussian':
+        lik_var = model.likelihood.variance.numpy()
+        likelihood_variances[coefficient][counter].append(lik_var)
 
     if step % 100 == 0:
         print('Lasso', coefficient, 'Step:', step, 'MLL:', value)
