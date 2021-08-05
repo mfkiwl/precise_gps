@@ -246,7 +246,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
                     p = np.clip(one_hot_mean, eps, 1 - eps)
                     p = p / np.expand_dims(np.sum(p, -1), -1)
 
-                    log_lik = multinomial.logpmf(Y_oh, n=1, p=p)
+                    log_lik = np.average(multinomial.logpmf(Y_oh, n=1, p=p))
                     pred = np.argmax(p, axis=-1)
 
                     rms_test = np.average(np.array(pred == data.test_y.flatten()).astype(float))
