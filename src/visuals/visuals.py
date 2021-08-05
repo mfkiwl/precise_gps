@@ -151,7 +151,7 @@ def show_kernels(kernels, titles, cols, aspect = 'own', show_nums = -1,
     else:
         plt.close()
 
-def visualize_mlls(mlls, names, savefig = None, show = 0):
+def visualize_mlls(mlls, log_liks, names, savefig = None, show = 0):
     '''
     Visualizes marginal log likelihood through iterations for different 
     models.
@@ -167,29 +167,34 @@ def visualize_mlls(mlls, names, savefig = None, show = 0):
 
     minimum = np.inf
     maximum = -np.inf 
+    
+    zipped = sorted(zip(names, log_liks, mlls))
+    zipped2 = zip(*zipped)
+    names, log_liks, mlls = [list(elem) for elem in zipped2]
+    best_log_liks = best_coef(log_liks)
 
     plt.figure(figsize = (10,6))
-    for idx, log_lik in enumerate(mlls):
-        iterations = log_lik.keys()
+    for idx, mll in enumerate(mlls):
+        mll_as_list = mll[best_log_liks[idx]]
         counter = 0
-        for jdx in iterations:
-            current = log_lik[jdx][-1]
+        for jdx in range(10):
+            current = mll_as_list[jdx][-1]
             if current < minimum:
                 minimum = current
             if current > maximum:
                 maximum = current 
             
             if 'SVI' in names[idx]:
-                x_value = np.arange(len(log_lik[jdx]))*50
+                x_value = np.arange(len(mll_as_list[jdx]))*50
             else:
-                x_value = np.arange(len(log_lik[jdx]))*5
+                x_value = np.arange(len(mll_as_list[jdx]))*5
             
             if counter == 0:
                 counter += 1
-                plt.plot(x_value, log_lik[jdx], 
+                plt.plot(x_value, mll_as_list[jdx], 
                          color = COLORS[idx], label = names[idx], alpha = 0.8)
             else:
-                plt.plot(x_value, log_lik[jdx], 
+                plt.plot(x_value, mll_as_list[jdx], 
                          color = COLORS[idx], alpha = 0.8)
     
     plt.grid(True)
@@ -339,7 +344,7 @@ def visualize_log_likelihood_mean(log_liks, names, kernels, num_runs,
     else:
         plt.close()
         
-def visualize_best_lls(log_liks, names, savefig = None, show = 0):
+def visualize_best_lls(log_liks, names, info, savefig = None, show = 0):
     '''
     Visualizes log-likelihoods for different models for all 
     lasso-coefficients used in optimization.
@@ -374,6 +379,7 @@ def visualize_best_lls(log_liks, names, savefig = None, show = 0):
 
 
     plt.grid(False)
+    plt.title(info, fontweight = 'bold')
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
     if show:
@@ -381,7 +387,7 @@ def visualize_best_lls(log_liks, names, savefig = None, show = 0):
     else:
         plt.close()
 
-def visualize_best_rmse(log_liks, rmses, names, savefig = None, show = 0):
+def visualize_best_rmse(log_liks, rmses, names, info, savefig = None, show = 0):
     '''
     Visualizes rmse for different models for all 
     lasso-coefficients used in optimization.
@@ -417,6 +423,7 @@ def visualize_best_rmse(log_liks, rmses, names, savefig = None, show = 0):
 
 
     plt.grid(False)
+    plt.title(info, fontweight = 'bold')
     if savefig:
         plt.savefig(savefig, bbox_inches='tight')
     if show:

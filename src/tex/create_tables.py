@@ -95,9 +95,8 @@ def save_overview(log_liks, test_errors, names, path, best_indices):
         mean_ll = np.round(np.mean(log_liks[idx][best_indices[idx]]),2)
         var_ll = np.round(np.std(log_liks[idx][best_indices[idx]]),3)
 
-        mean_test, var_test = np.round(
-            np.mean(test_errors[idx][best_indices[idx]]),3), 
-        np.round(np.std(test_errors[idx][best_indices[idx]]),3)
+        mean_test = np.round(np.mean(test_errors[idx][best_indices[idx]]),3) 
+        var_test = np.round(np.std(test_errors[idx][best_indices[idx]]),3)
         ar = [f"{model}", f"{mean_ll}({var_ll})", f"{mean_test}({var_test})"]
         rows.append(ar)
     table.add_rows(rows)

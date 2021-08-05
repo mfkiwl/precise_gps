@@ -7,6 +7,7 @@ from src.visuals.visuals import *
 from src.datasets.datasets import *
 from src.visuals.process_results import *
 from src.tex.create_tables import * 
+from src.select import select_dataset
 
 plt.rcParams.update({'font.size': 14}) # Global fontsize
 
@@ -66,6 +67,9 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
     log_liks, train_errors, test_errors = [], [], []
     all_lassos, all_precisions = [], []
     num_runs = []
+    nlls = []
+    nll_names = []
+    svi_logliks, gpr_logliks, sghmc_logliks = [], [], []
 
     for key in df.keys():
         precisions = []
@@ -74,7 +78,7 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
         kernel = data['kernel']
         penalty = data['penalty']
         rank = data['rank']
-        number_of_initializations = data["num_runs"]
+        number_of_initializations = data['num_runs']
         
         num_runs.append(number_of_initializations)
 
@@ -95,16 +99,19 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
             names.append(f'{model} {kernel} {penalty}')
              
         # Some coefficients for MLL visualization
-        lassos = data['lassos'][0::step] if data['penalty'] == 'lasso'  \
-            else data['n'][0::step]
-        lassos = lassos[0:min(len(lassos), num_lassos)]
-        for l in lassos:
-            if model == 'SVI':
-                mlls_svi.append(data['mll'][l])
-                mll_names_svi.append(f'{model} {kernel} {str(np.round(l,2))}')
-            if model == 'GPR':
-                mlls_gpr.append(data['mll'][l])
-                mll_names_gpr.append(f'{model} {kernel} {str(np.round(l,2))}')
+        #lassos = data['lassos'] if data['penalty'] == 'lasso' else data['n']
+        #lassos = lassos[0:min(len(lassos), num_lassos)]
+        # for l in data['lassos'] if data['penalty'] == 'lasso' else data['n']:
+        #     if model == 'SVI':
+        #         mlls_svi.append(data['mll'][l])
+        #         mll_names_svi.append(f'{model} {kernel} {str(np.round(l,2))}')
+        #     if model == 'GPR':
+        #         mlls_gpr.append(data['mll'][l])
+        #         mll_names_gpr.append(f'{model} {kernel} {str(np.round(l,2))}')
+        #     if model == 'SGHMC':
+        #         nlls.append(data['nll'][l])
+        #         nll_names.append(f'{model} {kernel} {str(np.round(l,2))}')
+                
 
         for l in data['lassos'] if data['penalty'] == 'lasso' else data['n']:
             new_params = {}
@@ -122,6 +129,28 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
                     
             precisions.append(new_params) 
         
+        if model == 'SVI':
+            mlls_svi.append(data['mll'])
+            svi_logliks.append(data['log_likelihoods'])
+            if kernel == 'ARD':
+                mll_names_svi.append(f'{model} {kernel}')
+            else:
+                mll_names_svi.append(f'{model} {kernel} {penalty}')
+        if model == 'GPR':
+            mlls_gpr.append(data['mll'])
+            gpr_logliks.append(data['log_likelihoods'])
+            if kernel == 'ARD':
+                mll_names_gpr.append(f'{model} {kernel}')
+            else:
+                mll_names_gpr.append(f'{model} {kernel} {penalty}')
+        if model == 'SGHMC':
+            nlls.append(data['nlls'])
+            sghmc_logliks.append(data['log_likelihoods'])
+            if kernel == 'ARD':
+                nll_names.append(f'{model} {kernel}')
+            else:
+                nll_names.append(f'{model} {kernel} {penalty}')
+        
         all_precisions.append(precisions)
         log_liks.append(data['log_likelihoods'])
         train_errors.append(data['train_errors'])
@@ -133,15 +162,39 @@ def create_results(dataset, directory, num_lassos, step = 1, show = 0,
         map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', 
             zip(names,best_coefs)))
     
-    visualize_best_lls(log_liks, comparison_plot_names, 
+    svi_best_coefs = best_coef(svi_logliks)
+    svi_names = list(
+        map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', 
+            zip(mll_names_svi,svi_best_coefs)))
+    
+    gpr_best_coefs = best_coef(gpr_logliks)
+    gpr_names = list(
+        map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', 
+            zip(mll_names_gpr,gpr_best_coefs)))
+    
+    sghmc_best_coefs = best_coef(sghmc_logliks)
+    sghmc_names = list(
+        map(lambda x: f'{x[0]} {str(np.round(x[1],2))}', 
+            zip(nll_names,sghmc_best_coefs)))
+    
+    data_instance = select_dataset(dataset, 0.2)
+    
+    _N = len(data_instance.test_y) + len(data_instance.train_y)
+    _D = len(data_instance.cols)
+    info = f'{dataset}, D={_D}, N={_N}'
+    
+    visualize_best_lls(log_liks, comparison_plot_names, info, 
                        savefig=f'{plot_path}/lls.pdf')
-    visualize_best_rmse(log_liks, test_errors, comparison_plot_names, 
+    visualize_best_rmse(log_liks, test_errors, comparison_plot_names, info, 
                         savefig=f'{plot_path}/rmses.pdf')
-    visualize_mlls(mlls_svi, mll_names_svi, 
+    visualize_mlls(mlls_svi, svi_logliks, svi_names, 
                    f'{plot_path}/mlls_svi.pdf', show)
     if mlls_gpr:
-        visualize_mlls(mlls_gpr, mll_names_gpr, 
+        visualize_mlls(mlls_gpr, gpr_logliks, gpr_names, 
                        f'{plot_path}/mlls_gpr.pdf', show)
+    if nlls:
+        visualize_mlls(nlls, sghmc_logliks, sghmc_names, 
+                       f'{plot_path}/nlls.pdf', show)
         
     visualize_log_likelihood(log_liks, names, all_precisions, num_runs, True, 
                              f'{plot_path}/log_liks_fro.pdf', show)

@@ -125,7 +125,7 @@ def main(path):
                        batch_iter, rank, penalty, n, V)
 
         instance_path = os.path.basename(path).split('.')[0]
-        save_path = f'results/raw/{dataset.lower()}{instance_path}'
+        save_path = f'results/raw/{dataset.lower()}/{instance_path}'
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 

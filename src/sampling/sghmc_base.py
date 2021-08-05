@@ -1,11 +1,35 @@
+# MIT License
+
+# Copyright (c) 2018 Hava842
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import numpy as np
 import tensorflow as tf
 
 
 class BaseModel(object):
     def __init__(self, X, Y, vars, minibatch_size, window_size):
-        self.X_placeholder = tf.compat.v1.placeholder(tf.float64, shape=[None, X.shape[1]])
-        self.Y_placeholder = tf.compat.v1.placeholder(tf.float64, shape=[None, Y.shape[1]])
+        self.X_placeholder = tf.compat.v1.placeholder(tf.float64, 
+                                                      shape=[None, X.shape[1]])
+        self.Y_placeholder = tf.compat.v1.placeholder(tf.float64, 
+                                                      shape=[None, Y.shape[1]])
         self.X = X
         self.Y = Y
         self.N = X.shape[0]
@@ -26,10 +50,14 @@ class BaseModel(object):
         grads = tf.gradients(nll, self.vars)
 
         for theta, grad in zip(self.vars, grads):
-            xi = tf.Variable(tf.ones_like(theta), dtype=tf.float64, trainable=False)
-            g = tf.Variable(tf.ones_like(theta), dtype=tf.float64, trainable=False)
-            g2 = tf.Variable(tf.ones_like(theta), dtype=tf.float64, trainable=False)
-            p = tf.Variable(tf.zeros_like(theta), dtype=tf.float64, trainable=False)
+            xi = tf.Variable(tf.ones_like(theta), dtype=tf.float64, 
+                             trainable=False)
+            g = tf.Variable(tf.ones_like(theta), dtype=tf.float64, 
+                            trainable=False)
+            g2 = tf.Variable(tf.ones_like(theta), dtype=tf.float64, 
+                             trainable=False)
+            p = tf.Variable(tf.zeros_like(theta), dtype=tf.float64, 
+                            trainable=False)
 
             r_t = 1. / (xi + 1.)
             g_t = (1. - r_t) * g + r_t * grad
@@ -44,15 +72,19 @@ class BaseModel(object):
             epsilon_scaled = epsilon / tf.sqrt(tf.cast(self.N, tf.float64))
             noise_scale = 2. * epsilon_scaled ** 2 * mdecay * Minv
             sigma = tf.sqrt(tf.maximum(noise_scale, 1e-16))
-            sample_t = tf.random.normal(tf.shape(theta), dtype=tf.float64) * sigma
+            sample_t = tf.random.normal(tf.shape(theta), 
+                                        dtype=tf.float64) * sigma
             p_t = p - epsilon ** 2 * Minv * grad - mdecay * p + sample_t
             theta_t = theta + p_t
 
             sample_updates.append((theta, theta_t))
             sample_updates.append((p, p_t))
 
-        self.sample_op = [tf.compat.v1.assign(var, var_t) for var, var_t in sample_updates]
-        self.burn_in_op = [tf.compat.v1.assign(var, var_t) for var, var_t in burn_in_updates + sample_updates]
+        self.sample_op = [
+            tf.compat.v1.assign(var, var_t) for var, var_t in sample_updates]
+        self.burn_in_op = [
+            tf.compat.v1.assign(var, var_t) for var, var_t in burn_in_updates \
+                + sample_updates]
 
     def reset(self, X, Y):
         self.X, self.Y, self.N = X, Y, X.shape[0]
@@ -79,7 +111,8 @@ class BaseModel(object):
         for i in range(num):
             for j in range(spacing):
                 X_batch, Y_batch = self.get_minibatch()
-                feed_dict = {self.X_placeholder: X_batch, self.Y_placeholder: Y_batch}
+                feed_dict = {self.X_placeholder: X_batch, 
+                             self.Y_placeholder: Y_batch}
                 self.session.run((self.sample_op), feed_dict=feed_dict)
 
             values = self.session.run((self.vars))
@@ -112,7 +145,6 @@ class BaseModel(object):
         feed_dict = {self.X_placeholder: X_batch, self.Y_placeholder: Y_batch}
         if posterior:
             feed_dict.update(np.random.choice(self.posterior_samples))
-        #mll = np.sum(self.session.run((self.log_likelihood), feed_dict=feed_dict), 0)
         nll = self.session.run((self.nll), feed_dict = feed_dict)
-        print(' Training MLL of a sample: {}'.format(nll))
+        print(' Training NLL of a sample: {}'.format(nll))
         return nll

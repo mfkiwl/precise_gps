@@ -25,15 +25,15 @@ def save_results(model, step, params, counter, variances, likelihood_variances,
     '''
     if type(model).__name__ == 'SVIPenalty':
         value = model.maximum_log_likelihood_objective(model.train_data)
-        q_mus[coefficient].append(model.q_mu)
-        q_sqrts[coefficient].append(model.q_sqrt)
-        Zs[coefficient].append(model.inducing_variable.Z)
+        #q_mus[coefficient].append(model.q_mu)
+        #q_sqrts[coefficient].append(model.q_sqrt)
+        #Zs[coefficient].append(model.inducing_variable.Z)
     else:
         value = model.maximum_log_likelihood_objective()
         
     if type(model.kernel).__name__ in _full_kernels: 
-        coefficient = model.kernel.coefficient.numpy()
-        params[coefficient][counter].append(list(coefficient))
+        kernel_params = model.kernel.L.numpy()
+        params[coefficient][counter].append(list(kernel_params))
     else:
         lengthscales = model.kernel.lengthscales.numpy()
         params[coefficient][counter].append(list(lengthscales))

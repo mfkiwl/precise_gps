@@ -179,8 +179,7 @@ class Year(Dataset):
         return np.arange(90)
         
     def read_data(self):
-        path = 'https://archive.ics.uci.edu/ml/machine-learning-databases\
-        /00203/YearPredictionMSD.txt.zip'
+        path = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00203/YearPredictionMSD.txt.zip'
         data = pd.read_csv(path,compression='zip', header = None).values
         return data[:,1:], data[:,0].reshape(-1,1), self.get_cols(self.path)
     

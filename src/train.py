@@ -5,6 +5,7 @@ from src.visuals.visuals import *
 from src.models.initialization import *
 from src.select import select_kernel, select_model
 from src.save_intermediate import save_results
+from src.sampling.mcmc_kernel import sample_posterior_params
 
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold
@@ -138,7 +139,10 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
     test_errors, train_errors, mlls, params, sghmc_params = {}, {}, {}, {}, {}
     likelihood_variances, variances, log_likelihoods = {}, {}, {}
     sghmc_vars, nlls, q_mus, q_sqrts, Zs = {}, {}, {}, {}, {}
-
+    
+    sample_test_errors, sample_log_liks = {}, {}
+    best_sample_test_errors = {}
+    best_sample_log_liks = {}
 
     # Iterating through coefficients defined by the prior that is used:
     # Lasso, Wishart.
@@ -149,6 +153,10 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
         likelihood_variances[coefficient], variances[coefficient] = {}, {}
         log_likelihoods[coefficient] = []
         q_mus[coefficient], q_sqrts[coefficient], Zs[coefficient] = [], [], []
+        sample_test_errors[coefficient] = []
+        sample_log_liks[coefficient] = []
+        best_sample_test_errors[coefficient] = []
+        best_sample_log_liks[coefficient] = []
         
         #kf = KFold(n_splits=5, shuffle=True)
         for num_run in range(num_runs):
@@ -225,15 +233,32 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
                 log_lik = np.average(norm.logpdf(data.test_y*data.y_std, 
                                                  loc=mean*data.y_std, 
                                                  scale=var**0.5*data.y_std))
-
+                
+            print('Intermediate,', 'Coef:', coefficient, 'LL:', log_lik,
+              'Test error', rms_test)
             test_errors[coefficient].append(rms_test)
             train_errors[coefficient].append(rms_train)
             log_likelihoods[coefficient].append(log_lik)
+
+            if type(_model).__name__ == 'GPRPenalty' and  \
+                type(_model.kernel).__name__ != 'ARD':
+                rms, loglik, best_loglik, best_rms = sample_posterior_params(
+                    _model, data)
+                print('Intermediate_sample,', 'Coef:', coefficient, 'LL:', 
+                      loglik, 'Test error', rms, "Best-ll", best_loglik, 
+                      "Best-rmse", best_rms)
+                
+                sample_test_errors[coefficient].append(rms)
+                sample_log_liks[coefficient].append(loglik)
+                
+                best_sample_test_errors[coefficient].append(best_rms)
+                best_sample_log_liks[coefficient].append(best_loglik)
+                
             
 
         current_mean = np.mean(test_errors[coefficient])
         current_ll = np.mean(log_likelihoods[coefficient])
-        print('Lasso:', coefficient, 'LL:', current_ll,
+        print('Coef:', coefficient, 'LL:', current_ll,
               'Test error', current_mean)
         
     # Save results after running the experiments
@@ -263,5 +288,9 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
     results['q_sqrt'] = q_sqrts
     results['Z'] = Zs
     results['nlls'] = nlls
+    results['sample_test_errors'] = sample_test_errors
+    results['sample_log_lik'] = sample_log_liks
+    results['best_sample_test_errors'] = best_sample_test_errors
+    results['best_sample_log_lik'] = best_sample_log_liks
     return results  
 
