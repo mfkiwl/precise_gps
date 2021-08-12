@@ -248,8 +248,8 @@ class SGHMC_Full(BaseKernel, gpflow.kernels.Kernel):
             variance = np.random.randn()
 
         self.variance = tf.Variable(variance, dtype = tf.float64, 
-                                    trainable = False)
-        self.L = tf.Variable(L, dtype = tf.float64, trainable = False)
+                                    trainable = True)
+        self.L = tf.Variable(L, dtype = tf.float64, trainable = True)
         self.dim = dim
 
     def K_diag(self, X) -> tf.Tensor:
@@ -316,8 +316,8 @@ class SGHMC_ARD(BaseKernel, gpflow.kernels.Kernel):
             variance = np.random.randn()
 
         self.variance = tf.Variable(variance, dtype = tf.float64, 
-                                    trainable = False)
-        self.L = tf.Variable(L, dtype = tf.float64, trainable = False)
+                                    trainable = True)
+        self.L = tf.Variable(L, dtype = tf.float64, trainable = True)
         self.dim = dim
         
     

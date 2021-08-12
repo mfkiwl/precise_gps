@@ -62,7 +62,7 @@ def run_adam_and_natgrad(model, iterations, train_dataset, minibatch_size,
         if step % 50 == 0:
             save_results(model, step, params, counter, variances, 
                          likelihood_variances, mlls, coefficient, 
-                         q_mus, q_sqrts, Zs)
+                         q_mus, q_sqrts, Zs, next(train_iter))
 
 
 def train(model, kernel, data, lassos, max_iter, num_runs, randomized, 
@@ -186,7 +186,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
                 if step % 5 == 0:
                     save_results(_model, step, params, num_run, variances, 
                                  likelihood_variances, mlls, coefficient, 
-                                 q_mus, q_sqrts, Zs)
+                                 q_mus, q_sqrts, Zs, (data.train_X, 
+                     data.train_y))
             
             if type(_model) == SVIPenalty:
                 train_dataset = tf.data.Dataset.from_tensor_slices(
@@ -258,8 +259,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
             train_errors[coefficient].append(rms_train)
             log_likelihoods[coefficient].append(log_lik)
 
-            if type(_model).__name__ == 'GPRPenalty' and  \
-                type(_model.kernel).__name__ != 'ARD':
+            if type(_model).__name__ == 'GPRPenalty':
                 rms, loglik, best_loglik, best_rms = sample_posterior_params(
                     _model, data)
                 print('Intermediate_sample,', 'Coef:', coefficient, 'LL:', 

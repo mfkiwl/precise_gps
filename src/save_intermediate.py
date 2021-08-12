@@ -4,7 +4,7 @@ from src.models.kernels import *
 _full_kernels = ['FullGaussianKernel', 'LowRankFullGaussianKernel']
 
 def save_results(model, step, params, counter, variances, likelihood_variances, 
-                 mlls, coefficient, q_mus, q_sqrts, Zs):
+                 mlls, coefficient, q_mus, q_sqrts, Zs, train_iter):
     '''
     Save intermediate results during the optimizations process. Used for
     standard Gaussian process regresssion and stochastic variational 
@@ -24,7 +24,7 @@ def save_results(model, step, params, counter, variances, likelihood_variances,
         Zs (gpflow.Parameter) : inducing points
     '''
     if type(model).__name__ == 'SVIPenalty':
-        value = model.maximum_log_likelihood_objective(model.train_data)
+        value = model.maximum_log_likelihood_objective(train_iter)
         #q_mus[coefficient].append(model.q_mu)
         #q_sqrts[coefficient].append(model.q_sqrt)
         #Zs[coefficient].append(model.inducing_variable.Z)

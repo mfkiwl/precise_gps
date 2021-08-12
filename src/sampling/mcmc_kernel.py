@@ -9,8 +9,8 @@ from gpflow import set_trainable
 from sklearn.metrics import mean_squared_error
 from scipy.stats import norm 
 
-NUM_BURN_IN = ci_niter(300)
-NUM_SAMPLES = ci_niter(50)
+NUM_BURN_IN = ci_niter(1000)
+NUM_SAMPLES = ci_niter(100)
 
 @tf.function
 def run_chain_fn(hmc_helper, adaptive_hmc):
@@ -27,8 +27,11 @@ def sample_posterior_params(model, dataset):
         set_trainable(model.inducing_variable, False)
     
     f64 = gpflow.utilities.to_default_float
-    model.kernel.L.prior = tfd.Normal(f64(0.0), f64(1.0))
-    model.kernel.variance.prior = tfd.Normal(f64(0.0), f64(1.0))
+    if type(model.kernel).__name__ == 'ARD':
+        model.kernel.lengthscales.prior = tfd.Gamma(f64(1.0), f64(1.0))
+    else:
+        model.kernel.L.prior = tfd.Normal(f64(0.0), f64(1.0))
+    model.kernel.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
     model.likelihood.variance.prior = tfd.Gamma(f64(1.0), f64(1.0))
 
     # Note that here we need model.trainable_parameters, not trainable_variables
@@ -49,27 +52,35 @@ def sample_posterior_params(model, dataset):
 
     samples, _ = run_chain_fn(hmc_helper, adaptive_hmc)
     parameter_samples = hmc_helper.convert_to_constrained_values(samples)
+    print('Params:', type(parameter_samples))
 
     means = []
     vars = []
     
     best_loglik, best_rmse = -np.inf, np.inf
+    best_mll = -np.inf
     for L, alpha, lik_var  in zip(parameter_samples[0], parameter_samples[1], 
                    parameter_samples[2]):
         new_model = gpflow.utilities.deepcopy(model)
-        new_model.kernel.L = L
+        
+        if type(model.kernel).__name__ == 'ARD':
+            new_model.kernel.lengthscales = L
+        else:
+            new_model.kernel.L = L
         new_model.kernel.variance = alpha
         new_model.likelihood.variance = lik_var
         mean, var = new_model.predict_y(dataset.test_X)
         
         rms_test = mean_squared_error(dataset.test_y, np.array(mean), 
                                   squared=False)
+        mll = new_model.maximum_log_likelihood_objective()
         log_lik = np.average(
             norm.logpdf(dataset.test_y*dataset.y_std, 
                         loc=np.array(mean)*dataset.y_std, 
                         scale=np.array(var)**0.5*dataset.y_std))
 
-        if log_lik > best_loglik:
+        if mll > best_mll:
+            best_mll = mll
             best_loglik = log_lik
             best_rmse = rms_test
         

@@ -103,8 +103,8 @@ class DGP(BaseModel):
                 Layer(self.kernels[l], outputs, n_inducing, 
                       fixed_mean=(l+1 < n_layers), X=X_running))
             X_running = np.matmul(X_running, self.layers[-1].mean)
-        new_vars = [l.U for l in self.layers] + [self.kernels[0].L] + \
-            [self.kernels[0].variance]
+        new_vars = [l.U for l in self.layers] #+ [self.kernels[0].L] + \
+        #    [self.kernels[0].variance]
         super().__init__(X, Y, new_vars, minibatch_size, window_size)
         self.f, self.fmeans, self.fvars = self.propagate(self.X_placeholder)
         self.y_mean, self.y_var = self.likelihood.predict_mean_and_var(
@@ -116,7 +116,7 @@ class DGP(BaseModel):
 
         self.nll = - tf.reduce_sum(
              self.log_likelihood) / tf.cast(tf.shape(self.X_placeholder)[0], 
-             tf.float64)*N - self.prior - getattr(Prior(), self.penalty)(self)
+             tf.float64)*N - self.prior #- getattr(Prior(), self.penalty)(self)
         self.nll /= N
         
         #self.varexps = self.likelihood.variational_expectations(
@@ -144,9 +144,9 @@ class DGP(BaseModel):
         for i in range(S):
             feed_dict = {self.X_placeholder: X}
             feed_dict.update(self.posterior_samples[i])
-            L = list(self.posterior_samples[i].values())[-2].tolist()
-            precisions.append(L)
-            variances.append(list(self.posterior_samples[i].values())[-1])
+            #L = list(self.posterior_samples[i].values())[-2].tolist()
+            #precisions.append(L)
+            #variances.append(list(self.posterior_samples[i].values())[-1])
             m, v = self.session.run((self.y_mean, self.y_var), 
                                     feed_dict=feed_dict)
             ms.append(m)
