@@ -1,0 +1,33 @@
+{
+    "svi_full" : {
+        "model" : "SVIPenalty",
+        "kernel": "FullGaussianKernel",
+        "data": "Susy",
+        "lassos": [0,1,8],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": 1000,
+        "batch_iter": 10000,
+        "split": 0.2,
+        "rank":0
+    },
+
+    "svi_ard" : {
+        "model" : "SVIPenalty",
+        "kernel": "ARD",
+        "data": "Susy",
+        "lassos": [0],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": 1000,
+        "batch_iter": 10000,
+        "split": 0.2,
+        "rank":0
+    }
+}

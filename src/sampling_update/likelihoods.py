@@ -37,10 +37,8 @@ class Gaussian(object):
         return -0.5 * (np.log(2 * np.pi) + tf.math.log(var) + \
             tf.square(mu-x) / var)
 
-    def __init__(self, variance=1.0, **kwargs):
-        self.variance = tf.exp(
-            tf.Variable(np.log(variance), 
-                        dtype=tf.float64, name='lik_log_variance'))
+    def __init__(self, variance, **kwargs):
+        self.variance = variance
     @print_name
     def logp(self, F, Y):
         return self.logdensity(Y, F, self.variance)

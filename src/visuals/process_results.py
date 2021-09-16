@@ -3,6 +3,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 
 from sklearn.decomposition import PCA
+from operator import itemgetter
 
 from src.select import select_model, select_kernel
 from src.models.initialization import fill_lowrank_triangular
@@ -191,4 +192,35 @@ def best_coef(log_liks):
     values = [dict(
         map(lambda x : (x[0], np.mean(x[1])), ll.items())) for ll in log_liks]
     return [max(val, key = val.get) for val in values]
+
+def best_mll(mlls):
+    '''
+    Determine the best hyperparameters based on the validation 
+    log-likelihood.
+    
+    Args:
+        log_liks (list) : list of log-likelihood dictionaries of
+        different models
+    
+    Returns:
+        coefficients (list) : dictionary keys that produce the best
+        log-likelihood for each model
+    '''
+    values = [dict(
+        map(lambda x : (x[0], list(x[1].values())), ll.items())) for ll in mlls]
+    
+    dictionary = []
+    for e in values:
+        new_list = []
+        k, val = list(e.keys()), e.values()
+        for idx, v in enumerate(list(val)):
+            iterations = []
+            for v1 in v:
+                if type(v1[-1]).__name__ == 'EagerTensor':
+                    iterations.append(v1[-1].numpy())
+                else:
+                    iterations.append(v1[-1])
+            new_list.append((k[idx], np.mean(iterations)))
+        dictionary.append(new_list)
+    return [max(val,key=itemgetter(1)) for val in dictionary]
     

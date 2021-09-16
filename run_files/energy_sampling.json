@@ -1,4 +1,5 @@
 {
+
     "sghmc_ard" : {
         "model" : "SGHMC",
         "kernel": "SGHMC_ARD",
@@ -14,8 +15,9 @@
         "split": 0.2,
         "rank":6,
         "n":[8],
-        "penalty" : "lasso"
+        "penalty" : "inverse_wishart"
     },
+
     "sghmc_full_lasso" : {
         "model" : "SGHMC",
         "kernel": "SGHMC_Full",
@@ -30,7 +32,7 @@
         "batch_iter": 40000,
         "split": 0.2,
         "rank":6,
-        "n":[13],
+        "n":[8],
         "penalty" : "lasso"
     }
 }

@@ -27,7 +27,7 @@ class ARD(BaseKernel, gpflow.kernels.Kernel):
             lengthscales = np.ones(dim)
             variance = 1.0
         else:
-            lengthscales = np.random.uniform(0.5,3,dim)
+            lengthscales = np.random.uniform(0.5,2,dim)
             variance = 1.0
 
         self.variance = gpflow.Parameter(
@@ -57,7 +57,7 @@ class ARD(BaseKernel, gpflow.kernels.Kernel):
             X2 = X1
             
         # Precision is the inverse squared of the lengthscales
-        P = tf.linalg.diag(self.lengthscales**(2))    
+        P = tf.linalg.diag(self.lengthscales**2)    
         X11 = tf.squeeze(
             tf.expand_dims(X1,axis = 1) @ P @ tf.expand_dims(X1,axis = -1),-1)
         X22 = tf.transpose(
@@ -135,19 +135,19 @@ class FullGaussianKernel(BaseKernel, gpflow.kernels.Kernel):
         if X2 is None:
             X2 = X1
         
-        L = tfp.math.fill_triangular(self.L) # matrix representation of L
+        #L = tfp.math.fill_triangular(self.L) # matrix representation of L
 
-        A = X1 @ L
-        B = X2 @ L 
+        #A = X1 @ L
+        #B = X2 @ L 
+        P = self.precision()
 
         X11 = tf.squeeze(
-            tf.expand_dims(A, axis = 1) @ tf.expand_dims(A, axis = -1), 
-            axis = -1) # (N, 1)
+            tf.expand_dims(X1,axis = 1) @ P @ tf.expand_dims(X1,axis = -1),-1)
         X22 = tf.transpose(
             tf.squeeze(
-                tf.expand_dims(B, axis = 1) @ tf.expand_dims(B, axis = -1), 
-                axis = -1))  # (1,M)
-        X12 = A @ tf.transpose(B) # (N,M)
+                tf.expand_dims(X2,axis = 1) @ P @ tf.expand_dims(X2,axis = -1),
+                -1))
+        X12 = X1 @ P @ tf.transpose(X2)
 
         # kernel  (N,1) - (N,M) + (1,M)
         K = self.variance*tf.exp(-0.5 * (X11 - 2*X12 + X22))
@@ -249,7 +249,7 @@ class SGHMC_Full(BaseKernel, gpflow.kernels.Kernel):
 
         self.variance = tf.Variable(variance, dtype = tf.float64, 
                                     trainable = True)
-        self.L = tf.Variable(L, dtype = tf.float64, trainable = True)
+        self.L = tf.Variable(L, dtype = tf.float64, trainable = False)
         self.dim = dim
 
     def K_diag(self, X) -> tf.Tensor:
@@ -317,7 +317,7 @@ class SGHMC_ARD(BaseKernel, gpflow.kernels.Kernel):
 
         self.variance = tf.Variable(variance, dtype = tf.float64, 
                                     trainable = True)
-        self.L = tf.Variable(L, dtype = tf.float64, trainable = True)
+        self.L = tf.Variable(L, dtype = tf.float64, trainable = False)
         self.dim = dim
         
     

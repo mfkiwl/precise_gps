@@ -90,6 +90,7 @@ def save_overview(log_liks, test_errors, names, path, best_indices):
     table.set_cols_align(["c"]*3)
     rows = [[chr(92)+"textbf{Model}", chr(92)+"textbf{MLL}", 
              chr(92)+"textbf{MRMSE}"]]
+    print('Names:', len(names))
     for idx in range(len(names)):
         model = names[idx]
         mean_ll = np.round(np.mean(log_liks[idx][best_indices[idx]]),2)
@@ -100,6 +101,7 @@ def save_overview(log_liks, test_errors, names, path, best_indices):
         ar = [f"{model}", f"{mean_ll}({var_ll})", f"{mean_test}({var_test})"]
         rows.append(ar)
     table.add_rows(rows)
+    print(len(rows))
         
     with open(f"{path}overview.txt", "a") as file:
         file.write(ltx.draw_latex(table, caption=""))

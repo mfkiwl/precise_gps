@@ -1,9 +1,9 @@
 {
 
-    "sghmc_ard" : {
+    "sghmc_full_lasso" : {
         "model" : "SGHMC",
-        "kernel": "SGHMC_ARD",
-        "data": "Kin8nm",
+        "kernel": "SGHMC_Full",
+        "data": "Year",
         "lassos": [0],
         "max_iter": 700,
         "num_runs": 10,
@@ -18,10 +18,10 @@
         "penalty" : "inverse_wishart"
     },
 
-    "sghmc_full_lasso" : {
+    "sghmc_ard" : {
         "model" : "SGHMC",
-        "kernel": "SGHMC_Full",
-        "data": "Kin8nm",
+        "kernel": "SGHMC_ARD",
+        "data": "Year",
         "lassos": [0],
         "max_iter": 700,
         "num_runs": 10,

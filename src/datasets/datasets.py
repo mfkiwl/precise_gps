@@ -56,7 +56,7 @@ class Dataset(object):
         raise NotImplementedError
     
     def get_cols(self, path):
-        return [d.strip("'") for d in list(
+        return [f'${chr(92)}mathrm{{{d}}}$'.replace("'", '') for d in list(
             pd.read_csv(path + "/features.csv", delimiter=','))]
 
 class Redwine(Dataset):

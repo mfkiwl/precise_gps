@@ -34,10 +34,6 @@ def print_name(f):
 
 class BaseModel(object):
     def __init__(self, X, Y, vars, minibatch_size, window_size):
-        self.X_placeholder = tf.compat.v1.placeholder(tf.float64, 
-                                                      shape=[None, X.shape[1]])
-        self.Y_placeholder = tf.compat.v1.placeholder(tf.float64, 
-                                                      shape=[None, Y.shape[1]])
         self.X = X
         self.Y = Y
         self.N = X.shape[0]
@@ -51,20 +47,26 @@ class BaseModel(object):
         self.burn_in_op = None
 
     @print_name
-    def generate_update_step(self, nll, epsilon, mdecay):
+    def generate_update_step(self, nll, epsilon, mdecay, burn_in = True):
         self.epsilon = epsilon
         burn_in_updates = []
         sample_updates = []
-
-        grads = tf.gradients(nll, self.vars)
-
+        
+        #grads = tf.gradients(nll, self.vars)
+        #grads = tf.GradientTape(nll, self.vars)
+        with tf.GradientTape() as gtape:
+            gtape.watch(self.vars)
+            grads = gtape.gradient(nll(), self.vars)
+        
+        #print(grads)
+        #print(self.vars)
         for theta, grad in zip(self.vars, grads):
             xi = tf.Variable(tf.ones_like(theta), dtype=tf.float64, 
-                             trainable=False)
+                            trainable=False)
             g = tf.Variable(tf.ones_like(theta), dtype=tf.float64, 
                             trainable=False)
             g2 = tf.Variable(tf.ones_like(theta), dtype=tf.float64, 
-                             trainable=False)
+                            trainable=False)
             p = tf.Variable(tf.zeros_like(theta), dtype=tf.float64, 
                             trainable=False)
 
@@ -89,11 +91,13 @@ class BaseModel(object):
             sample_updates.append((theta, theta_t))
             sample_updates.append((p, p_t))
 
-        self.sample_op = [
-            var.assign(var_t) for var, var_t in sample_updates]
-        self.burn_in_op = [
+        if burn_in:
+            self.burn_in_op = [
             var.assign(var_t) for var, var_t in burn_in_updates \
                 + sample_updates]
+        else:
+            self.sample_op = [
+                var.assign(var_t) for var, var_t in sample_updates]
 
     @print_name
     def reset(self, X, Y):
@@ -117,60 +121,37 @@ class BaseModel(object):
         self.data_iter += self.minibatch_size
         return X_batch, Y_batch
 
-    @print_name
-    def collect_samples(self, num, spacing):
-        self.posterior_samples = []
-        for i in range(num):
-            for j in range(spacing):
-                X_batch, Y_batch = self.get_minibatch()
-                feed_dict = {self.X_placeholder: X_batch, 
-                             self.Y_placeholder: Y_batch}
-                self.session.run((self.sample_op), feed_dict=feed_dict)
+    #@print_name
+    # def collect_samples(self, num, spacing):
+    #     self.posterior_samples = []
+    #     for i in range(num):
+    #         for j in range(spacing):
+    #             X_batch, Y_batch = self.get_minibatch()
+    #             calculate_nll(X_batch, Y_batch)
+    #             self.generate_update_step()
 
-            values = self.session.run((self.vars))
-            sample = {}
-            for var, value in zip(self.vars, values):
-                sample[var] = value
-            self.posterior_samples.append(sample)
+    #         values = self.vars#self.session.run((self.vars))
+    #         sample = {}
+    #         for var, value in zip(self.vars, values):
+    #             sample[var] = value
+    #         self.posterior_samples.append(sample)
 
-    @print_name
-    def sghmc_step(self):
-        X_batch, Y_batch = self.get_minibatch()
-        #print(X_batch.shape)
-        feed_dict = {self.X_placeholder: X_batch, self.Y_placeholder: Y_batch}
-        #print("burn", len(self.burn_in_op))
-        #print("feed", len(feed_dict))
-        #print("vars", len(self.vars))
-        #print(self.session.run((self.vars)))
-        #print(self.session.run((self.vars)))
-        self.session.run(self.burn_in_op, feed_dict=feed_dict)
-        #print("Var1", a[8])
-        #a = self.session.run(self.burn_in_op, feed_dict=feed_dict)
-        #print("Var2", a[8])
-        #print(self.burn_in_op, len(self.burn_in_op))
-        #print(self.session.run((self.vars)))
-        values = self.session.run((self.vars))
-        sample = {}
-        for var, value in zip(self.vars, values):
-            sample[var] = value
-        self.window.append(sample)
-        if len(self.window) > self.window_size:
-            self.window = self.window[-self.window_size:]
+    # @print_name
+    # def sghmc_step(self):
+    #     X_batch, Y_batch = self.get_minibatch()
+    #     values = self.vars
+    #     sample = {}
+    #     for var, value in zip(self.vars, values):
+    #         sample[var] = value
+    #     self.window.append(sample)
+    #     if len(self.window) > self.window_size:
+    #         self.window = self.window[-self.window_size:]
 
-    @print_name
-    def train_hypers(self):
-        X_batch, Y_batch = self.get_minibatch()
-        feed_dict = {self.X_placeholder: X_batch, self.Y_placeholder: Y_batch}
-        i = np.random.randint(len(self.window))
-        feed_dict.update(self.window[i])
-        self.session.run(self.hyper_train_op, feed_dict=feed_dict)
-
-    @print_name
-    def print_sample_performance(self, posterior=False):
-        X_batch, Y_batch = self.get_minibatch()
-        feed_dict = {self.X_placeholder: X_batch, self.Y_placeholder: Y_batch}
-        if posterior:
-            feed_dict.update(np.random.choice(self.posterior_samples))
-        nll = self.session.run((self.nll), feed_dict = feed_dict)
-        print(' Training NLL of a sample: {}'.format(nll))
-        return nll
+    # @print_name
+    # def train_hypers(self):
+    #     X_batch, Y_batch = self.get_minibatch()
+    #     self.X_batch = X_batch
+    #     self.Y_batch = Y_batch
+    #     i = np.random.randint(len(self.window))
+    #     feed_dict.update(self.window[i])
+    #     self.session.run(self.hyper_train_op, feed_dict=feed_dict)

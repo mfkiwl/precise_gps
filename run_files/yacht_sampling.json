@@ -1,21 +1,4 @@
 {
-    "sghmc_ard" : {
-        "model" : "SGHMC",
-        "kernel": "SGHMC_ARD",
-        "data": "Yacht",
-        "lassos": [0],
-        "max_iter": 700,
-        "num_runs": 10,
-        "randomized": 1,
-        "show": 0,
-        "num_Z": 100,
-        "minibatch": -1,
-        "batch_iter": 40000,
-        "split": 0.2,
-        "rank":6,
-        "n":[9],
-        "penalty" : "lasso"
-    },
 
     "sghmc_full_lasso" : {
         "model" : "SGHMC",
@@ -31,7 +14,25 @@
         "batch_iter": 40000,
         "split": 0.2,
         "rank":6,
-        "n":[9],
+        "n":[6],
+        "penalty" : "inverse_wishart"
+    },
+
+    "sghmc_ard" : {
+        "model" : "SGHMC",
+        "kernel": "SGHMC_ARD",
+        "data": "Yacht",
+        "lassos": [0],
+        "max_iter": 700,
+        "num_runs": 10,
+        "randomized": 1,
+        "show": 0,
+        "num_Z": 100,
+        "minibatch": -1,
+        "batch_iter": 40000,
+        "split": 0.2,
+        "rank":6,
+        "n":[6],
         "penalty" : "lasso"
     }
 }

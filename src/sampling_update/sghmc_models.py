@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from src.sampling.sghmc_gp import DGP
+from src.sampling_update.sghmc_gp import DGP
 
 import numpy as np
 import tensorflow as tf
@@ -28,7 +28,6 @@ import scipy
 import gpflow
 
 from scipy.stats import norm
-from src.sampling.likelihoods import Gaussian
 
 from functools import wraps
 def print_name(f):
@@ -38,11 +37,12 @@ def print_name(f):
         return f(*args, **kwds)
     return wrapper
 
+
 class RegressionModel(object):
     def __init__(self, data, kernel, lasso, n, V, penalty):
         class ARGS:
             num_inducing = 100
-            iterations = 10_000
+            iterations = 1_000
             minibatch_size = 10000
             window_size = 100
             num_posterior_samples = 100
@@ -59,11 +59,11 @@ class RegressionModel(object):
 
     @print_name
     def fit(self, X, Y):
-        lik = Gaussian(np.var(Y, 0))
-        return self._fit(X, Y, lik)
+        #lik = Gaussian(np.var(Y, 0))
+        return self._fit(X, Y)
 
     @print_name
-    def _fit(self, X, Y, lik, **kwargs):
+    def _fit(self, X, Y, **kwargs):
         if len(Y.shape) == 1:
             Y = Y[:, None]
 
@@ -75,7 +75,7 @@ class RegressionModel(object):
             mb_size = self.ARGS.minibatch_size \
                 if X.shape[0] > self.ARGS.minibatch_size else X.shape[0]
 
-            self.model = DGP(X, Y, 100, kerns, lik,
+            self.model = DGP(X, Y, 100, kerns,
                              minibatch_size=mb_size,
                              window_size=self.ARGS.window_size, 
                              lasso = self.lasso, n = self.n, V = self.V,
@@ -87,6 +87,7 @@ class RegressionModel(object):
             for _ in range(self.ARGS.iterations):
                 self.model.sghmc_step()
                 self.model.train_hypers()
+                #step_count = self.model.optimizer.minimize(self.model.nll, [var1]).numpy()
                 if _ % 100 == 1:
                     print('Iteration {}'.format(_))
                     nll = self.model.print_sample_performance()

@@ -1,11 +1,12 @@
 {
-    "sghmc_ard" : {
+
+    "sghmc_full_lasso" : {
         "model" : "SGHMC",
-        "kernel": "SGHMC_ARD",
+        "kernel": "SGHMC_Full",
         "data": "Boston",
         "lassos": [0],
         "max_iter": 700,
-        "num_runs": 1,
+        "num_runs": 10,
         "randomized": 1,
         "show": 0,
         "num_Z": 100,
@@ -14,15 +15,16 @@
         "split": 0.2,
         "rank":6,
         "n":[13],
-        "penalty" : "lasso"
+        "penalty" : "inverse_wishart"
     },
-    "sghmc_full_lasso" : {
+
+    "sghmc_ard" : {
         "model" : "SGHMC",
-        "kernel": "SGHMC_Full",
+        "kernel": "SGHMC_ARD",
         "data": "Boston",
         "lassos": [0],
         "max_iter": 700,
-        "num_runs": 1,
+        "num_runs": 10,
         "randomized": 1,
         "show": 0,
         "num_Z": 100,

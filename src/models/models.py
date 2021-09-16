@@ -88,7 +88,7 @@ class Standard_GPR(gpflow.models.GPR):
         kernel = kwargs["kernel"]
         super(Standard_GPR, self).__init__(data, kernel)
 
-class SGHMC(RegressionModel):
+class SGHMC(RegressionModel, gpflow.models.SVGP):
     def __init__(self, **kwargs):
         data = kwargs["data"]
         kernel = kwargs["kernel"]
@@ -101,5 +101,25 @@ class SGHMC(RegressionModel):
         V = tf.eye(self.p, dtype = tf.float64) if "V" not in kwargs else \
             kwargs["V"]
         
-        super(SGHMC, self).__init__(data, kernel, lasso, n, V, penalty)
+        M = kwargs["M"]
+        
+        N = len(data.train_y)
+        new_X = select_inducing_points(data.train_X, M)
+        
+        q_mu= np.zeros((M,1))
+        q_sqrt = [np.eye(M, dtype = np.float64) for _ in range(1)]
+        q_sqrt = np.array(q_sqrt)
+        
+        #gpflow.models.SVGP.__init__(self, kernel, 
+        #                                     gpflow.likelihoods.Gaussian(), 
+        #                                     new_X, num_data = N, q_mu = q_mu,
+        #                                     q_sqrt = q_sqrt)
+        
+        #set_trainable(self.q_mu, False)
+        #set_trainable(self.q_sqrt, False)
+        
+        #self.variational_params = [(self.q_mu, self.q_sqrt)]
+        self.n = n
+        self.V = V
+        RegressionModel.__init__(self, data, kernel, lasso, n, V, penalty)
         

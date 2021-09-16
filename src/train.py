@@ -22,7 +22,8 @@ ADAM_LR, GAMMA = 0.01, 0.1
 
 def run_adam_and_natgrad(model, iterations, train_dataset, minibatch_size,
                          params, coefficient, counter, variances, 
-                         likelihood_variances, mlls, N, q_mus, q_sqrts, Zs):
+                         likelihood_variances, mlls, N, q_mus, q_sqrts, Zs,
+                         train_X = None, train_y = None):
     '''
     Function to run Adam optimizer, and natural gradient for variational
     parameters.
@@ -131,7 +132,8 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
     
     # SGHMC is implemented using tensorflow 1.13.
     if model == 'SGHMC':
-        tf.compat.v1.disable_eager_execution()
+        tf.compat.v1.disable_v2_behavior()
+    #    tf.compat.v1.disable_eager_execution()
 
     dim = len(data.cols) # number of features for inputs
     
@@ -178,7 +180,7 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
             model_kwargs = {'data': data, 
                             'kernel': _kernel, 'lasso': coefficient, 
                             'M': num_Z, 'horseshoe': coefficient, 
-                            'n': coefficient, 'V': V}
+                            'n': coefficient, 'V': V, 'penalty':penalty}
                 
             _model = select_model(model, **model_kwargs)
             
@@ -207,7 +209,20 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
                     options={'maxiter': max_iter,'disp': False}, 
                     step_callback = step_callback)
             else:
+                # train_dataset = tf.data.Dataset.from_tensor_slices(
+                #     (data.train_X, 
+                #      data.train_y)).repeat().shuffle(len(data.train_y))
+                
+                # run_adam_and_natgrad(_model,batch_iter, train_dataset,
+                #                      minibatch_size, params, coefficient,
+                #                      num_run,variances, likelihood_variances,
+                #                      mlls, len(data.train_y), 
+                #                      q_mus, q_sqrts, Zs, data.train_X,
+                #                      data.train_y)
+                
+                print(_model.penalty)
                 _model.fit(data.train_X, data.train_y)
+                
 
             # Calculating error and log-likelihood
             if type(_model).__name__ == 'SGHMC':
@@ -216,11 +231,11 @@ def train(model, kernel, data, lassos, max_iter, num_runs, randomized,
                 sghmc_vars[coefficient].append(opt_variances)
                 pred_train,_,_,_ = _model.predict(data.train_X)
                 rms_test = mean_squared_error(data.test_y, mean, 
-                                              squared=False)
+                                             squared=False)
                 rms_train = mean_squared_error(data.train_y, pred_train, 
-                                               squared=False)
+                                              squared=False)
                 log_lik = np.average(_model.calculate_density(data.test_X, 
-                                                              data.test_y))
+                                                             data.test_y))
                 nlls[coefficient][num_run] = _model.nlls
             else:
                 mean, var = _model.predict_y(data.test_X)
